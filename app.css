@@ -87,7 +87,7 @@ input[type="number"],
 input[type="date"],
 input[type="tel"],
 select {
-  width: 100%;
+  width: 90%;
   padding: 1rem;
   margin-bottom: 1.1rem;
   border: 1px solid var(--gray);
@@ -559,20 +559,68 @@ ul#listaGanhos li:last-child {
   background-color: #1ee66c;
 }
 
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #f9f9f9; /* opcional, só para dar contraste */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Botão de apoio */
 .btn-apoio {
   display: inline-block;
-  background-color: #820ad1;
-  color: white;
+  background-color: white;
+  color: black;
   padding: 12px 20px;
   border-radius: 8px;
   text-decoration: none;
   font-weight: bold;
   margin-top: 1rem;
   transition: background-color 0.3s;
+  max-width: 90%;
+  box-sizing: border-box;
 }
 
 .btn-apoio:hover {
-  background-color: #6b08af;
+  background-color: #000;
+  color: #fff;
+}
+
+/* Texto e ícone GitHub */
+footer p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+footer a i {
+  font-size: 1.5rem;
+  color: #000;
+  margin-top: 0.3rem;
+  transition: color 0.3s;
+}
+
+footer a i:hover {
+  color: #820ad1;
+}
+
+/* Responsividade extra para telas muito pequenas */
+@media (max-width: 480px) {
+  .btn-apoio {
+    font-size: 0.9rem;
+    padding: 10px 16px;
+  }
+
+  footer p {
+    font-size: 0.8rem;
+  }
+
+  footer a i {
+    font-size: 1.3rem;
+  }
 }
 
 /* --- Ajustes de Responsividade --- */
@@ -592,7 +640,7 @@ ul#listaGanhos li:last-child {
 @media (max-width: 600px) {
   .container,
   .login-container {
-    max-width: 100%;
+    max-width: 90%;
     padding: 1rem 0.5rem;
     margin-bottom: 80px;
   }
