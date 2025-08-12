@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MotoCash</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="icon" href="images/motoCash.ico" type="image/x-icon" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#2196f3" />
+  </head>
+  <body>
+    <section id="tela-login" class="pagina">
+      <!-- Login -->
+      <div class="login-container card">
+        <h2 id="tituloLogin">Login</h2>
+        <form id="formLogin">
+          <input type="text" id="loginUsuario" placeholder="Usuário" required />
+          <input type="password" id="loginSenha" placeholder="Senha" required />
+          <button type="submit">Entrar</button>
+        </form>
+        <p>Não tem conta? <a href="#" id="linkCadastro">Cadastre-se</a></p>
+        <div id="loginErro" class="erro"></div>
+      </div>
+
+      <!-- Cadastro -->
+      <div class="login-container card" id="cadastroBox" style="display: none">
+        <h2>Cadastro</h2>
+        <form id="formCadastro">
+          <!-- Foto de Perfil -->
+          <!-- Escolher avatar -->
+          <div class="avatar-selecao">
+            <label>Escolha um avatar:</label>
+            <div class="opcoes-avatar">
+              <img
+                src="avatares/ava1.jpg"
+                class="avatar-opcao"
+                data-avatar="avatares/ava1.jpg"
+              />
+              <img
+                src="avatares/ava2.jpg"
+                class="avatar-opcao"
+                data-avatar="avatares/ava2.jpg"
+              />
+              <img
+                src="avatares/ava3.jpg"
+                class="avatar-opcao"
+                data-avatar="avatares/ava3.jpg"
+              />
+            </div>
+            <input type="hidden" id="avatarSelecionado" required />
+          </div>
+
+          <input
+            type="text"
+            id="cadastroUsuario"
+            placeholder="Usuário"
+            required
+          />
+          <input
+            type="password"
+            id="cadastroSenha"
+            placeholder="Senha"
+            required
+          />
+          <input
+            type="text"
+            id="cadastroNome"
+            placeholder="Nome completo"
+            required
+          />
+          <input
+            type="tel"
+            id="cadastroTelefone"
+            placeholder="Telefone"
+            pattern="[0-9]{10,13}"
+            required
+          />
+
+          <select id="cadastroMoto" required>
+            <option value="">Selecione o modelo da moto</option>
+            <option value="Honda CG 160">Honda CG 160</option>
+            <option value="Yamaha Factor 150">Yamaha Factor 150</option>
+            <option value="Honda Biz 125">Honda Biz 125</option>
+            <option value="Yamaha Fazer 250">Yamaha Fazer 250</option>
+          </select>
+
+          <input
+            type="number"
+            id="cadastroMetaSemanal"
+            placeholder="Meta semanal (R$)"
+            step="0.01"
+            min="0"
+            required
+            value="1000"
+          />
+
+          <button type="submit">Cadastrar</button>
+        </form>
+        <p>Já tem conta? <a href="#" id="linkLogin">Faça login</a></p>
+        <div id="cadastroErro" class="erro"></div>
+      </div>
+    </section>
+
+    <!-- Início -->
+    <section id="tela-inicio" class="pagina" style="display: none">
+      <div class="container">
+        <div class="topo-inicio destaque-topo">
+          <div>
+            <div id="msgOlaInicio">Olá, Usuário</div>
+            <div id="metaMensagem" class="meta-mensagem"></div>
+          </div>
+        </div>
+        <div class="resumos-rapidos">
+          <div class="card-resumo">
+            <span class="material-icons icone-resumo">today</span>
+            <div class="resumo-titulo">Hoje</div>
+            <div id="resumoHoje" class="resumo-valor">R$ 0,00</div>
+          </div>
+          <div class="card-resumo">
+            <span class="material-icons icone-resumo">calendar_view_week</span>
+            <div class="resumo-titulo">Semana</div>
+            <div id="resumoSemana" class="resumo-valor">R$ 0,00</div>
+          </div>
+          <div class="card-resumo">
+            <span class="material-icons icone-resumo">calendar_month</span>
+            <div class="resumo-titulo">Mês</div>
+            <div id="resumoMes" class="resumo-valor">R$ 0,00</div>
+          </div>
+        </div>
+        <div class="graficos-circulares">
+          <div class="grafico-circular card">
+            <h3>Ganhos Diários</h3>
+            <canvas id="graficoDiario" width="120" height="120"></canvas>
+            <div id="valorGraficoDiario" class="valor-grafico">R$ 0,00</div>
+          </div>
+          <div class="grafico-circular card">
+            <h3>Ganhos Semanais</h3>
+            <canvas id="graficoSemanal" width="120" height="120"></canvas>
+            <div id="valorGraficoSemanal" class="valor-grafico">R$ 0,00</div>
+          </div>
+          <div class="grafico-circular card">
+            <h3>Ganhos Mensais</h3>
+            <canvas id="graficoMensal" width="120" height="120"></canvas>
+            <div id="valorGraficoMensal" class="valor-grafico">R$ 0,00</div>
+          </div>
+        </div>
+        <div class="ferramentas-rapidas">
+          <button id="atalhoAdicionarGanho">
+            <span class="material-icons">add_circle</span>Adicionar Ganho
+          </button>
+          <button id="atalhoExportar">
+            <span class="material-icons">file_download</span>Exportar Relatório
+          </button>
+          <button id="atalhoCompartilhar">
+            <span class="material-icons">share</span>Compartilhar WhatsApp
+          </button>
+        </div>
+        <div class="indicadores">
+          <div class="indicador">
+            <span class="material-icons">trending_up</span>
+            <span>Média de entregas/dia: <b id="mediaEntregas">0</b></span>
+          </div>
+          <div class="indicador">
+            <span class="material-icons">star</span>
+            <span>Melhor dia: <b id="melhorDia">-</b></span>
+          </div>
+          <div class="indicador">
+            <span class="material-icons">flag</span>
+            <span>Última entrega: <b id="ultimaEntrega">-</b></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ganhos -->
+    <section id="tela-ganhos" class="pagina" style="display: none">
+      <div class="container">
+        <div class="card">
+          <h1 id="totalGanhos">Ganhos atuais: R$ 0,00</h1>
+          <div class="resumo-mes" style="margin-bottom: 1.2rem">
+            <span class="material-icons" style="vertical-align: middle"
+              >calendar_month</span
+            >
+            <span id="ganhoMes" style="margin-left: 0.5rem"
+              >Ganho do mês: R$ 0,00</span
+            >
+          </div>
+          <form id="formGanho">
+            <input type="date" id="data" required />
+            <input
+              type="number"
+              id="valorDiaria"
+              placeholder="Valor da diária"
+              step="0.01"
+              min="0"
+              required
+            />
+            <input
+              type="number"
+              id="taxaEntrega"
+              placeholder="Taxa por entrega"
+              step="0.01"
+              min="0"
+              required
+            />
+            <input
+              type="number"
+              id="qtdEntregas"
+              placeholder="Quantidade de entregas"
+              min="0"
+              required
+            />
+            <button type="submit">Adicionar Ganho</button>
+          </form>
+        </div>
+        <div class="card">
+          <h2>Histórico de Ganhos</h2>
+          <ul id="listaGanhos"></ul>
+          <div class="compartilhar-whatsapp">
+            <h3>Compartilhar via WhatsApp</h3>
+            <label
+              ><input type="checkbox" id="compQtdEntregas" checked /> Quantidade
+              de entregas</label
+            >
+            <label
+              ><input type="checkbox" id="compValorDiaria" checked /> Valor da
+              diária</label
+            >
+            <label
+              ><input type="checkbox" id="compValorTotal" checked /> Valor
+              total</label
+            >
+            <button id="btnCompartilhar">Compartilhar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tela-perfil" class="pagina" style="display: none">
+      <div class="container">
+        <div class="card perfil-dados">
+          <!-- Foto de perfil -->
+          <div class="foto-perfil-container">
+            <img
+              id="fotoPerfil"
+              src="default-avatar.png"
+              alt="Foto de perfil"
+              class="foto-perfil"
+            />
+            <label for="inputFotoPerfil" class="btn-alterar-foto">
+              <span class="material-icons">edit</span>
+            </label>
+            <input
+              type="file"
+              id="inputFotoPerfil"
+              accept="image/*"
+              style="display: none"
+            />
+          </div>
+
+          <div class="dado-perfil">
+            <strong>Nome:</strong>
+            <span id="perfilNome" class="valor-dado"></span>
+          </div>
+
+          <div class="dado-perfil">
+            <strong>Usuário:</strong>
+            <span id="perfilUsuario" class="valor-dado"></span>
+          </div>
+
+          <div class="dado-perfil">
+            <strong>Telefone:</strong>
+            <span id="perfilTelefone" class="valor-dado"></span>
+          </div>
+
+          <div class="dado-perfil">
+            <strong>Modelo da moto:</strong>
+            <span id="perfilMoto" class="valor-dado"></span>
+          </div>
+
+          <div class="dado-perfil">
+            <strong>Meta semanal:</strong>
+            <span id="perfilMeta" class="valor-dado"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <form id="formAlterarCadastro">
+            <h3>Alterar Dados</h3>
+
+            <div class="form-group">
+              <label for="novaMetaSemanal">Meta Semanal (R$)</label>
+              <input
+                type="number"
+                id="novaMetaSemanal"
+                placeholder="Ex: 1000.00"
+                step="0.01"
+                min="0"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="novoNome">Nome Completo</label>
+              <input
+                type="text"
+                id="novoNome"
+                placeholder="Seu novo nome"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="novaSenha">Nova Senha</label>
+              <input
+                type="password"
+                id="novaSenha"
+                placeholder="Deixe em branco para não alterar"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="novoTelefone">Telefone</label>
+              <input
+                type="tel"
+                id="novoTelefone"
+                placeholder="Novo telefone"
+                pattern="[0-9]{10,13}"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="novaMoto">Modelo da Moto</label>
+              <select id="novaMoto" class="form-input">
+                <option value="">Selecione</option>
+                <option value="Honda CG 160">Honda CG 160</option>
+                <option value="Yamaha Factor 150">Yamaha Factor 150</option>
+                <option value="Honda Biz 125">Honda Biz 125</option>
+                <option value="Yamaha Fazer 250">Yamaha Fazer 250</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn-primario">
+              <span class="material-icons">save</span> Salvar Alterações
+            </button>
+          </form>
+
+          <button id="btnSair" class="btn-secundario">
+            <span class="material-icons">logout</span> Sair
+          </button>
+        </div>
+      </div>
+
+      <a
+        href="https://nubank.com.br/cobrar/599bu/689acc38-b21e-4f6d-9747-862b7566ec4d"
+        target="_blank"
+        class="btn-apoio"
+      >
+        🙌 Apoie o Projeto
+      </a>
+    </section>
+    <footer style="text-align: center; padding: 1rem">
+      <a
+        href="https://nubank.com.br/cobrar/599bu/689acc38-b21e-4f6d-9747-862b7566ec4d"
+        target="_blank"
+        class="btn-apoio"
+      >
+        🙌 Apoie o Projeto
+      </a>
+    </footer>
+    <!-- Barra inferior de navegação -->
+    <nav class="bottom-bar" id="bottomBar">
+      <button title="Início" id="btnNavInicio">
+        <span class="material-icons">home</span>
+        <span class="label">Início</span>
+      </button>
+      <button title="Ganhos" id="btnNavGanhos">
+        <span class="material-icons">attach_money</span>
+        <span class="label">Ganhos</span>
+      </button>
+      <button title="Perfil" id="btnNavPerfil">
+        <span class="material-icons">person</span>
+        <span class="label">Perfil</span>
+      </button>
+    </nav>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

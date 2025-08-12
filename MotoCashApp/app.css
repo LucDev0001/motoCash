@@ -1,0 +1,649 @@
+/* Paleta branco e preto, responsivo, estilo app moderno */
+
+/* Reset e base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  word-wrap: break-word; /* Evita texto estourar a tela */
+}
+
+html,
+body {
+  min-height: 100vh;
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  background: #fff;
+  color: #111;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Paleta */
+:root {
+  --black: #111;
+  --white: #fff;
+  --gray-light: #f5f5f5;
+  --gray: #e0e0e0;
+  --gray-dark: #888;
+  --accent: #111;
+  --accent-light: #222;
+}
+
+/* Containers principais */
+.container {
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 1.2rem 1rem 1rem 1rem;
+  position: relative;
+}
+
+.card {
+  background: var(--white);
+  border-radius: 18px;
+  box-shadow: 0 2px 12px #0001;
+  padding: 1.2rem 1rem;
+  margin-bottom: 1.2rem;
+  border: 1px solid var(--gray);
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  color: var(--black);
+  margin-bottom: 1rem;
+  letter-spacing: -1px;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 0.7rem;
+}
+
+h2 {
+  font-size: 1.3rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+  color: var(--accent-light);
+}
+
+label {
+  font-size: 1rem;
+  color: var(--accent-light);
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+/* Inputs e botões */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="tel"],
+select {
+  width: 100%;
+  padding: 1rem;
+  margin-bottom: 1.1rem;
+  border: 1px solid var(--gray);
+  border-radius: 14px;
+  font-size: 1.1rem;
+  background: var(--gray-light);
+  color: var(--black);
+  transition: box-shadow 0.2s, border 0.2s;
+}
+
+input[type="file"] {
+  margin-bottom: 1rem;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border: 1.5px solid var(--accent);
+  background: #fff;
+}
+
+button {
+  width: 100%;
+  padding: 1rem;
+  background: var(--black);
+  color: var(--white);
+  border: none;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 2px 8px #0002;
+  transition: background 0.2s, transform 0.1s;
+  letter-spacing: 0.5px;
+}
+
+button:hover,
+button:focus {
+  background: var(--accent-light);
+  transform: translateY(-2px) scale(1.03);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+a:hover {
+  color: var(--gray-dark);
+}
+
+/* Topo usuário */
+.topo-inicio {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+#fotoUsuarioInicio {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--white);
+  box-shadow: 0 2px 8px #0002;
+  background: var(--gray-light);
+}
+
+#msgOlaInicio {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--black);
+}
+
+/* Filtro de data */
+.filtro-data {
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  justify-content: flex-start;
+}
+
+.filtro-data label {
+  margin-bottom: 0;
+  font-size: 1rem;
+  color: var(--accent-light);
+}
+
+/* Cards de resumo rápido */
+.resumos-rapidos {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-bottom: 1.2rem;
+}
+.card-resumo {
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 1rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 90px;
+  flex: 1;
+  border: 1px solid var(--gray);
+}
+.icone-resumo {
+  color: var(--accent);
+  font-size: 2rem;
+  margin-bottom: 0.2rem;
+}
+.resumo-titulo {
+  font-size: 0.95rem;
+  color: var(--gray-dark);
+}
+.resumo-valor {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--black);
+}
+
+/* Gráficos circulares */
+.graficos-circulares {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.grafico-circular {
+  background: var(--white);
+  border-radius: 20px;
+  box-shadow: 0 4px 24px #0001;
+  padding: 1.2rem 1rem 0.7rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90vw;
+  max-width: 340px;
+  min-width: 180px;
+  border: 1px solid var(--gray);
+}
+
+.grafico-label {
+  font-size: 1.1rem;
+  color: var(--gray-dark);
+  margin-top: 0.7rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.valor-grafico {
+  margin-top: 0.6rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: center;
+}
+
+/* Ferramentas rápidas */
+.ferramentas-rapidas {
+  display: flex;
+  gap: 0.7rem;
+  margin: 1.2rem 0 1.2rem 0;
+  flex-wrap: wrap;
+}
+.ferramentas-rapidas button {
+  flex: 1;
+  min-width: 120px;
+  background: var(--black);
+  color: var(--white);
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  box-shadow: 0 2px 8px #0001;
+  margin-bottom: 0.5rem;
+}
+
+/* Indicadores */
+.indicadores {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.indicador {
+  background: var(--gray-light);
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 1rem;
+  color: var(--accent-light);
+}
+.indicador .material-icons {
+  color: var(--accent);
+  font-size: 1.5rem;
+}
+
+/* Meta mensagem */
+.meta-mensagem {
+  font-size: 0.98rem;
+  color: var(--accent);
+  margin-top: 0.2rem;
+  font-weight: 500;
+}
+
+/* Destaque topo */
+.destaque-topo {
+  background: var(--gray-light);
+  border-radius: 18px;
+  padding: 1rem 0.7rem;
+  margin-bottom: 1.2rem;
+}
+
+/* Histórico de ganhos */
+ul#listaGanhos {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 1.5rem 0;
+  background: var(--white);
+  border-radius: 18px;
+  box-shadow: 0 1px 8px #0001;
+  border: 1px solid var(--gray);
+}
+
+ul#listaGanhos li {
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--gray);
+  font-size: 1.1rem;
+  color: var(--black);
+}
+
+ul#listaGanhos li:last-child {
+  border-bottom: none;
+}
+
+/* Compartilhar WhatsApp */
+.compartilhar-whatsapp {
+  margin-top: 1.5rem;
+  background: var(--gray-light);
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 1px 4px #0001;
+  border: 1px solid var(--gray);
+}
+
+.compartilhar-whatsapp label {
+  font-size: 1rem;
+  color: var(--accent-light);
+  margin-right: 1.2rem;
+}
+
+.compartilhar-whatsapp button {
+  background: var(--black);
+  margin-top: 0.7rem;
+}
+
+/* Perfil */
+.perfil-topo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+#fotoUsuarioPerfil {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--black);
+  background: var(--gray-light);
+  box-shadow: 0 2px 8px #0001;
+}
+
+.perfil-dados {
+  margin-bottom: 1.2rem;
+  font-size: 1.1rem;
+  color: var(--black);
+}
+
+.perfil-dados strong {
+  color: var(--accent-light);
+}
+
+#formAlterarCadastro input {
+  margin-bottom: 0.7rem;
+}
+
+#btnSair {
+  background: #d32f2f;
+  margin-top: 1.2rem;
+}
+
+#btnSair:hover {
+  background: #b71c1c;
+}
+
+.foto-perfil-container {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.opcoes-avatar {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.avatar-opcao {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border 0.2s ease;
+}
+
+.avatar-opcao.selecionado {
+  border-color: #2196f3;
+}
+
+.foto-perfil {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  display: block;
+  margin: 0 auto 0.5rem;
+}
+
+#bottomBar {
+  display: none;
+}
+/* Barra inferior de navegação */
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100vw;
+  background: var(--white);
+  border-top: 1.5px solid var(--gray);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0.2rem 0;
+  z-index: 100;
+  box-shadow: 0 -2px 12px #0001;
+  height: 70px;
+}
+
+.bottom-bar button {
+  background: none;
+  border: none;
+  outline: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--accent-light);
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0.2rem 0.7rem;
+  transition: color 0.2s;
+}
+
+.bottom-bar button:focus,
+.bottom-bar button:hover {
+  color: var(--black);
+}
+
+.bottom-bar .material-icons {
+  font-size: 2.3rem;
+}
+
+.bottom-bar .label {
+  font-size: 0.95rem;
+  margin-top: 0.1rem;
+  font-weight: 500;
+}
+
+.usuario-logado {
+  margin-left: 1rem;
+  font-size: 1.1rem;
+  color: var(--accent-light);
+  font-weight: bold;
+  align-self: center;
+  white-space: nowrap;
+}
+
+/* Login/Cadastro */
+.login-container {
+  max-width: 370px;
+  margin: 40px auto;
+  background: var(--white);
+  border-radius: 18px;
+  box-shadow: 0 2px 12px #0001;
+  padding: 2rem 1.2rem;
+  text-align: center;
+  border: 1px solid var(--gray);
+}
+
+.login-container input {
+  width: 100%;
+  padding: 1rem;
+  margin: 0.7rem 0;
+  border-radius: 14px;
+  border: 1px solid var(--gray);
+  font-size: 1.1rem;
+  background: var(--gray-light);
+  box-shadow: 0 1px 4px #0001;
+  color: var(--black);
+}
+
+.login-container button {
+  width: 100%;
+  padding: 1rem;
+  background: var(--black);
+  color: var(--white);
+  border: none;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.login-container .link {
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.login-container .link:hover {
+  color: var(--gray-dark);
+}
+
+/* Barra de progresso da meta */
+.progresso-meta {
+  width: 100%;
+  height: 10px;
+  background-color: #eee;
+  border-radius: 5px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.progresso-barra {
+  height: 100%;
+  background-color: #4caf50;
+  transition: width 0.3s ease;
+}
+
+/* Estilo quando a meta é atingida */
+.progresso-barra.meta-completa {
+  background-color: #1ee66c;
+}
+
+.btn-apoio {
+  display: inline-block;
+  background-color: #820ad1;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  margin-top: 1rem;
+  transition: background-color 0.3s;
+}
+
+.btn-apoio:hover {
+  background-color: #6b08af;
+}
+
+/* --- Ajustes de Responsividade --- */
+
+/* Tablets */
+@media (max-width: 900px) {
+  .resumos-rapidos {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .ferramentas-rapidas {
+    justify-content: center;
+  }
+}
+
+/* Smartphones médios */
+@media (max-width: 600px) {
+  .container,
+  .login-container {
+    max-width: 100%;
+    padding: 1rem 0.5rem;
+    margin-bottom: 80px;
+  }
+
+  .graficos-circulares {
+    gap: 1rem;
+  }
+
+  .grafico-circular {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .resumos-rapidos,
+  .ferramentas-rapidas {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bottom-bar {
+    height: 64px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Smartphones muito pequenos */
+@media (max-width: 400px) {
+  .container,
+  .login-container {
+    padding: 0.7rem 0.3rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .grafico-circular {
+    padding: 0.5rem;
+    min-width: auto;
+  }
+
+  .bottom-bar .material-icons {
+    font-size: 1.5rem;
+  }
+
+  .bottom-bar .label {
+    font-size: 0.75rem;
+  }
+
+  button {
+    font-size: 1rem;
+    padding: 0.8rem;
+  }
+}
