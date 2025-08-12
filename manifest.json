@@ -3,7 +3,7 @@
   "short_name": "MotoCash",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "black",
   "theme_color": "black",
   "orientation": "portrait",
   "icons": [
