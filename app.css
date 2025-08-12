@@ -589,6 +589,11 @@ footer {
   color: #fff;
 }
 
+.btn-apoio a {
+  color: #fff;
+  background-color: #000;
+}
+
 /* Texto e ícone GitHub */
 footer p {
   margin: 0;
@@ -604,7 +609,7 @@ footer a i {
 }
 
 footer a i:hover {
-  color: #820ad1;
+  color: #ffffff;
 }
 
 /* Responsividade extra para telas muito pequenas */
