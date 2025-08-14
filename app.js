@@ -1,4 +1,4 @@
-// app.js - Controle de Ganhos para Motoboys (Versão Corrigida)
+// app.js - Controle de Ganhos para Motoboys (Versão Corrigida com Previsão do Tempo)
 
 // =============================================
 // ============ CONFIGURAÇÃO INICIAL ===========
@@ -204,6 +204,7 @@ const auth = {
     ganhos.atualizarUI();
     relatorios.atualizarGraficos();
     ganhos.atualizarTelaInicio();
+    weather.getAndDisplayDetailedWeather(); // CHAMA A FUNÇÃO DE TEMPO AO FAZER LOGIN
     $("formLogin").reset();
   },
 };
@@ -548,13 +549,13 @@ const ganhos = {
     // Calcula progresso
     const progresso = Math.min(100, (ganhos / meta) * 100);
     progressoContainer.innerHTML = `
-      <div class="progresso-meta">
-        <div class="progresso-barra" style="width: ${progresso}%"></div>
-      </div>
-      <div class="progresso-texto">
-        ${progresso.toFixed(0)}% da meta alcançada
-      </div>
-    `;
+            <div class="progresso-meta">
+                <div class="progresso-barra" style="width: ${progresso}%"></div>
+            </div>
+            <div class="progresso-texto">
+                ${progresso.toFixed(0)}% da meta alcançada
+            </div>
+        `;
 
     // Adiciona estilos condicionais
     if (progresso >= 100) {
@@ -570,6 +571,136 @@ const ganhos = {
   setElementText: (id, text) => {
     const element = $(id);
     if (element) element.textContent = text;
+  },
+};
+
+// =============================================
+// ============== PREVISÃO DO TEMPO ============
+// =============================================
+
+const weather = {
+  API_KEY: "SUA_CHAVE_DE_API_AQUI", // <<< COLOQUE SUA CHAVE AQUI
+
+  init: function () {
+    this.setupToggleButton();
+  },
+
+  getAndDisplayDetailedWeather: async function () {
+    const statusDiv = $("weather-status");
+    const hourlyContainer = $("hourly-forecast-container")?.querySelector(
+      ".previsao-lista"
+    );
+    const fiveDayContainer = $("five-day-forecast-container")?.querySelector(
+      ".previsao-lista"
+    );
+
+    if (!statusDiv || !hourlyContainer || !fiveDayContainer) return;
+
+    statusDiv.textContent = "Buscando sua localização...";
+
+    if (!navigator.geolocation) {
+      statusDiv.textContent =
+        "Geolocalização não é suportada pelo seu navegador.";
+      return;
+    }
+
+    function success(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weather.API_KEY}&units=metric&lang=pt`;
+
+      statusDiv.textContent = "Carregando previsão...";
+
+      fetch(apiUrl)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(
+              "Erro ao buscar dados da API. Verifique a chave ou a URL."
+            );
+          }
+          return response.json();
+        })
+        .then((data) => {
+          statusDiv.textContent = "";
+
+          // --- PREVISÃO DE 8 HORAS (HOJE) ---
+          hourlyContainer.innerHTML = "";
+          const hourlyForecast = data.list.slice(0, 3);
+          hourlyForecast.forEach((item) => {
+            const date = new Date(item.dt * 1000);
+            const time = date.toLocaleTimeString("pt-BR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+            hourlyContainer.innerHTML += weather.createForecastItem(
+              time,
+              item.main.temp,
+              item.weather[0].icon
+            );
+          });
+
+          // --- PREVISÃO DE 5 DIAS ---
+          fiveDayContainer.innerHTML = "";
+          const fiveDayForecast = data.list.filter((item) => {
+            const date = new Date(item.dt * 1000);
+            // A API retorna a cada 3h, pegamos a previsão das 12h para ter uma por dia
+            return date.getHours() === 12;
+          });
+
+          fiveDayForecast.forEach((item) => {
+            const date = new Date(item.dt * 1000);
+            const day = date.toLocaleDateString("pt-BR", { weekday: "short" });
+            fiveDayContainer.innerHTML += weather.createForecastItem(
+              day,
+              item.main.temp,
+              item.weather[0].icon
+            );
+          });
+        })
+        .catch((error) => {
+          console.error("Erro ao obter previsão do tempo:", error);
+          statusDiv.textContent = "Erro ao carregar a previsão.";
+        });
+    }
+
+    function error() {
+      statusDiv.textContent =
+        "Não foi possível obter sua localização. Verifique as permissões.";
+    }
+
+    navigator.geolocation.getCurrentPosition(success, error);
+  },
+
+  // Função auxiliar para criar o HTML de um item da previsão
+  createForecastItem: function (label, temp, iconCode) {
+    return `
+            <div class="previsao-item">
+                <p>${label}</p>
+                <img src="http://openweathermap.org/img/wn/${iconCode}.png" alt="Tempo">
+                <p>${Math.round(temp)}°C</p>
+            </div>
+        `;
+  },
+
+  setupToggleButton: function () {
+    const toggleButton = $("toggle-forecast-btn");
+    const hourlyForecastDiv = $("hourly-forecast-container");
+    const fiveDayForecastDiv = $("five-day-forecast-container");
+
+    if (!toggleButton || !hourlyForecastDiv || !fiveDayForecastDiv) return;
+
+    toggleButton.addEventListener("click", () => {
+      if (hourlyForecastDiv.style.display !== "none") {
+        hourlyForecastDiv.style.display = "none";
+        fiveDayForecastDiv.style.display = "block";
+        toggleButton.textContent = "8 Horas";
+      } else {
+        fiveDayForecastDiv.style.display = "none";
+        hourlyForecastDiv.style.display = "block";
+        toggleButton.textContent = "5 Dias";
+      }
+    });
   },
 };
 
@@ -811,6 +942,7 @@ const bottomNav = {
         navegacao.mostrarTelaProtegida("tela-inicio");
         ganhos.atualizarTelaInicio();
         relatorios.atualizarGraficos();
+        weather.getAndDisplayDetailedWeather(); // <<< CHAMADA PARA ATUALIZAR O TEMPO
       };
     }
 
@@ -863,6 +995,7 @@ function initApp() {
   ganhos.init();
   relatorios.init();
   bottomNav.init();
+  weather.init(); // <<< INICIALIZAÇÃO DO MÓDULO DE TEMPO
 
   // Verifica se há usuário logado
   if (!storage.getUsuarioLogado()) {
@@ -873,5 +1006,6 @@ function initApp() {
     ganhos.atualizarUI();
     relatorios.atualizarGraficos();
     ganhos.atualizarTelaInicio();
+    weather.getAndDisplayDetailedWeather(); // <<< CHAMADA INICIAL PARA ATUALIZAR O TEMPO
   }
 }
