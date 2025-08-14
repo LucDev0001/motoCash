@@ -579,7 +579,7 @@ const ganhos = {
 // =============================================
 
 const weather = {
-  API_KEY: "SUA_CHAVE_DE_API_AQUI", // <<< COLOQUE SUA CHAVE AQUI
+  API_KEY: "b39ef98f3edca5d6de39c4fcd9b78c7c", // <<< COLOQUE SUA CHAVE AQUI
 
   init: function () {
     this.setupToggleButton();
