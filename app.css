@@ -189,7 +189,7 @@ a:hover {
 }
 
 .toggle-button {
-  background-color: #2196f3;
+  background-color: var(--black);
   color: white;
   border: none;
   padding: 8px 12px;
@@ -197,10 +197,6 @@ a:hover {
   cursor: pointer;
   font-size: 0.9rem;
   transition: background-color 0.3s;
-}
-
-.toggle-button:hover {
-  background-color: #1976d2;
 }
 
 .previsao-lista {
