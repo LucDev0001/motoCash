@@ -166,6 +166,73 @@ a:hover {
   color: var(--black);
 }
 
+/* Estilos para a nova seção de previsão do tempo */
+.card-previsao {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  margin-top: 20px;
+  color: #333;
+}
+
+.previsao-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.previsao-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.toggle-button {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s;
+}
+
+.toggle-button:hover {
+  background-color: #1976d2;
+}
+
+.previsao-lista {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding-bottom: 10px;
+}
+
+.previsao-item {
+  flex: 0 0 80px; /* Ajusta o tamanho dos cards de previsão */
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.previsao-item img {
+  width: 40px;
+  height: 40px;
+}
+
+.previsao-item p {
+  margin: 5px 0 0;
+}
+
+#weather-status {
+  text-align: center;
+  margin-top: 10px;
+}
+
 /* Filtro de data */
 .filtro-data {
   margin-bottom: 1.2rem;
