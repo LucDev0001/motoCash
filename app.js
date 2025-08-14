@@ -579,10 +579,10 @@ const ganhos = {
 // =============================================
 
 const weather = {
-  API_KEY: "b39ef98f3edca5d6de39c4fcd9b78c7c", // <<< COLOQUE SUA CHAVE AQUI
+  API_KEY: "b39ef98f3edca5d6de39c4fcd9b78c7c",
 
   init: function () {
-    this.setupToggleButton();
+    // Não há mais botão para inicializar
   },
 
   getAndDisplayDetailedWeather: async function () {
@@ -590,11 +590,8 @@ const weather = {
     const hourlyContainer = $("hourly-forecast-container")?.querySelector(
       ".previsao-lista"
     );
-    const fiveDayContainer = $("five-day-forecast-container")?.querySelector(
-      ".previsao-lista"
-    );
 
-    if (!statusDiv || !hourlyContainer || !fiveDayContainer) return;
+    if (!statusDiv || !hourlyContainer) return;
 
     statusDiv.textContent = "Buscando sua localização...";
 
@@ -608,6 +605,7 @@ const weather = {
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
 
+      // Usamos a API de previsão de 5 dias / 3 horas
       const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weather.API_KEY}&units=metric&lang=pt`;
 
       statusDiv.textContent = "Carregando previsão...";
@@ -639,24 +637,6 @@ const weather = {
               item.weather[0].icon
             );
           });
-
-          // --- PREVISÃO DE 5 DIAS ---
-          fiveDayContainer.innerHTML = "";
-          const fiveDayForecast = data.list.filter((item) => {
-            const date = new Date(item.dt * 1000);
-            // A API retorna a cada 3h, pegamos a previsão das 12h para ter uma por dia
-            return date.getHours() === 12;
-          });
-
-          fiveDayForecast.forEach((item) => {
-            const date = new Date(item.dt * 1000);
-            const day = date.toLocaleDateString("pt-BR", { weekday: "short" });
-            fiveDayContainer.innerHTML += weather.createForecastItem(
-              day,
-              item.main.temp,
-              item.weather[0].icon
-            );
-          });
         })
         .catch((error) => {
           console.error("Erro ao obter previsão do tempo:", error);
@@ -681,26 +661,6 @@ const weather = {
                 <p>${Math.round(temp)}°C</p>
             </div>
         `;
-  },
-
-  setupToggleButton: function () {
-    const toggleButton = $("toggle-forecast-btn");
-    const hourlyForecastDiv = $("hourly-forecast-container");
-    const fiveDayForecastDiv = $("five-day-forecast-container");
-
-    if (!toggleButton || !hourlyForecastDiv || !fiveDayForecastDiv) return;
-
-    toggleButton.addEventListener("click", () => {
-      if (hourlyForecastDiv.style.display !== "none") {
-        hourlyForecastDiv.style.display = "none";
-        fiveDayForecastDiv.style.display = "block";
-        toggleButton.textContent = "8 Horas";
-      } else {
-        fiveDayForecastDiv.style.display = "none";
-        hourlyForecastDiv.style.display = "block";
-        toggleButton.textContent = "5 Dias";
-      }
-    });
   },
 };
 
