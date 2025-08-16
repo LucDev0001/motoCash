@@ -1,4 +1,4 @@
-// app.js - Controle de Ganhos para Motoboys (Versão Corrigida com Previsão do Tempo)
+// app.js - Controle de Ganhos para Motoboys (Versão Corrigida com Previsão do Tempo e Edição de Ganhos)
 
 // =============================================
 // ============ CONFIGURAÇÃO INICIAL ===========
@@ -327,6 +327,9 @@ const perfil = {
 // =============================================
 
 const ganhos = {
+  // Variável para armazenar o índice do ganho que está sendo editado
+  ganhoEditandoId: null,
+
   init: function () {
     this.setupGanhos();
   },
@@ -335,7 +338,11 @@ const ganhos = {
     if ($("formGanho")) {
       $("formGanho").addEventListener("submit", (e) => {
         e.preventDefault();
-        this.adicionarGanho();
+        if (this.ganhoEditandoId !== null) {
+          this.atualizarGanho();
+        } else {
+          this.adicionarGanho();
+        }
       });
     }
   },
@@ -362,14 +369,17 @@ const ganhos = {
     const valor = valorDiaria + taxaEntrega * qtdEntregas;
     const ganhos = storage.getGanhos();
 
-    ganhos.push({
+    // Adiciona um ID único para cada ganho
+    const novoGanho = {
+      id: Date.now(), // Usando timestamp como ID único
       usuario: usuario.usuario,
       data,
       valor,
       valorDiaria,
       taxaEntrega,
       qtdEntregas,
-    });
+    };
+    ganhos.push(novoGanho);
 
     storage.setGanhos(ganhos);
     this.atualizarUI();
@@ -378,6 +388,91 @@ const ganhos = {
     $("formGanho").reset();
 
     navegacao.mostrarTelaProtegida("tela-inicio");
+  },
+
+  atualizarGanho: function () {
+    const usuario = storage.getUsuarioLogado();
+    if (!usuario || this.ganhoEditandoId === null) return;
+
+    const ganhos = storage.getGanhos();
+    const index = ganhos.findIndex((g) => g.id === this.ganhoEditandoId);
+
+    if (index === -1) {
+      alert("Erro: Ganho não encontrado para edição.");
+      return;
+    }
+
+    const data = $("data").value;
+    const valorDiaria = parseFloat($("valorDiaria").value);
+    const taxaEntrega = parseFloat($("taxaEntrega").value);
+    const qtdEntregas = parseInt($("qtdEntregas").value);
+
+    if (
+      !data ||
+      isNaN(valorDiaria) ||
+      isNaN(taxaEntrega) ||
+      isNaN(qtdEntregas)
+    ) {
+      alert("Preencha todos os campos corretamente.");
+      return;
+    }
+
+    const valor = valorDiaria + taxaEntrega * qtdEntregas;
+
+    // Atualiza o objeto de ganho
+    ganhos[index] = {
+      ...ganhos[index],
+      data,
+      valor,
+      valorDiaria,
+      taxaEntrega,
+      qtdEntregas,
+    };
+
+    storage.setGanhos(ganhos);
+    this.atualizarUI();
+    this.atualizarTelaInicio();
+    relatorios.atualizarGraficos();
+    $("formGanho").reset();
+    
+    // Reseta o estado de edição
+    this.ganhoEditandoId = null;
+    $("btnSalvarGanho").textContent = "Adicionar Ganho";
+
+    navegacao.mostrarTelaProtegida("tela-inicio");
+  },
+
+  excluirGanho: function (ganhoId) {
+    if (confirm("Tem certeza que deseja excluir este ganho?")) {
+      const ganhos = storage.getGanhos();
+      const ganhosAtualizados = ganhos.filter((g) => g.id !== ganhoId);
+      storage.setGanhos(ganhosAtualizados);
+      this.atualizarUI();
+      this.atualizarTelaInicio();
+      relatorios.atualizarGraficos();
+    }
+  },
+
+  editarGanho: function (ganhoId) {
+    const ganhos = storage.getGanhos();
+    const ganho = ganhos.find((g) => g.id === ganhoId);
+
+    if (ganho) {
+      // Preenche o formulário com os dados do ganho
+      $("data").value = ganho.data;
+      $("valorDiaria").value = ganho.valorDiaria;
+      $("taxaEntrega").value = ganho.taxaEntrega;
+      $("qtdEntregas").value = ganho.qtdEntregas;
+
+      // Define o estado de edição
+      this.ganhoEditandoId = ganhoId;
+
+      // Mude o texto do botão para "Atualizar Ganho"
+      $("btnSalvarGanho").textContent = "Atualizar Ganho";
+
+      // Navegue para a tela de ganhos se não estiver nela
+      navegacao.mostrarTelaProtegida("tela-ganhos");
+    }
   },
 
   atualizarUI: function () {
@@ -419,17 +514,54 @@ const ganhos = {
         .slice()
         .reverse()
         .forEach((item) => {
-          const detalhes = `Diária: ${formatarMoeda(
-            item.valorDiaria
-          )}, Taxa: ${formatarMoeda(item.taxaEntrega)}, Qtde: ${
-            item.qtdEntregas
-          }`;
           const li = document.createElement("li");
-          li.textContent = `${item.data}: ${formatarMoeda(
-            item.valor
-          )} (${detalhes})`;
+          li.classList.add("ganho-item");
+          li.innerHTML = `
+              <div class="ganho-info">
+                  <p class="ganho-data">${item.data}</p>
+                  <p class="ganho-valor">${formatarMoeda(item.valor)}</p>
+              </div>
+              <div class="ganho-acoes">
+                  <button class="btn-menu-ganho" data-ganho-id="${item.id}">
+                      ...
+                  </button>
+                  <div class="menu-ganho-opcoes" style="display: none;">
+                      <a href="#" class="btn-editar" data-ganho-id="${item.id}">Editar</a>
+                      <a href="#" class="btn-excluir" data-ganho-id="${item.id}">Excluir</a>
+                  </div>
+              </div>
+          `;
           $("listaGanhos").appendChild(li);
         });
+
+      // Adiciona event listeners para os botões de menu e ações
+      document.querySelectorAll(".btn-menu-ganho").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          const menu = e.target.nextElementSibling;
+          if (menu) {
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+          }
+        });
+      });
+
+      document.querySelectorAll(".btn-excluir").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          const ganhoId = parseInt(e.target.dataset.ganhoId);
+          ganhos.excluirGanho(ganhoId);
+        });
+      });
+
+      document.querySelectorAll(".btn-editar").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          const ganhoId = parseInt(e.target.dataset.ganhoId);
+          ganhos.editarGanho(ganhoId);
+          // Oculta o menu após a seleção
+          e.target.closest(".menu-ganho-opcoes").style.display = "none";
+        });
+      });
     }
   },
 
@@ -624,7 +756,7 @@ const weather = {
 
           // --- PREVISÃO DE 8 HORAS (HOJE) ---
           hourlyContainer.innerHTML = "";
-          const hourlyForecast = data.list.slice(0, 3);
+          const hourlyForecast = data.list.slice(0, 8);
           hourlyForecast.forEach((item) => {
             const date = new Date(item.dt * 1000);
             const time = date.toLocaleTimeString("pt-BR", {
@@ -685,11 +817,13 @@ const relatorios = {
       .getGanhos()
       .filter((g) => g.usuario === usuario.usuario);
     const hoje = new Date();
+    const metaSemanal = usuario.metaSemanal || 1000;
 
     // Ganhos do dia
     const ganhosDia = ganhosUsuario
       .filter((g) => g.data === hoje.toISOString().slice(0, 10))
       .reduce((soma, g) => soma + Number(g.valor), 0);
+    const metaDiaria = metaSemanal / 7;
 
     // Ganhos da semana
     const inicioSemana = new Date(hoje);
@@ -714,44 +848,77 @@ const relatorios = {
         );
       })
       .reduce((soma, g) => soma + Number(g.valor), 0);
+    const metaMensal = metaSemanal * 4;
 
     // Atualiza valores dos gráficos
     this.setElementText("valorGraficoDiario", formatarMoeda(ganhosDia));
     this.setElementText("valorGraficoSemanal", formatarMoeda(ganhosSemana));
     this.setElementText("valorGraficoMensal", formatarMoeda(ganhosMes));
 
-    // Cria/atualiza gráficos
-    this.criarGrafico("graficoDiario", ganhosDia, "#1ee66c");
-    this.criarGrafico("graficoSemanal", ganhosSemana, "#13b15a");
-    this.criarGrafico("graficoMensal", ganhosMes, "#000");
+    // Cria/atualiza gráficos com a nova lógica de metas
+    this.criarGrafico(
+      "graficoDiario",
+      ganhosDia,
+      metaDiaria,
+      "Ganhos do Dia",
+      "#1ee66c"
+    );
+    this.criarGrafico(
+      "graficoSemanal",
+      ganhosSemana,
+      metaSemanal,
+      "Ganhos da Semana",
+      "#13b15a"
+    );
+    this.criarGrafico(
+      "graficoMensal",
+      ganhosMes,
+      metaMensal,
+      "Ganhos do Mês",
+      "#000"
+    );
   },
 
-  criarGrafico: function (elementId, valor, cor) {
+  criarGrafico: function (elementId, valor, meta, label, cor) {
     if (!$(elementId)) return;
 
     // Destrói gráfico existente
-    if (
-      this[`chart${elementId.charAt(0).toUpperCase() + elementId.slice(1)}`]
-    ) {
-      this[
-        `chart${elementId.charAt(0).toUpperCase() + elementId.slice(1)}`
-      ].destroy();
+    const chartVarName = `chart${
+      elementId.charAt(0).toUpperCase() + elementId.slice(1)
+    }`;
+    if (this[chartVarName]) {
+      this[chartVarName].destroy();
     }
 
+    // Calcula o valor restante para a meta
+    const restante = Math.max(0, meta - valor);
+
     // Cria novo gráfico
-    this[`chart${elementId.charAt(0).toUpperCase() + elementId.slice(1)}`] =
-      new Chart($(elementId), {
-        type: "doughnut",
-        data: {
-          labels: ["Ganhos"],
-          datasets: [{ data: [valor, 1], backgroundColor: [cor, "#eee"] }],
+    this[chartVarName] = new Chart($(elementId), {
+      type: "doughnut",
+      data: {
+        labels: [label, "Falta para a Meta"],
+        datasets: [
+          { data: [valor, restante], backgroundColor: [cor, "#eee"] },
+        ],
+      },
+      options: {
+        cutout: "70%",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const label = context.label || "";
+                const value = context.parsed;
+                return `${label}: ${formatarMoeda(value)}`;
+              },
+            },
+          },
         },
-        options: {
-          cutout: "70%",
-          plugins: { legend: { display: false } },
-          animation: { animateScale: true },
-        },
-      });
+        animation: { animateScale: true },
+      },
+    });
   },
 
   setupFerramentas: function () {
