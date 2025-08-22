@@ -19,7 +19,6 @@
   </head>
   <body>
     <section id="tela-login" class="pagina">
-      <!-- Login -->
       <div class="login-container card">
         <h2 id="tituloLogin">Login</h2>
         <form id="formLogin">
@@ -31,12 +30,9 @@
         <div id="loginErro" class="erro"></div>
       </div>
 
-      <!-- Cadastro -->
       <div class="login-container card" id="cadastroBox" style="display: none">
         <h2>Cadastro</h2>
         <form id="formCadastro">
-          <!-- Foto de Perfil -->
-          <!-- Escolher avatar -->
           <div class="avatar-selecao">
             <label>Escolha um avatar:</label>
             <div class="opcoes-avatar">
@@ -110,7 +106,6 @@
       </div>
     </section>
 
-    <!-- Início -->
     <section id="tela-inicio" class="pagina" style="display: none">
       <div class="container">
         <div class="topo-inicio destaque-topo">
@@ -190,13 +185,12 @@
           </div>
           <div class="indicador">
             <span class="material-icons">flag</span>
-            <span>Última entrega: <b id="ultimaEntrega">-</b></span>
+            <span>Último Ganho: <b id="ultimaEntrega">-</b></span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Ganhos -->
     <section id="tela-ganhos" class="pagina" style="display: none">
       <div class="container">
         <div class="card">
@@ -234,7 +228,7 @@
               min="0"
               required
             />
-            <button type="submit">Adicionar Ganho</button>
+            <button type="submit" id="btnSalvarGanho">Adicionar Ganho</button>
           </form>
         </div>
         <div class="card">
@@ -263,7 +257,6 @@
     <section id="tela-perfil" class="pagina" style="display: none">
       <div class="container">
         <div class="card perfil-dados">
-          <!-- Foto de perfil -->
           <div class="foto-perfil-container">
             <img
               id="fotoPerfil"
@@ -398,7 +391,6 @@
         </a>
       </div>
     </footer>
-    <!-- Barra inferior de navegação -->
     <nav class="bottom-bar" id="bottomBar">
       <button title="Início" id="btnNavInicio">
         <span class="material-icons">home</span>

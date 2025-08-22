@@ -378,27 +378,107 @@ a:hover {
   margin-bottom: 1.2rem;
 }
 
-/* Histórico de ganhos */
+/* --- ESTILOS PARA A NOVA LISTA DE GANHOS --- */
+
+/* Container da lista */
 ul#listaGanhos {
-  list-style: none;
+  list-style: none; /* Remove os pontos da lista */
   padding: 0;
-  margin: 0.5rem 0 1.5rem 0;
-  background: var(--white);
-  border-radius: 18px;
-  box-shadow: 0 1px 8px #0001;
+  margin: 1.5rem 0;
+}
+
+/* Estilo de cada item da lista (o card) */
+.ganho-item {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   border: 1px solid var(--gray);
 }
 
-ul#listaGanhos li {
-  padding: 1rem 1.2rem;
-  border-bottom: 1px solid var(--gray);
-  font-size: 1.1rem;
-  color: var(--black);
+/* Efeito ao passar o mouse */
+.ganho-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
 }
 
-ul#listaGanhos li:last-child {
-  border-bottom: none;
+/* Informações de Ganho (Data e Valor) */
+.ganho-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Permite que ocupe o espaço disponível */
 }
+
+.ganho-data {
+  font-size: 0.9rem;
+  color: #777;
+  margin-bottom: 0.2rem;
+}
+
+.ganho-valor {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #13b15a;
+}
+
+/* Estilo do menu de ações */
+.ganho-acoes {
+  position: relative;
+}
+
+/* Botão de menu (os 3 pontinhos) */
+.btn-menu-ganho {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #888;
+  cursor: pointer;
+  padding: 0.5rem;
+  line-height: 1; /* Ajuste para centralizar verticalmente */
+}
+
+/* Container das opções de menu (Editar/Excluir) */
+.menu-ganho-opcoes {
+  position: absolute;
+  top: 100%; /* Posiciona abaixo do botão */
+  right: 0;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  min-width: 120px;
+  overflow: hidden; /* Garante que as bordas arredondadas funcionem */
+  display: none; /* Inicia oculto */
+  border: 1px solid var(--gray);
+}
+
+/* Estilo dos links de ação (Editar/Excluir) */
+.menu-ganho-opcoes a {
+  display: block;
+  padding: 0.8rem 1rem;
+  text-decoration: none;
+  color: #333;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+/* Efeito ao passar o mouse nas opções */
+.menu-ganho-opcoes a:hover {
+  background-color: #f5f5f5;
+}
+
+/* Cores específicas para as ações */
+.menu-ganho-opcoes a.btn-excluir {
+  color: #e63946; /* Vermelho para a ação de excluir */
+}
+
+/* --- FIM DOS NOVOS ESTILOS --- */
+
 
 /* Compartilhar WhatsApp */
 .compartilhar-whatsapp {
