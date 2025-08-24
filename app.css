@@ -479,7 +479,6 @@ ul#listaGanhos {
 
 /* --- FIM DOS NOVOS ESTILOS --- */
 
-
 /* Compartilhar WhatsApp */
 .compartilhar-whatsapp {
   margin-top: 1.5rem;
@@ -589,10 +588,9 @@ ul#listaGanhos {
   background: var(--white);
   /*border-top: 1.5px solid var(--gray);*/
   display: flex;
-  gap: 0.5rem;
   justify-content: space-around;
   align-items: center;
-  padding: 2rem;
+  padding: 0.2rem 0;
   z-index: 100;
   /*box-shadow: 0 -2px 12px #0001;*/
   height: 70px;
