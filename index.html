@@ -19,7 +19,6 @@
   </head>
   <body>
     <section id="tela-login" class="pagina">
-      <!-- Login -->
       <div class="login-container card">
         <h2 id="tituloLogin">Login</h2>
         <form id="formLogin">
@@ -31,12 +30,9 @@
         <div id="loginErro" class="erro"></div>
       </div>
 
-      <!-- Cadastro -->
       <div class="login-container card" id="cadastroBox" style="display: none">
         <h2>Cadastro</h2>
         <form id="formCadastro">
-          <!-- Foto de Perfil -->
-          <!-- Escolher avatar -->
           <div class="avatar-selecao">
             <label>Escolha um avatar:</label>
             <div class="opcoes-avatar">
@@ -88,9 +84,16 @@
           <select id="cadastroMoto" required>
             <option value="">Selecione o modelo da moto</option>
             <option value="Honda CG 160">Honda CG 160</option>
-            <option value="Yamaha Factor 150">Yamaha Factor 150</option>
             <option value="Honda Biz 125">Honda Biz 125</option>
+            <option value="Honda Pop 110i">Honda Pop 110i</option>
+            <option value="Honda NXR Bros 160">Honda NXR Bros 160</option>
+            <option value="Honda CB 300F">Honda CB 300F</option>
+            <option value="Yamaha YBR 150 Factor">Yamaha YBR 150 Factor</option>
+            <option value="Yamaha XTZ 250 Lander">Yamaha XTZ 250 Lander</option>
             <option value="Yamaha Fazer 250">Yamaha Fazer 250</option>
+            <option value="Yamaha Crosser 150">Yamaha Crosser 150</option>
+            <option value="Honda PCX 160">Honda PCX 160</option>
+            <option value="Honda XRE 300 Sahara">Honda XRE 300 Sahara</option>
           </select>
 
           <input
@@ -110,7 +113,6 @@
       </div>
     </section>
 
-    <!-- Início -->
     <section id="tela-inicio" class="pagina" style="display: none">
       <div class="container">
         <div class="topo-inicio destaque-topo">
@@ -130,12 +132,9 @@
 
           <div id="hourly-forecast-container">
             <div class="previsao-lista"></div>
-
-            <div id="five-day-forecast-container" style="display: none">
-              <div class="previsao-lista"></div>
-            </div>
           </div>
-          <div id="weather-status">Carregando previsão....</div>
+
+          <div id="weather-status">Carregando previsão...</div>
         </div>
         <div class="resumos-rapidos">
           <div class="card-resumo">
@@ -193,13 +192,12 @@
           </div>
           <div class="indicador">
             <span class="material-icons">flag</span>
-            <span>Última entrega: <b id="ultimaEntrega">-</b></span>
+            <span>Último Ganho: <b id="ultimaEntrega">-</b></span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Ganhos -->
     <section id="tela-ganhos" class="pagina" style="display: none">
       <div class="container">
         <div class="card">
@@ -237,7 +235,7 @@
               min="0"
               required
             />
-            <button type="submit">Adicionar Ganho</button>
+            <button type="submit" id="btnSalvarGanho">Adicionar Ganho</button>
           </form>
         </div>
         <div class="card">
@@ -266,7 +264,6 @@
     <section id="tela-perfil" class="pagina" style="display: none">
       <div class="container">
         <div class="card perfil-dados">
-          <!-- Foto de perfil -->
           <div class="foto-perfil-container">
             <img
               id="fotoPerfil"
@@ -401,7 +398,6 @@
         </a>
       </div>
     </footer>
-    <!-- Barra inferior de navegação -->
     <nav class="bottom-bar" id="bottomBar">
       <button title="Início" id="btnNavInicio">
         <span class="material-icons">home</span>

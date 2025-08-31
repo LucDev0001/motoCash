@@ -1,17 +1,14 @@
-// app.js - Controle de Ganhos para Motoboys (Versão Corrigida com Previsão do Tempo)
+// app.js - Controle de Ganhos para Motoboys (Versão Final Corrigida)
 
 // =============================================
 // ============ CONFIGURAÇÃO INICIAL ===========
 // =============================================
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Inicializa a data atual no formulário de ganhos
   if ($("data")) {
     const today = new Date();
     $("data").value = today.toISOString().substr(0, 10);
   }
-
-  // Inicializa a aplicação
   initApp();
 });
 
@@ -19,36 +16,43 @@ document.addEventListener("DOMContentLoaded", function () {
 // ============== UTILITÁRIOS ==================
 // =============================================
 
-// Seletores de elementos (com verificação de existência)
 function $(id) {
   const element = document.getElementById(id);
   if (!element) console.warn(`Elemento #${id} não encontrado`);
   return element;
 }
 
-// Formata valores monetários
 function formatarMoeda(valor) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function getWeekRange(date) {
+  const hoje = new Date(date);
+  const diaDaSemana = hoje.getDay(); // Domingo = 0, Segunda = 1, ...
+  const diff = hoje.getDate() - diaDaSemana + (diaDaSemana === 0 ? -6 : 1); // Ajusta para segunda-feira
+
+  const start = new Date(hoje.getFullYear(), hoje.getMonth(), diff, 0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+
+  return { start, end };
 }
 
 // =============================================
 // ========== GERENCIAMENTO DE DADOS ===========
 // =============================================
 
-// Armazenamento local (localStorage)
 const storage = {
   getUsuarios: () => JSON.parse(localStorage.getItem("usuarios")) || [],
   setUsuarios: (usuarios) =>
     localStorage.setItem("usuarios", JSON.stringify(usuarios)),
-
   getUsuarioLogado: () =>
     JSON.parse(localStorage.getItem("usuarioLogado")) || null,
   setUsuarioLogado: (usuario) =>
     localStorage.setItem("usuarioLogado", JSON.stringify(usuario)),
-
   getGanhos: () => JSON.parse(localStorage.getItem("ganhos")) || [],
   setGanhos: (ganhos) => localStorage.setItem("ganhos", JSON.stringify(ganhos)),
-
   limparSessao: () => localStorage.removeItem("usuarioLogado"),
 };
 
@@ -67,7 +71,6 @@ const navegacao = {
       navegacao.ajustarBarraInferior(telaId);
     }
   },
-
   mostrarTelaProtegida: (telaId) => {
     if (!storage.getUsuarioLogado()) {
       navegacao.mostrarTela("tela-login");
@@ -75,7 +78,6 @@ const navegacao = {
       navegacao.mostrarTela(telaId);
     }
   },
-
   ajustarBarraInferior: (telaId) => {
     const barra = $("bottomBar");
     if (barra) {
@@ -92,61 +94,45 @@ const auth = {
   init: function () {
     this.setupLoginCadastro();
   },
-
   setupLoginCadastro: function () {
-    // Alternar entre login e cadastro
-    if ($("linkCadastro")) {
+    if ($("linkCadastro"))
       $("linkCadastro").addEventListener("click", (e) => {
         e.preventDefault();
         $("formLogin").parentElement.style.display = "none";
         $("cadastroBox").style.display = "block";
       });
-    }
-
-    if ($("linkLogin")) {
+    if ($("linkLogin"))
       $("linkLogin").addEventListener("click", (e) => {
         e.preventDefault();
         $("cadastroBox").style.display = "none";
         $("formLogin").parentElement.style.display = "block";
       });
-    }
-
-    // Seleção de avatar
     document.querySelectorAll(".avatar-opcao").forEach((img) => {
       img.addEventListener("click", () => {
-        document.querySelectorAll(".avatar-opcao").forEach((i) => {
-          i.classList.remove("avatar-selecionado");
-        });
+        document
+          .querySelectorAll(".avatar-opcao")
+          .forEach((i) => i.classList.remove("avatar-selecionado"));
         img.classList.add("avatar-selecionado");
         $("avatarSelecionado").value = img.dataset.avatar;
       });
     });
-
-    // Formulário de Login
-    if ($("formLogin")) {
+    if ($("formLogin"))
       $("formLogin").addEventListener("submit", (e) => {
         e.preventDefault();
         this.handleLogin();
       });
-    }
-
-    // Formulário de Cadastro
-    if ($("formCadastro")) {
+    if ($("formCadastro"))
       $("formCadastro").addEventListener("submit", (e) => {
         e.preventDefault();
         this.handleCadastro();
       });
-    }
   },
-
   handleLogin: function () {
     const usuario = $("loginUsuario").value.trim();
     const senha = $("loginSenha").value;
-    const usuarios = storage.getUsuarios();
-    const user = usuarios.find(
-      (u) => u.usuario === usuario && u.senha === senha
-    );
-
+    const user = storage
+      .getUsuarios()
+      .find((u) => u.usuario === usuario && u.senha === senha);
     if (user) {
       storage.setUsuarioLogado(user);
       $("loginErro").textContent = "";
@@ -155,57 +141,39 @@ const auth = {
       $("loginErro").textContent = "Usuário ou senha inválidos!";
     }
   },
-
   handleCadastro: function () {
     const usuario = $("cadastroUsuario").value.trim();
-    const senha = $("cadastroSenha").value;
-    const nome = $("cadastroNome").value.trim();
-    const telefone = $("cadastroTelefone").value.trim();
-    const moto = $("cadastroMoto").value;
     const avatar = $("avatarSelecionado").value;
-    const metaSemanal = parseFloat($("cadastroMetaSemanal").value) || 1000;
-    const usuarios = storage.getUsuarios();
-
-    // Validações
     if (!usuario) return this.showError("cadastroErro", "Usuário inválido!");
-    if (usuarios.find((u) => u.usuario === usuario))
+    if (storage.getUsuarios().find((u) => u.usuario === usuario))
       return this.showError("cadastroErro", "Usuário já existe!");
     if (!avatar) return this.showError("cadastroErro", "Selecione um avatar!");
-
+    const usuarios = storage.getUsuarios();
     const novoUsuario = {
       usuario,
-      senha,
-      nome,
-      telefone,
-      moto,
       avatar,
-      metaSemanal,
+      senha: $("cadastroSenha").value,
+      nome: $("cadastroNome").value.trim(),
+      telefone: $("cadastroTelefone").value.trim(),
+      moto: $("cadastroMoto").value,
+      metaSemanal: parseFloat($("cadastroMetaSemanal").value) || 1000,
     };
-
     usuarios.push(novoUsuario);
     storage.setUsuarios(usuarios);
     storage.setUsuarioLogado(novoUsuario);
-    $("cadastroErro").textContent = "";
-
     this.afterLogin();
-    $("formCadastro").reset();
-    $("cadastroBox").style.display = "none";
-    $("formLogin").parentElement.style.display = "block";
   },
-
-  showError: (elementId, message) => {
-    const element = $(elementId);
-    if (element) element.textContent = message;
+  showError: (id, msg) => {
+    if ($(id)) $(id).textContent = msg;
   },
-
   afterLogin: function () {
     navegacao.mostrarTelaProtegida("tela-inicio");
     perfil.atualizarUI();
     ganhos.atualizarUI();
     relatorios.atualizarGraficos();
     ganhos.atualizarTelaInicio();
-    weather.getAndDisplayDetailedWeather(); // CHAMA A FUNÇÃO DE TEMPO AO FAZER LOGIN
-    $("formLogin").reset();
+    weather.getAndDisplayDetailedWeather();
+    if ($("formLogin")) $("formLogin").reset();
   },
 };
 
@@ -217,12 +185,9 @@ const perfil = {
   init: function () {
     this.setupAlterarDados();
   },
-
   atualizarUI: function () {
     const usuario = storage.getUsuarioLogado();
     if (!usuario) return;
-
-    // Atualiza informações exibidas
     this.setElementText("perfilNome", usuario.nome || usuario.usuario);
     this.setElementText("perfilUsuario", usuario.usuario);
     this.setElementText("perfilTelefone", usuario.telefone || "");
@@ -235,90 +200,45 @@ const perfil = {
       "msgOlaInicio",
       `Olá, ${usuario.nome || usuario.usuario}`
     );
-
-    // Atualiza foto do perfil
-    if ($("fotoPerfil") && usuario.avatar) {
-      $("fotoPerfil").src = usuario.avatar;
-    }
-
-    // Pré-preencher formulário de edição
+    if ($("fotoPerfil") && usuario.avatar) $("fotoPerfil").src = usuario.avatar;
     this.preencherFormularioEdicao(usuario);
   },
-
   setElementText: (id, text) => {
-    const element = $(id);
-    if (element) element.textContent = text;
+    if ($(id)) $(id).textContent = text;
   },
-
   preencherFormularioEdicao: function (usuario) {
     if ($("novoNome")) $("novoNome").value = usuario.nome || "";
     if ($("novaMetaSemanal"))
       $("novaMetaSemanal").value = usuario.metaSemanal || "";
     if ($("novoTelefone")) $("novoTelefone").value = usuario.telefone || "";
     if ($("novaSenha")) $("novaSenha").value = "";
-
-    if ($("novaMoto")) {
-      const selectMoto = $("novaMoto");
-      for (let i = 0; i < selectMoto.options.length; i++) {
-        if (selectMoto.options[i].value === usuario.moto) {
-          selectMoto.selectedIndex = i;
-          break;
-        }
-      }
-    }
   },
-
   setupAlterarDados: function () {
-    if ($("formAlterarCadastro")) {
+    if ($("formAlterarCadastro"))
       $("formAlterarCadastro").addEventListener("submit", (e) => {
         e.preventDefault();
         this.handleAlterarDados();
       });
-    }
   },
-
   handleAlterarDados: function () {
     const usuario = storage.getUsuarioLogado();
     if (!usuario) return;
-
     const usuarios = storage.getUsuarios();
     const idx = usuarios.findIndex((u) => u.usuario === usuario.usuario);
     if (idx === -1) return;
-
-    // Obter valores do formulário
-    const novoNome = $("novoNome").value.trim();
-    const novaSenha = $("novaSenha").value.trim();
-    const novaMeta = $("novaMetaSemanal").value.trim();
-    const novoTelefone = $("novoTelefone").value.trim();
-    const novaMoto = $("novaMoto").value;
-
-    // Validações
-    if (novaMeta && isNaN(parseFloat(novaMeta))) {
-      alert("A meta semanal deve ser um valor numérico");
-      return;
-    }
-
-    if (novoTelefone && !/^\d{10,13}$/.test(novoTelefone)) {
-      alert("Telefone deve conter entre 10 e 13 dígitos");
-      return;
-    }
-
-    // Atualizar dados
-    if (novoNome) usuarios[idx].nome = novoNome;
-    if (novaSenha) usuarios[idx].senha = novaSenha;
-    if (novaMeta) usuarios[idx].metaSemanal = parseFloat(novaMeta);
-    if (novoTelefone) usuarios[idx].telefone = novoTelefone;
-    if (novaMoto) usuarios[idx].moto = novaMoto;
-
+    if ($("novoNome").value.trim())
+      usuarios[idx].nome = $("novoNome").value.trim();
+    if ($("novaSenha").value) usuarios[idx].senha = $("novaSenha").value;
+    if ($("novaMetaSemanal").value)
+      usuarios[idx].metaSemanal = parseFloat($("novaMetaSemanal").value);
+    if ($("novoTelefone").value.trim())
+      usuarios[idx].telefone = $("novoTelefone").value.trim();
+    if ($("novaMoto").value) usuarios[idx].moto = $("novaMoto").value;
     storage.setUsuarios(usuarios);
     storage.setUsuarioLogado(usuarios[idx]);
-
     this.atualizarUI();
     ganhos.atualizarTelaInicio();
-
     alert("Dados alterados com sucesso!");
-    $("formAlterarCadastro").reset();
-    this.preencherFormularioEdicao(usuarios[idx]);
   },
 };
 
@@ -378,7 +298,6 @@ const ganhos = {
       $("filtro-datas-personalizadas").style.display = "none";
     this.atualizarUI();
   },
-
   adicionarGanho: function () {
     const data = $("data").value;
     const valorDiaria = parseFloat($("valorDiaria").value) || 0;
@@ -399,7 +318,6 @@ const ganhos = {
     storage.setGanhos(ganhos);
     this.finalizarAcaoDeGanho();
   },
-
   atualizarGanho: function () {
     const ganhos = storage.getGanhos();
     const index = ganhos.findIndex((g) => g.id === this.ganhoEditandoId);
@@ -429,7 +347,6 @@ const ganhos = {
     $("data").value = new Date().toISOString().substr(0, 10);
     navegacao.mostrarTelaProtegida("tela-ganhos");
   },
-
   excluirGanho: function (ganhoId) {
     if (confirm("Tem certeza que deseja excluir este ganho?")) {
       storage.setGanhos(storage.getGanhos().filter((g) => g.id !== ganhoId));
@@ -724,6 +641,9 @@ const ganhos = {
   setElementText: (id, text) => {
     if ($(id)) $(id).textContent = text;
   },
+  setElementText: (id, text) => {
+    if ($(id)) $(id).textContent = text;
+  },
 };
 // =============================================
 // ============== PREVISÃO DO TEMPO ============
@@ -731,87 +651,53 @@ const ganhos = {
 
 const weather = {
   API_KEY: "b39ef98f3edca5d6de39c4fcd9b78c7c",
-
-  init: function () {
-    // Não há mais botão para inicializar
-  },
-
+  init: function () {},
   getAndDisplayDetailedWeather: async function () {
     const statusDiv = $("weather-status");
     const hourlyContainer = $("hourly-forecast-container")?.querySelector(
       ".previsao-lista"
     );
-
     if (!statusDiv || !hourlyContainer) return;
-
     statusDiv.textContent = "Buscando sua localização...";
-
-    if (!navigator.geolocation) {
-      statusDiv.textContent =
-        "Geolocalização não é suportada pelo seu navegador.";
-      return;
-    }
-
-    function success(position) {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-
-      // Usamos a API de previsão de 5 dias / 3 horas
-      const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weather.API_KEY}&units=metric&lang=pt`;
-
-      statusDiv.textContent = "Carregando previsão...";
-
-      fetch(apiUrl)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(
-              "Erro ao buscar dados da API. Verifique a chave ou a URL."
-            );
-          }
-          return response.json();
-        })
-        .then((data) => {
-          statusDiv.textContent = "";
-
-          // --- PREVISÃO DE 8 HORAS (HOJE) ---
-          hourlyContainer.innerHTML = "";
-          const hourlyForecast = data.list.slice(0, 3);
-          hourlyForecast.forEach((item) => {
-            const date = new Date(item.dt * 1000);
-            const time = date.toLocaleTimeString("pt-BR", {
-              hour: "2-digit",
-              minute: "2-digit",
+    if (!navigator.geolocation)
+      return (statusDiv.textContent = "Geolocalização não é suportada.");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude: lat, longitude: lon } = position.coords;
+        const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${weather.API_KEY}&units=metric&lang=pt_br`;
+        statusDiv.textContent = "Carregando previsão...";
+        fetch(apiUrl)
+          .then((res) => res.json())
+          .then((data) => {
+            statusDiv.textContent = "";
+            hourlyContainer.innerHTML = "";
+            data.list.slice(0, 8).forEach((item) => {
+              const date = new Date(item.dt * 1000);
+              const time = date.toLocaleTimeString("pt-BR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              hourlyContainer.innerHTML += weather.createForecastItem(
+                time,
+                item.main.temp,
+                item.weather[0].icon
+              );
             });
-            hourlyContainer.innerHTML += weather.createForecastItem(
-              time,
-              item.main.temp,
-              item.weather[0].icon
-            );
+          })
+          .catch((err) => {
+            console.error(err);
+            statusDiv.textContent = "Erro ao carregar previsão.";
           });
-        })
-        .catch((error) => {
-          console.error("Erro ao obter previsão do tempo:", error);
-          statusDiv.textContent = "Erro ao carregar a previsão.";
-        });
-    }
-
-    function error() {
-      statusDiv.textContent =
-        "Não foi possível obter sua localização. Verifique as permissões.";
-    }
-
-    navigator.geolocation.getCurrentPosition(success, error);
+      },
+      () => {
+        statusDiv.textContent = "Não foi possível obter sua localização.";
+      }
+    );
   },
-
-  // Função auxiliar para criar o HTML de um item da previsão
   createForecastItem: function (label, temp, iconCode) {
-    return `
-            <div class="previsao-item">
-                <p>${label}</p>
-                <img src="http://openweathermap.org/img/wn/${iconCode}.png" alt="Tempo">
-                <p>${Math.round(temp)}°C</p>
-            </div>
-        `;
+    return `<div class="previsao-item"><p>${label}</p><img src="http://openweathermap.org/img/wn/${iconCode}.png" alt="Tempo"><p>${Math.round(
+      temp
+    )}°C</p></div>`;
   },
 };
 
@@ -823,217 +709,174 @@ const relatorios = {
   chartDiario: null,
   chartSemanal: null,
   chartMensal: null,
-
   init: function () {
     this.setupFerramentas();
   },
-
   atualizarGraficos: function () {
     const usuario = storage.getUsuarioLogado();
     if (!usuario) return;
-
     const ganhosUsuario = storage
       .getGanhos()
       .filter((g) => g.usuario === usuario.usuario);
     const hoje = new Date();
-
-    // Ganhos do dia
+    const metaSemanal = usuario.metaSemanal || 1000;
     const ganhosDia = ganhosUsuario
       .filter((g) => g.data === hoje.toISOString().slice(0, 10))
-      .reduce((soma, g) => soma + Number(g.valor), 0);
-
-    // Ganhos da semana
-    const inicioSemana = new Date(hoje);
-    inicioSemana.setDate(hoje.getDate() - hoje.getDay());
-    const fimSemana = new Date(inicioSemana);
-    fimSemana.setDate(inicioSemana.getDate() + 6);
-
+      .reduce((s, g) => s + g.valor, 0);
+    const semana = getWeekRange(hoje);
     const ganhosSemana = ganhosUsuario
       .filter((g) => {
-        const d = new Date(g.data);
-        return d >= inicioSemana && d <= fimSemana;
+        const d = new Date(g.data + "T03:00:00");
+        return d >= semana.start && d <= semana.end;
       })
-      .reduce((soma, g) => soma + Number(g.valor), 0);
-
-    // Ganhos do mês
+      .reduce((s, g) => s + g.valor, 0);
     const ganhosMes = ganhosUsuario
-      .filter((g) => {
-        const d = new Date(g.data);
-        return (
-          d.getMonth() === hoje.getMonth() &&
-          d.getFullYear() === hoje.getFullYear()
-        );
-      })
-      .reduce((soma, g) => soma + Number(g.valor), 0);
-
-    // Atualiza valores dos gráficos
+      .filter(
+        (g) =>
+          new Date(g.data).getMonth() === hoje.getMonth() &&
+          new Date(g.data).getFullYear() === hoje.getFullYear()
+      )
+      .reduce((s, g) => s + g.valor, 0);
     this.setElementText("valorGraficoDiario", formatarMoeda(ganhosDia));
     this.setElementText("valorGraficoSemanal", formatarMoeda(ganhosSemana));
     this.setElementText("valorGraficoMensal", formatarMoeda(ganhosMes));
-
-    // Cria/atualiza gráficos
-    this.criarGrafico("graficoDiario", ganhosDia, "#1ee66c");
-    this.criarGrafico("graficoSemanal", ganhosSemana, "#13b15a");
-    this.criarGrafico("graficoMensal", ganhosMes, "#000");
+    this.criarGrafico(
+      "graficoDiario",
+      ganhosDia,
+      metaSemanal / 7,
+      "Ganhos do Dia",
+      "#1ee66c"
+    );
+    this.criarGrafico(
+      "graficoSemanal",
+      ganhosSemana,
+      metaSemanal,
+      "Ganhos da Semana",
+      "#13b15a"
+    );
+    this.criarGrafico(
+      "graficoMensal",
+      ganhosMes,
+      metaSemanal * 4,
+      "Ganhos do Mês",
+      "#000"
+    );
   },
-
-  criarGrafico: function (elementId, valor, cor) {
-    if (!$(elementId)) return;
-
-    // Destrói gráfico existente
-    if (
-      this[`chart${elementId.charAt(0).toUpperCase() + elementId.slice(1)}`]
-    ) {
-      this[
-        `chart${elementId.charAt(0).toUpperCase() + elementId.slice(1)}`
-      ].destroy();
-    }
-
-    // Cria novo gráfico
-    this[`chart${elementId.charAt(0).toUpperCase() + elementId.slice(1)}`] =
-      new Chart($(elementId), {
-        type: "doughnut",
-        data: {
-          labels: ["Ganhos"],
-          datasets: [{ data: [valor, 1], backgroundColor: [cor, "#eee"] }],
+  criarGrafico: function (id, valor, meta, label, cor) {
+    if (!$(id)) return;
+    const chartVarName = `chart${id.charAt(0).toUpperCase() + id.slice(1)}`;
+    if (this[chartVarName]) this[chartVarName].destroy();
+    const restante = Math.max(0, meta - valor);
+    this[chartVarName] = new Chart($(id), {
+      type: "doughnut",
+      data: {
+        labels: [label, "Falta"],
+        datasets: [{ data: [valor, restante], backgroundColor: [cor, "#eee"] }],
+      },
+      options: {
+        cutout: "70%",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.label}: ${formatarMoeda(ctx.parsed)}`,
+            },
+          },
         },
-        options: {
-          cutout: "70%",
-          plugins: { legend: { display: false } },
-          animation: { animateScale: true },
-        },
-      });
+      },
+    });
   },
-
   setupFerramentas: function () {
-    // Atalho para adicionar ganho
-    if ($("atalhoAdicionarGanho")) {
-      $("atalhoAdicionarGanho").onclick = () => {
+    if ($("atalhoAdicionarGanho"))
+      $("atalhoAdicionarGanho").onclick = () =>
         navegacao.mostrarTelaProtegida("tela-ganhos");
-        if ($("formGanho"))
-          $("formGanho").scrollIntoView({ behavior: "smooth" });
-      };
-    }
-
-    // Exportar relatório CSV
-    if ($("atalhoExportar")) {
+    if ($("atalhoExportar"))
       $("atalhoExportar").onclick = this.exportarRelatorioCSV;
-    }
-
-    // Compartilhar via WhatsApp
-    if ($("atalhoCompartilhar")) {
+    if ($("atalhoCompartilhar"))
       $("atalhoCompartilhar").onclick = this.compartilharWhatsApp;
-    }
-
-    // Botão de compartilhar na tela de ganhos
-    if ($("btnCompartilhar")) {
-      $("btnCompartilhar").addEventListener(
-        "click",
-        this.compartilharUltimoGanho
+    if ($("btnCompartilhar"))
+      $("btnCompartilhar").addEventListener("click", () =>
+        this.compartilharResumoSemanalComOpcoes()
       );
-    }
   },
-
   exportarRelatorioCSV: function () {
-    const usuario = storage.getUsuarioLogado();
-    if (!usuario) return;
-
     const ganhosUsuario = storage
       .getGanhos()
-      .filter((g) => g.usuario === usuario.usuario);
-    if (ganhosUsuario.length === 0) {
-      alert("Nenhum ganho para exportar.");
-      return;
-    }
-
+      .filter((g) => g.usuario === storage.getUsuarioLogado().usuario);
+    if (ganhosUsuario.length === 0) return alert("Nenhum ganho para exportar.");
     let csv = "Data,Valor,Diária,Taxa Entrega,Qtde Entregas\n";
     ganhosUsuario.forEach((g) => {
       csv += `${g.data},${g.valor},${g.valorDiaria},${g.taxaEntrega},${g.qtdEntregas}\n`;
     });
-
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = "relatorio_ganhos.csv";
-    document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   },
-
   compartilharWhatsApp: function () {
-    const usuario = storage.getUsuarioLogado();
-    if (!usuario) return;
-
     const ganhosUsuario = storage
       .getGanhos()
-      .filter((g) => g.usuario === usuario.usuario);
-    if (ganhosUsuario.length === 0) {
-      alert("Nenhum ganho para compartilhar.");
-      return;
-    }
-
+      .filter((g) => g.usuario === storage.getUsuarioLogado().usuario);
+    if (ganhosUsuario.length === 0)
+      return alert("Nenhum ganho para compartilhar.");
     const hoje = new Date();
     const ganhosMes = ganhosUsuario
-      .filter((g) => {
-        const d = new Date(g.data);
-        return (
-          d.getMonth() === hoje.getMonth() &&
-          d.getFullYear() === hoje.getFullYear()
-        );
-      })
-      .reduce((s, g) => s + Number(g.valor), 0);
-
-    let msg = `Resumo do mês: ${formatarMoeda(ganhosMes)}\n`;
-    msg += `Total de entregas: ${ganhosUsuario.reduce(
-      (s, g) => s + Number(g.qtdEntregas || 0),
-      0
-    )}`;
-
-    let tel = usuario.telefone ? usuario.telefone.replace(/\D/g, "") : "";
-    let url =
-      tel.length >= 10
-        ? `https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`
-        : `https://wa.me/?text=${encodeURIComponent(msg)}`;
-
-    window.open(url, "_blank");
+      .filter(
+        (g) =>
+          new Date(g.data).getMonth() === hoje.getMonth() &&
+          new Date(g.data).getFullYear() === hoje.getFullYear()
+      )
+      .reduce((s, g) => s + g.valor, 0);
+    const totalEntregas = ganhosUsuario.reduce((s, g) => s + g.qtdEntregas, 0);
+    let msg = `Resumo do mês: ${formatarMoeda(
+      ganhosMes
+    )}\nTotal de entregas: ${totalEntregas}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   },
-
-  compartilharUltimoGanho: function () {
-    const usuario = storage.getUsuarioLogado();
-    if (!usuario) return;
-
+  compartilharResumoSemanalComOpcoes: function () {
     const ganhosUsuario = storage
       .getGanhos()
-      .filter((g) => g.usuario === usuario.usuario);
-    if (ganhosUsuario.length === 0) {
-      alert("Nenhum ganho para compartilhar.");
-      return;
+      .filter((g) => g.usuario === storage.getUsuarioLogado().usuario);
+    const semana = getWeekRange(new Date());
+    const ganhosDaSemana = ganhosUsuario.filter((g) => {
+      const d = new Date(g.data + "T03:00:00");
+      return d >= semana.start && d <= semana.end;
+    });
+    if (ganhosDaSemana.length === 0)
+      return alert("Nenhum ganho na semana atual para compartilhar.");
+    const totais = ganhosDaSemana.reduce(
+      (acc, g) => ({
+        entregas: acc.entregas + g.qtdEntregas,
+        diarias: acc.diarias + g.valorDiaria,
+        total: acc.total + g.valor,
+      }),
+      { entregas: 0, diarias: 0, total: 0 }
+    );
+    let msg = `*Resumo da Semana (${semana.start.toLocaleDateString(
+      "pt-BR"
+    )} a ${semana.end.toLocaleDateString("pt-BR")})*:\n`;
+    let infoAdicionada = false;
+    if ($("compQtdEntregas")?.checked) {
+      msg += `\n- Quantidade de Entregas: *${totais.entregas}*`;
+      infoAdicionada = true;
     }
-
-    const ultimo = ganhosUsuario[ganhosUsuario.length - 1];
-    let msg = `Ganhos do dia ${ultimo.data}: `;
-
-    if ($("compQtdEntregas") && $("compQtdEntregas").checked)
-      msg += `Entregas: ${ultimo.qtdEntregas} `;
-    if ($("compValorDiaria") && $("compValorDiaria").checked)
-      msg += `| Diária: ${formatarMoeda(ultimo.valorDiaria)} `;
-    if ($("compValorTotal") && $("compValorTotal").checked)
-      msg += `| Total: ${formatarMoeda(ultimo.valor)}`;
-
-    let tel = usuario.telefone ? usuario.telefone.replace(/\D/g, "") : "";
-    let url =
-      tel.length >= 10
-        ? `https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`
-        : `https://wa.me/?text=${encodeURIComponent(msg)}`;
-
-    window.open(url, "_blank");
+    if ($("compValorDiaria")?.checked) {
+      msg += `\n- Soma das Diárias: *${formatarMoeda(totais.diarias)}*`;
+      infoAdicionada = true;
+    }
+    if ($("compValorTotal")?.checked) {
+      msg += `\n- *Total Geral: ${formatarMoeda(totais.total)}*`;
+      infoAdicionada = true;
+    }
+    if (!infoAdicionada)
+      return alert("Selecione pelo menos uma informação para compartilhar.");
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   },
-
   setElementText: (id, text) => {
-    const element = $(id);
-    if (element) element.textContent = text;
+    if ($(id)) $(id).textContent = text;
   },
 };
 
@@ -1045,41 +888,29 @@ const bottomNav = {
   init: function () {
     this.setupEventos();
   },
-
   setupEventos: function () {
-    // Botão de início
-    if ($("btnNavInicio")) {
+    if ($("btnNavInicio"))
       $("btnNavInicio").onclick = () => {
         navegacao.mostrarTelaProtegida("tela-inicio");
         ganhos.atualizarTelaInicio();
         relatorios.atualizarGraficos();
-        weather.getAndDisplayDetailedWeather(); // <<< CHAMADA PARA ATUALIZAR O TEMPO
+        weather.getAndDisplayDetailedWeather();
       };
-    }
-
-    // Botão de ganhos
-    if ($("btnNavGanhos")) {
+    if ($("btnNavGanhos"))
       $("btnNavGanhos").onclick = () => {
         navegacao.mostrarTelaProtegida("tela-ganhos");
         ganhos.atualizarUI();
       };
-    }
-
-    // Botão de perfil
-    if ($("btnNavPerfil")) {
+    if ($("btnNavPerfil"))
       $("btnNavPerfil").onclick = () => {
         navegacao.mostrarTelaProtegida("tela-perfil");
         perfil.atualizarUI();
       };
-    }
-
-    // Botão de sair
-    if ($("btnSair")) {
+    if ($("btnSair"))
       $("btnSair").addEventListener("click", () => {
         storage.limparSessao();
         navegacao.mostrarTela("tela-login");
       });
-    }
   },
 };
 
@@ -1106,9 +937,7 @@ function initApp() {
   ganhos.init();
   relatorios.init();
   bottomNav.init();
-  weather.init(); // <<< INICIALIZAÇÃO DO MÓDULO DE TEMPO
-
-  // Verifica se há usuário logado
+  weather.init();
   if (!storage.getUsuarioLogado()) {
     navegacao.mostrarTela("tela-login");
   } else {
@@ -1117,6 +946,6 @@ function initApp() {
     ganhos.atualizarUI();
     relatorios.atualizarGraficos();
     ganhos.atualizarTelaInicio();
-    weather.getAndDisplayDetailedWeather(); // <<< CHAMADA INICIAL PARA ATUALIZAR O TEMPO
+    weather.getAndDisplayDetailedWeather();
   }
 }
