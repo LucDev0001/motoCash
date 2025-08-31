@@ -327,253 +327,404 @@ const perfil = {
 // =============================================
 
 const ganhos = {
+  ganhoEditandoId: null,
+
   init: function () {
     this.setupGanhos();
+    this.setupFiltros(); // Adicionamos a inicialização dos filtros
   },
 
   setupGanhos: function () {
-    if ($("formGanho")) {
+    if ($("formGanho"))
       $("formGanho").addEventListener("submit", (e) => {
         e.preventDefault();
-        this.adicionarGanho();
+        this.ganhoEditandoId ? this.atualizarGanho() : this.adicionarGanho();
+      });
+  },
+
+  // NOVO: Função para configurar os eventos dos filtros
+  setupFiltros: function () {
+    if ($("filtro-periodo")) {
+      $("filtro-periodo").addEventListener("change", () => {
+        if ($("filtro-periodo").value === "personalizado") {
+          $("filtro-datas-personalizadas").style.display = "flex";
+        } else {
+          $("filtro-datas-personalizadas").style.display = "none";
+          this.atualizarUI();
+        }
       });
     }
+    if ($("filtro-data-inicio"))
+      $("filtro-data-inicio").addEventListener("change", () =>
+        this.atualizarUI()
+      );
+    if ($("filtro-data-fim"))
+      $("filtro-data-fim").addEventListener("change", () => this.atualizarUI());
+    if ($("filtro-ordenar"))
+      $("filtro-ordenar").addEventListener("change", () => this.atualizarUI());
+    if ($("btn-limpar-filtros"))
+      $("btn-limpar-filtros").addEventListener("click", () =>
+        this.limparFiltros()
+      );
+  },
+
+  // NOVO: Função para limpar os filtros e re-renderizar a lista
+  limparFiltros: function () {
+    if ($("filtro-periodo")) $("filtro-periodo").value = "todos";
+    if ($("filtro-data-inicio")) $("filtro-data-inicio").value = "";
+    if ($("filtro-data-fim")) $("filtro-data-fim").value = "";
+    if ($("filtro-ordenar")) $("filtro-ordenar").value = "recentes";
+    if ($("filtro-datas-personalizadas"))
+      $("filtro-datas-personalizadas").style.display = "none";
+    this.atualizarUI();
   },
 
   adicionarGanho: function () {
-    const usuario = storage.getUsuarioLogado();
-    if (!usuario) return;
-
     const data = $("data").value;
-    const valorDiaria = parseFloat($("valorDiaria").value);
-    const taxaEntrega = parseFloat($("taxaEntrega").value);
-    const qtdEntregas = parseInt($("qtdEntregas").value);
-
-    if (
-      !data ||
-      isNaN(valorDiaria) ||
-      isNaN(taxaEntrega) ||
-      isNaN(qtdEntregas)
-    ) {
-      alert("Preencha todos os campos corretamente.");
-      return;
-    }
-
-    const valor = valorDiaria + taxaEntrega * qtdEntregas;
-    const ganhos = storage.getGanhos();
-
-    ganhos.push({
-      usuario: usuario.usuario,
+    const valorDiaria = parseFloat($("valorDiaria").value) || 0;
+    const taxaEntrega = parseFloat($("taxaEntrega").value) || 0;
+    const qtdEntregas = parseInt($("qtdEntregas").value) || 0;
+    if (!data) return alert("Preencha a data.");
+    const novoGanho = {
+      id: Date.now(),
+      usuario: storage.getUsuarioLogado().usuario,
       data,
-      valor,
       valorDiaria,
       taxaEntrega,
       qtdEntregas,
-    });
-
+      valor: valorDiaria + taxaEntrega * qtdEntregas,
+    };
+    const ganhos = storage.getGanhos();
+    ganhos.push(novoGanho);
     storage.setGanhos(ganhos);
+    this.finalizarAcaoDeGanho();
+  },
+
+  atualizarGanho: function () {
+    const ganhos = storage.getGanhos();
+    const index = ganhos.findIndex((g) => g.id === this.ganhoEditandoId);
+    if (index === -1) return alert("Erro: Ganho não encontrado.");
+    const valorDiaria = parseFloat($("valorDiaria").value) || 0;
+    const taxaEntrega = parseFloat($("taxaEntrega").value) || 0;
+    const qtdEntregas = parseInt($("qtdEntregas").value) || 0;
+    ganhos[index] = {
+      ...ganhos[index],
+      data: $("data").value,
+      valorDiaria,
+      taxaEntrega,
+      qtdEntregas,
+      valor: valorDiaria + taxaEntrega * qtdEntregas,
+    };
+    storage.setGanhos(ganhos);
+    this.ganhoEditandoId = null;
+    $("btnSalvarGanho").textContent = "Adicionar Ganho";
+    this.finalizarAcaoDeGanho();
+  },
+
+  finalizarAcaoDeGanho: function () {
     this.atualizarUI();
     this.atualizarTelaInicio();
     relatorios.atualizarGraficos();
     $("formGanho").reset();
-
-    navegacao.mostrarTelaProtegida("tela-inicio");
+    $("data").value = new Date().toISOString().substr(0, 10);
+    navegacao.mostrarTelaProtegida("tela-ganhos");
   },
 
+  excluirGanho: function (ganhoId) {
+    if (confirm("Tem certeza que deseja excluir este ganho?")) {
+      storage.setGanhos(storage.getGanhos().filter((g) => g.id !== ganhoId));
+      this.atualizarUI();
+      this.atualizarTelaInicio();
+      relatorios.atualizarGraficos();
+    }
+  },
+
+  editarGanho: function (ganhoId) {
+    const ganho = storage.getGanhos().find((g) => g.id === ganhoId);
+    if (!ganho) return;
+    $("data").value = ganho.data;
+    $("valorDiaria").value = ganho.valorDiaria;
+    $("taxaEntrega").value = ganho.taxaEntrega;
+    $("qtdEntregas").value = ganho.qtdEntregas;
+    this.ganhoEditandoId = ganhoId;
+    $("btnSalvarGanho").textContent = "Atualizar Ganho";
+    navegacao.mostrarTelaProtegida("tela-ganhos");
+    window.scrollTo(0, 0);
+  },
+
+  // ATUALIZADO: Função principal com toda a lógica de filtros
   atualizarUI: function () {
     const usuario = storage.getUsuarioLogado();
-    if (!usuario) return;
+    if (!usuario || !$("listaGanhos")) return;
 
-    const ganhosUsuario = storage
+    let ganhosUsuario = storage
       .getGanhos()
       .filter((g) => g.usuario === usuario.usuario);
 
-    // Calcula totais
-    const total = ganhosUsuario.reduce((s, g) => s + Number(g.valor), 0);
+    // --- LÓGICA DE FILTRAGEM ---
+    const periodo = $("filtro-periodo").value;
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    let dataInicio, dataFim;
+
+    switch (periodo) {
+      case "hoje":
+        dataInicio = hoje;
+        dataFim = new Date(hoje);
+        dataFim.setHours(23, 59, 59, 999);
+        break;
+      case "esta-semana":
+        const semana = getWeekRange(hoje);
+        dataInicio = semana.start;
+        dataFim = semana.end;
+        break;
+      case "este-mes":
+        dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+        dataFim = new Date(
+          hoje.getFullYear(),
+          hoje.getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999
+        );
+        break;
+      case "semana-passada":
+        const diaSemanaPassada = new Date(hoje);
+        diaSemanaPassada.setDate(hoje.getDate() - 7);
+        const semanaPassada = getWeekRange(diaSemanaPassada);
+        dataInicio = semanaPassada.start;
+        dataFim = semanaPassada.end;
+        break;
+      case "mes-passado":
+        dataInicio = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+        dataFim = new Date(
+          hoje.getFullYear(),
+          hoje.getMonth(),
+          0,
+          23,
+          59,
+          59,
+          999
+        );
+        break;
+      case "personalizado":
+        const inicioStr = $("filtro-data-inicio").value;
+        const fimStr = $("filtro-data-fim").value;
+        if (inicioStr) dataInicio = new Date(inicioStr + "T00:00:00");
+        if (fimStr) dataFim = new Date(fimStr + "T23:59:59");
+        break;
+    }
+
+    if (dataInicio && dataFim) {
+      ganhosUsuario = ganhosUsuario.filter((g) => {
+        const dataGanho = new Date(g.data + "T03:00:00");
+        return dataGanho >= dataInicio && dataGanho <= dataFim;
+      });
+    } else if (dataInicio) {
+      ganhosUsuario = ganhosUsuario.filter(
+        (g) => new Date(g.data + "T03:00:00") >= dataInicio
+      );
+    } else if (dataFim) {
+      ganhosUsuario = ganhosUsuario.filter(
+        (g) => new Date(g.data + "T03:00:00") <= dataFim
+      );
+    }
+
+    // --- LÓGICA DE ORDENAÇÃO ---
+    const ordenarPor = $("filtro-ordenar").value;
+    switch (ordenarPor) {
+      case "recentes":
+        ganhosUsuario.sort((a, b) => new Date(b.data) - new Date(a.data));
+        break;
+      case "antigos":
+        ganhosUsuario.sort((a, b) => new Date(a.data) - new Date(b.data));
+        break;
+      case "maior-valor":
+        ganhosUsuario.sort((a, b) => b.valor - a.valor);
+        break;
+      case "menor-valor":
+        ganhosUsuario.sort((a, b) => a.valor - b.valor);
+        break;
+    }
+
+    // --- RENDERIZAÇÃO ---
+    const total = ganhosUsuario.reduce((s, g) => s + g.valor, 0);
     this.setElementText(
       "totalGanhos",
-      `Ganhos atuais: ${formatarMoeda(total)}`
+      `Ganhos (filtrados): ${formatarMoeda(total)}`
     );
 
-    // Ganhos do mês
-    const hoje = new Date();
-    const ganhosMes = ganhosUsuario
-      .filter((g) => {
-        const d = new Date(g.data);
-        return (
-          d.getMonth() === hoje.getMonth() &&
-          d.getFullYear() === hoje.getFullYear()
-        );
-      })
-      .reduce((s, g) => s + Number(g.valor), 0);
-
+    const hojeParaMes = new Date();
+    const ganhosMes = storage
+      .getGanhos()
+      .filter(
+        (g) =>
+          g.usuario === usuario.usuario &&
+          new Date(g.data).getMonth() === hojeParaMes.getMonth() &&
+          new Date(g.data).getFullYear() === hojeParaMes.getFullYear()
+      )
+      .reduce((s, g) => s + g.valor, 0);
     this.setElementText(
       "ganhoMes",
       `Ganho do mês: ${formatarMoeda(ganhosMes)}`
     );
 
-    // Histórico de ganhos
-    if ($("listaGanhos")) {
-      $("listaGanhos").innerHTML = "";
-      ganhosUsuario
-        .slice()
-        .reverse()
-        .forEach((item) => {
-          const detalhes = `Diária: ${formatarMoeda(
-            item.valorDiaria
-          )}, Taxa: ${formatarMoeda(item.taxaEntrega)}, Qtde: ${
-            item.qtdEntregas
-          }`;
-          const li = document.createElement("li");
-          li.textContent = `${item.data}: ${formatarMoeda(
-            item.valor
-          )} (${detalhes})`;
-          $("listaGanhos").appendChild(li);
-        });
+    $("listaGanhos").innerHTML = "";
+    document.body.addEventListener("click", () =>
+      document
+        .querySelectorAll(".menu-ganho-opcoes")
+        .forEach((m) => (m.style.display = "none"))
+    );
+
+    if (ganhosUsuario.length === 0) {
+      $("listaGanhos").innerHTML =
+        '<li class="ganho-item-vazio">Nenhum ganho encontrado para os filtros selecionados.</li>';
     }
+
+    ganhosUsuario.forEach((item) => {
+      const dataDoGanho = new Date(item.data + "T03:00:00");
+      let diaDaSemana = dataDoGanho.toLocaleDateString("pt-BR", {
+        weekday: "long",
+      });
+      diaDaSemana = diaDaSemana.charAt(0).toUpperCase() + diaDaSemana.slice(1);
+      const li = document.createElement("li");
+      li.classList.add("ganho-item");
+      li.innerHTML = `
+          <div class="ganho-info">
+              <div class="info-principal">
+                  <p class="ganho-data">${diaDaSemana}, ${dataDoGanho.toLocaleDateString(
+        "pt-BR"
+      )}</p>
+                  <p class="ganho-valor">${formatarMoeda(item.valor)}</p>
+              </div>
+              <p class="info-secundaria">Entregas feitas: ${
+                item.qtdEntregas
+              }</p>
+          </div>
+          <div class="ganho-acoes">
+              <button class="btn-menu-ganho">...</button>
+              <div class="menu-ganho-opcoes" style="display: none;">
+                  <a href="#" class="btn-editar">Editar</a>
+                  <a href="#" class="btn-excluir">Excluir</a>
+              </div>
+          </div>`;
+      li.querySelector(".btn-menu-ganho").addEventListener("click", (e) => {
+        e.stopPropagation();
+        document
+          .querySelectorAll(".menu-ganho-opcoes")
+          .forEach((m) => (m.style.display = "none"));
+        e.currentTarget.nextElementSibling.style.display = "block";
+      });
+      li.querySelector(".btn-editar").addEventListener("click", (e) => {
+        e.preventDefault();
+        this.editarGanho(item.id);
+      });
+      li.querySelector(".btn-excluir").addEventListener("click", (e) => {
+        e.preventDefault();
+        this.excluirGanho(item.id);
+      });
+      $("listaGanhos").appendChild(li);
+    });
   },
 
+  // As outras funções permanecem as mesmas
   atualizarTelaInicio: function () {
     const usuario = storage.getUsuarioLogado();
     if (!usuario) return;
-
     const ganhosUsuario = storage
       .getGanhos()
       .filter((g) => g.usuario === usuario.usuario);
     const hoje = new Date();
     const hojeStr = hoje.toISOString().slice(0, 10);
-
-    // Ganhos do dia
     const ganhosHoje = ganhosUsuario
       .filter((g) => g.data === hojeStr)
-      .reduce((s, g) => s + Number(g.valor), 0);
-
-    // Ganhos da semana
-    const inicioSemana = new Date(hoje);
-    inicioSemana.setDate(hoje.getDate() - hoje.getDay());
-    const fimSemana = new Date(inicioSemana);
-    fimSemana.setDate(inicioSemana.getDate() + 6);
-
+      .reduce((s, g) => s + g.valor, 0);
+    const semana = getWeekRange(hoje);
     const ganhosSemana = ganhosUsuario
       .filter((g) => {
-        const d = new Date(g.data);
-        return d >= inicioSemana && d <= fimSemana;
+        const d = new Date(g.data + "T03:00:00");
+        return d >= semana.start && d <= semana.end;
       })
-      .reduce((s, g) => s + Number(g.valor), 0);
-
-    // Ganhos do mês
+      .reduce((s, g) => s + g.valor, 0);
     const ganhosMes = ganhosUsuario
-      .filter((g) => {
-        const d = new Date(g.data);
-        return (
-          d.getMonth() === hoje.getMonth() &&
-          d.getFullYear() === hoje.getFullYear()
-        );
-      })
-      .reduce((s, g) => s + Number(g.valor), 0);
-
-    // Última entrega
+      .filter(
+        (g) =>
+          new Date(g.data).getMonth() === hoje.getMonth() &&
+          new Date(g.data).getFullYear() === hoje.getFullYear()
+      )
+      .reduce((s, g) => s + g.valor, 0);
     let ultimaEntrega = "-";
     if (ganhosUsuario.length > 0) {
       const ult = ganhosUsuario[ganhosUsuario.length - 1];
-      ultimaEntrega = `${ult.data} (${formatarMoeda(ult.valor)})`;
+      ultimaEntrega = `${new Date(ult.data + "T03:00:00").toLocaleDateString(
+        "pt-BR"
+      )} (${formatarMoeda(ult.valor)})`;
     }
-
-    // Média de entregas por dia
     const entregasPorDia = {};
     ganhosUsuario.forEach((g) => {
-      entregasPorDia[g.data] =
-        (entregasPorDia[g.data] || 0) + Number(g.qtdEntregas || 0);
+      entregasPorDia[g.data] = (entregasPorDia[g.data] || 0) + g.qtdEntregas;
     });
-
     const diasComEntregas = Object.keys(entregasPorDia).length;
     const totalEntregas = Object.values(entregasPorDia).reduce(
       (s, v) => s + v,
       0
     );
     const mediaEntregas = diasComEntregas ? totalEntregas / diasComEntregas : 0;
-
-    // Melhor dia (maior ganho)
     let melhorDia = "-";
     if (ganhosUsuario.length > 0) {
       const ganhosPorDia = {};
       ganhosUsuario.forEach((g) => {
-        ganhosPorDia[g.data] = (ganhosPorDia[g.data] || 0) + Number(g.valor);
+        ganhosPorDia[g.data] = (ganhosPorDia[g.data] || 0) + g.valor;
       });
-
       const melhor = Object.entries(ganhosPorDia).sort(
         (a, b) => b[1] - a[1]
       )[0];
-      if (melhor) melhorDia = `${melhor[0]} (${formatarMoeda(melhor[1])})`;
+      if (melhor)
+        melhorDia = `${new Date(melhor[0] + "T03:00:00").toLocaleDateString(
+          "pt-BR"
+        )} (${formatarMoeda(melhor[1])})`;
     }
-
-    // Meta semanal
     const metaSemanal = usuario.metaSemanal || 1000;
     const faltaMeta = Math.max(0, metaSemanal - ganhosSemana);
-
     if ($("metaMensagem")) {
       $("metaMensagem").innerHTML =
         faltaMeta > 0
           ? `Faltam ${formatarMoeda(
               faltaMeta
-            )} para bater sua meta semanal de ${formatarMoeda(metaSemanal)}!`
-          : `Parabéns! Você bateu sua meta semanal de ${formatarMoeda(
-              metaSemanal
-            )}!`;
-
-      // Barra de progresso
+            )} para bater sua meta de ${formatarMoeda(metaSemanal)}!`
+          : `Parabéns! Você bateu sua meta de ${formatarMoeda(metaSemanal)}!`;
       this.atualizarBarraProgresso(metaSemanal, ganhosSemana);
     }
-
-    // Atualiza resumos rápidos
     this.setElementText("resumoHoje", formatarMoeda(ganhosHoje));
     this.setElementText("resumoSemana", formatarMoeda(ganhosSemana));
     this.setElementText("resumoMes", formatarMoeda(ganhosMes));
-
-    // Atualiza indicadores
     this.setElementText("mediaEntregas", mediaEntregas.toFixed(1));
     this.setElementText("melhorDia", melhorDia);
     this.setElementText("ultimaEntrega", ultimaEntrega);
   },
-
   atualizarBarraProgresso: function (meta, ganhos) {
-    // Remove a barra anterior se existir
-    const progressoAnterior = $("progresso-meta-container");
-    if (progressoAnterior) progressoAnterior.remove();
-
-    // Cria novo container
+    if ($("progresso-meta-container")) $("progresso-meta-container").remove();
     const progressoContainer = document.createElement("div");
     progressoContainer.id = "progresso-meta-container";
     progressoContainer.style.marginTop = "10px";
-
-    // Calcula progresso
-    const progresso = Math.min(100, (ganhos / meta) * 100);
-    progressoContainer.innerHTML = `
-            <div class="progresso-meta">
-                <div class="progresso-barra" style="width: ${progresso}%"></div>
-            </div>
-            <div class="progresso-texto">
-                ${progresso.toFixed(0)}% da meta alcançada
-            </div>
-        `;
-
-    // Adiciona estilos condicionais
-    if (progresso >= 100) {
+    const progresso = meta > 0 ? Math.min(100, (ganhos / meta) * 100) : 0;
+    progressoContainer.innerHTML = `<div class="progresso-meta"><div class="progresso-barra" style="width: ${progresso}%"></div></div><div class="progresso-texto">${progresso.toFixed(
+      0
+    )}% da meta alcançada</div>`;
+    if (progresso >= 100)
       progressoContainer
         .querySelector(".progresso-barra")
         .classList.add("meta-completa");
-    }
-
-    // Adiciona ao DOM
-    $("metaMensagem").insertAdjacentElement("afterend", progressoContainer);
+    if ($("metaMensagem"))
+      $("metaMensagem").insertAdjacentElement("afterend", progressoContainer);
   },
-
   setElementText: (id, text) => {
-    const element = $(id);
-    if (element) element.textContent = text;
+    if ($(id)) $(id).textContent = text;
   },
 };
-
 // =============================================
 // ============== PREVISÃO DO TEMPO ============
 // =============================================
