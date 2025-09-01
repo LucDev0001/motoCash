@@ -200,15 +200,12 @@
 
     <section id="tela-ganhos" class="pagina" style="display: none">
       <div class="container">
-        <div class="card">
-          <h1 id="totalGanhos">Ganhos atuais: R$ 0,00</h1>
-          <div class="resumo-mes" style="margin-bottom: 1.2rem">
-            <span class="material-icons" style="vertical-align: middle"
-              >calendar_month</span
-            >
-            <span id="ganhoMes" style="margin-left: 0.5rem"
-              >Ganho do mês: R$ 0,00</span
-            >
+        <div class="card" id="card-formulario-ganho" style="display: none">
+          <div class="card-header">
+            <h2 id="titulo-form-ganho">Adicionar Novo Ganho</h2>
+            <button id="btn-fechar-form-ganho" class="btn-fechar">
+              &times;
+            </button>
           </div>
           <form id="formGanho">
             <input type="date" id="data" required />
@@ -238,6 +235,7 @@
             <button type="submit" id="btnSalvarGanho">Adicionar Ganho</button>
           </form>
         </div>
+
         <div class="card">
           <h2>Histórico de Ganhos</h2>
 
@@ -247,7 +245,7 @@
               <select id="filtro-periodo">
                 <option value="todos">Todos</option>
                 <option value="hoje">Hoje</option>
-                <option value="esta-semana">Esta Semana</option>
+                <option value="esta-semana" selected>Esta Semana</option>
                 <option value="este-mes">Este Mês</option>
                 <option value="semana-passada">Semana Passada</option>
                 <option value="mes-passado">Mês Passado</option>
@@ -278,17 +276,37 @@
 
             <button id="btn-limpar-filtros">Limpar Filtros</button>
           </div>
+
+          <div id="card-resumo-filtro" class="resumo-filtro">
+            <div class="resumo-item">
+              <span class="resumo-label">Total do Período</span>
+              <strong id="resumo-filtro-total">R$ 0,00</strong>
+            </div>
+            <div class="resumo-item">
+              <span class="resumo-label">Nº de Entregas</span>
+              <strong id="resumo-filtro-entregas">0</strong>
+            </div>
+            <div class="resumo-item">
+              <span class="resumo-label">Dias Trabalhados</span>
+              <strong id="resumo-filtro-dias">0</strong>
+            </div>
+            <div class="resumo-item">
+              <span class="resumo-label">Média Diária</span>
+              <strong id="resumo-filtro-media">R$ 0,00</strong>
+            </div>
+          </div>
+
           <ul id="listaGanhos"></ul>
 
           <div class="compartilhar-whatsapp">
-            <h3>Compartilhar Resumo da Semana</h3>
+            <h3>Compartilhar Resumo do Período</h3>
             <label
               ><input type="checkbox" id="compQtdEntregas" checked /> Quantidade
               de entregas</label
             >
             <label
-              ><input type="checkbox" id="compValorDiaria" checked /> Valor da
-              diária</label
+              ><input type="checkbox" id="compValorDiaria" checked /> Soma das
+              diárias</label
             >
             <label
               ><input type="checkbox" id="compValorTotal" checked /> Valor
@@ -298,6 +316,8 @@
           </div>
         </div>
       </div>
+
+      <button id="btn-abrir-form-ganho" class="fab">+</button>
     </section>
 
     <section id="tela-perfil" class="pagina" style="display: none">
