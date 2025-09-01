@@ -238,7 +238,7 @@
             <button type="submit" id="btnSalvarGanho">Adicionar Ganho</button>
           </form>
         </div>
-                <div class="card">
+        <div class="card">
           <h2>Histórico de Ganhos</h2>
 
           <div id="filtros-ganhos" class="filtros-container">
@@ -254,15 +254,15 @@
                 <option value="personalizado">Personalizado</option>
               </select>
             </div>
-            
-            <div id="filtro-datas-personalizadas" style="display: none;">
+
+            <div id="filtro-datas-personalizadas" style="display: none">
               <div class="filtro-item">
                 <label for="filtro-data-inicio">De:</label>
-                <input type="date" id="filtro-data-inicio">
+                <input type="date" id="filtro-data-inicio" />
               </div>
               <div class="filtro-item">
                 <label for="filtro-data-fim">Até:</label>
-                <input type="date" id="filtro-data-fim">
+                <input type="date" id="filtro-data-fim" />
               </div>
             </div>
 
@@ -279,6 +279,24 @@
             <button id="btn-limpar-filtros">Limpar Filtros</button>
           </div>
           <ul id="listaGanhos"></ul>
+
+          <div class="compartilhar-whatsapp">
+            <h3>Compartilhar Resumo da Semana</h3>
+            <label
+              ><input type="checkbox" id="compQtdEntregas" checked /> Quantidade
+              de entregas</label
+            >
+            <label
+              ><input type="checkbox" id="compValorDiaria" checked /> Valor da
+              diária</label
+            >
+            <label
+              ><input type="checkbox" id="compValorTotal" checked /> Valor
+              total</label
+            >
+            <button id="btnCompartilhar">Compartilhar</button>
+          </div>
+        </div>
       </div>
     </section>
 
