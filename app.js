@@ -1,4 +1,4 @@
-// app.js - Controle de Ganhos para Motoboys (Versão com Compartilhamento por Filtro)
+// app.js - Controle de Ganhos para Motoboys (Versão Final Corrigida)
 
 // =============================================
 // ============ CONFIGURAÇÃO INICIAL ===========
@@ -26,11 +26,9 @@ function formatarMoeda(valor) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-// Retorna um objeto { start, end } para um período específico
 function getDateRange(periodo, customStart, customEnd) {
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
-
   let start, end;
 
   switch (periodo) {
@@ -74,7 +72,7 @@ function getDateRange(periodo, customStart, customEnd) {
         end = new Date(customEnd + "T23:59:59");
       }
       break;
-    default: // 'todos'
+    default:
       start = null;
       end = null;
       break;
@@ -289,13 +287,17 @@ const perfil = {
 // ============== GANHOS ======================
 // =============================================
 
-// app.js -> Substitua apenas o objeto 'ganhos'
-
 const ganhos = {
   ganhoEditandoId: null,
   init: function () {
     this.setupGanhos();
     this.setupFiltros();
+    // CORREÇÃO: Adiciona o listener para fechar o menu de 3 pontos aqui, para ser executado apenas uma vez.
+    document.body.addEventListener("click", () =>
+      document
+        .querySelectorAll(".menu-ganho-opcoes")
+        .forEach((m) => (m.style.display = "none"))
+    );
   },
   setupGanhos: function () {
     if ($("formGanho"))
@@ -303,8 +305,6 @@ const ganhos = {
         e.preventDefault();
         this.ganhoEditandoId ? this.atualizarGanho() : this.adicionarGanho();
       });
-
-    // Lógica para abrir e fechar o formulário com os novos botões
     if ($("btn-abrir-form-ganho")) {
       $("btn-abrir-form-ganho").addEventListener("click", () => {
         $("card-formulario-ganho").style.display = "block";
@@ -411,8 +411,6 @@ const ganhos = {
   editarGanho: function (ganhoId) {
     const ganho = storage.getGanhos().find((g) => g.id === ganhoId);
     if (!ganho) return;
-
-    // Preenche o formulário e o exibe
     $("data").value = ganho.data;
     $("valorDiaria").value = ganho.valorDiaria;
     $("taxaEntrega").value = ganho.taxaEntrega;
@@ -460,10 +458,7 @@ const ganhos = {
   atualizarUI: function () {
     const usuario = storage.getUsuarioLogado();
     if (!usuario || !$("listaGanhos")) return;
-
     const ganhosFiltrados = this.getGanhosFiltrados();
-
-    // LÓGICA PARA ATUALIZAR O NOVO PAINEL DE RESUMO
     const totalPeriodo = ganhosFiltrados.reduce((s, g) => s + g.valor, 0);
     const totalEntregas = ganhosFiltrados.reduce(
       (s, g) => s + g.qtdEntregas,
@@ -472,13 +467,10 @@ const ganhos = {
     const diasTrabalhados = new Set(ganhosFiltrados.map((g) => g.data)).size;
     const mediaDiaria =
       diasTrabalhados > 0 ? totalPeriodo / diasTrabalhados : 0;
-
     $("resumo-filtro-total").textContent = formatarMoeda(totalPeriodo);
     $("resumo-filtro-entregas").textContent = totalEntregas;
     $("resumo-filtro-dias").textContent = diasTrabalhados;
     $("resumo-filtro-media").textContent = formatarMoeda(mediaDiaria);
-
-    // Lógica para renderizar a lista
     $("listaGanhos").innerHTML = "";
     if (ganhosFiltrados.length === 0) {
       $("listaGanhos").innerHTML =
@@ -531,7 +523,6 @@ const ganhos = {
     });
   },
   atualizarTelaInicio: function () {
-    // Esta função não precisa de alterações
     const usuario = storage.getUsuarioLogado();
     if (!usuario) return;
     const ganhosUsuario = storage
@@ -626,6 +617,7 @@ const ganhos = {
     if ($(id)) $(id).textContent = text;
   },
 };
+
 // =============================================
 // ============== PREVISÃO DO TEMPO ============
 // =============================================
@@ -818,13 +810,11 @@ const relatorios = {
   },
   compartilharGanhosFiltrados: function () {
     const ganhosFiltrados = ganhos.getGanhosFiltrados();
-
     if (ganhosFiltrados.length === 0) {
       return alert(
         "Nenhum ganho encontrado no período selecionado para compartilhar."
       );
     }
-
     const totais = ganhosFiltrados.reduce(
       (acc, g) => ({
         entregas: acc.entregas + g.qtdEntregas,
@@ -833,7 +823,6 @@ const relatorios = {
       }),
       { entregas: 0, diarias: 0, total: 0 }
     );
-
     const select = $("filtro-periodo");
     const periodoTexto = select.options[select.selectedIndex].text;
     let titulo = `*Resumo do Período: ${periodoTexto}*`;
@@ -846,10 +835,8 @@ const relatorios = {
       ).toLocaleDateString("pt-BR");
       titulo = `*Resumo do Período de ${inicio} a ${fim}*`;
     }
-
     let msg = `${titulo}:\n`;
     let infoAdicionada = false;
-
     if ($("compQtdEntregas")?.checked) {
       msg += `\n- Quantidade de Entregas: *${totais.entregas}*`;
       infoAdicionada = true;
@@ -862,10 +849,8 @@ const relatorios = {
       msg += `\n- *Total Geral: ${formatarMoeda(totais.total)}*`;
       infoAdicionada = true;
     }
-
     if (!infoAdicionada)
       return alert("Selecione pelo menos uma informação para compartilhar.");
-
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   },
   setElementText: (id, text) => {
@@ -932,7 +917,7 @@ function initApp() {
   bottomNav.init();
   weather.init();
   if (!storage.getUsuarioLogado()) {
-    navegacao.mostrarTela("tela-login");
+    navegacao.mostrarTela("tela-ganhos");
   } else {
     navegacao.mostrarTela("tela-inicio");
     perfil.atualizarUI();
