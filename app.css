@@ -889,3 +889,79 @@ footer a i:hover {
 #btn-limpar-filtros:hover {
   background-color: #5a6268;
 }
+
+/* app.css -> Adicione no final do arquivo */
+
+/* Estilo do Botão Flutuante (FAB) */
+.fab {
+  position: fixed;
+  bottom: 80px; /* Acima da barra de navegação */
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background-color: #1ee66c;
+  color: white;
+  border-radius: 50%;
+  border: none;
+  font-size: 28px;
+  line-height: 56px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Estilo do cabeçalho do card do formulário */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.card-header h2 {
+  margin: 0;
+}
+
+.btn-fechar {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #777;
+  cursor: pointer;
+}
+
+/* Estilo do novo painel de resumo do filtro */
+.resumo-filtro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f7f9fc;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e0e0e0;
+}
+
+.resumo-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.resumo-label {
+  font-size: 0.8rem;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.resumo-item strong {
+  font-size: 1.1rem;
+  color: #333;
+}
