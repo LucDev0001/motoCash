@@ -1,4 +1,4 @@
-// app.js - Controle de Ganhos para Motoboys (Versão Final Corrigida)
+// app.js - Controle de Ganhos para Motoboys (Versão com Compartilhamento por Filtro)
 
 // =============================================
 // ============ CONFIGURAÇÃO INICIAL ===========
@@ -26,16 +26,59 @@ function formatarMoeda(valor) {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-function getWeekRange(date) {
-  const hoje = new Date(date);
-  const diaDaSemana = hoje.getDay(); // Domingo = 0, Segunda = 1, ...
-  const diff = hoje.getDate() - diaDaSemana + (diaDaSemana === 0 ? -6 : 1); // Ajusta para segunda-feira
+// Retorna um objeto { start, end } para um período específico
+function getDateRange(periodo, customStart, customEnd) {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
 
-  const start = new Date(hoje.getFullYear(), hoje.getMonth(), diff, 0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-  end.setHours(23, 59, 59, 999);
+  let start, end;
 
+  switch (periodo) {
+    case "hoje":
+      start = new Date(hoje);
+      end = new Date(hoje);
+      end.setHours(23, 59, 59, 999);
+      break;
+    case "esta-semana":
+      const diaSemana = hoje.getDay();
+      const diff = hoje.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1);
+      start = new Date(hoje.setDate(diff));
+      end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      end.setHours(23, 59, 59, 999);
+      break;
+    case "este-mes":
+      start = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      end = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+      end.setHours(23, 59, 59, 999);
+      break;
+    case "semana-passada":
+      const fimSemanaPassada = new Date(hoje);
+      fimSemanaPassada.setDate(
+        hoje.getDate() - hoje.getDay() - (hoje.getDay() === 0 ? 0 : 1) - 1
+      );
+      fimSemanaPassada.setHours(23, 59, 59, 999);
+      start = new Date(fimSemanaPassada);
+      start.setDate(fimSemanaPassada.getDate() - 6);
+      start.setHours(0, 0, 0, 0);
+      end = fimSemanaPassada;
+      break;
+    case "mes-passado":
+      start = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+      end = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
+      end.setHours(23, 59, 59, 999);
+      break;
+    case "personalizado":
+      if (customStart && customEnd) {
+        start = new Date(customStart + "T00:00:00");
+        end = new Date(customEnd + "T23:59:59");
+      }
+      break;
+    default: // 'todos'
+      start = null;
+      end = null;
+      break;
+  }
   return { start, end };
 }
 
@@ -194,7 +237,7 @@ const perfil = {
     this.setElementText("perfilMoto", usuario.moto || "");
     this.setElementText(
       "perfilMeta",
-      `R$ ${(usuario.metaSemanal || 1000).toFixed(2)}`
+      formatarMoeda(usuario.metaSemanal || 1000)
     );
     this.setElementText(
       "msgOlaInicio",
@@ -248,12 +291,10 @@ const perfil = {
 
 const ganhos = {
   ganhoEditandoId: null,
-
   init: function () {
     this.setupGanhos();
-    this.setupFiltros(); // Adicionamos a inicialização dos filtros
+    this.setupFiltros();
   },
-
   setupGanhos: function () {
     if ($("formGanho"))
       $("formGanho").addEventListener("submit", (e) => {
@@ -261,8 +302,6 @@ const ganhos = {
         this.ganhoEditandoId ? this.atualizarGanho() : this.adicionarGanho();
       });
   },
-
-  // NOVO: Função para configurar os eventos dos filtros
   setupFiltros: function () {
     if ($("filtro-periodo")) {
       $("filtro-periodo").addEventListener("change", () => {
@@ -270,8 +309,8 @@ const ganhos = {
           $("filtro-datas-personalizadas").style.display = "flex";
         } else {
           $("filtro-datas-personalizadas").style.display = "none";
-          this.atualizarUI();
         }
+        this.atualizarUI();
       });
     }
     if ($("filtro-data-inicio"))
@@ -283,20 +322,14 @@ const ganhos = {
     if ($("filtro-ordenar"))
       $("filtro-ordenar").addEventListener("change", () => this.atualizarUI());
     if ($("btn-limpar-filtros"))
-      $("btn-limpar-filtros").addEventListener("click", () =>
-        this.limparFiltros()
-      );
-  },
-
-  // NOVO: Função para limpar os filtros e re-renderizar a lista
-  limparFiltros: function () {
-    if ($("filtro-periodo")) $("filtro-periodo").value = "todos";
-    if ($("filtro-data-inicio")) $("filtro-data-inicio").value = "";
-    if ($("filtro-data-fim")) $("filtro-data-fim").value = "";
-    if ($("filtro-ordenar")) $("filtro-ordenar").value = "recentes";
-    if ($("filtro-datas-personalizadas"))
-      $("filtro-datas-personalizadas").style.display = "none";
-    this.atualizarUI();
+      $("btn-limpar-filtros").addEventListener("click", () => {
+        $("filtro-periodo").value = "todos";
+        $("filtro-ordenar").value = "recentes";
+        $("filtro-data-inicio").value = "";
+        $("filtro-data-fim").value = "";
+        $("filtro-datas-personalizadas").style.display = "none";
+        this.atualizarUI();
+      });
   },
   adicionarGanho: function () {
     const data = $("data").value;
@@ -338,7 +371,6 @@ const ganhos = {
     $("btnSalvarGanho").textContent = "Adicionar Ganho";
     this.finalizarAcaoDeGanho();
   },
-
   finalizarAcaoDeGanho: function () {
     this.atualizarUI();
     this.atualizarTelaInicio();
@@ -355,7 +387,6 @@ const ganhos = {
       relatorios.atualizarGraficos();
     }
   },
-
   editarGanho: function (ganhoId) {
     const ganho = storage.getGanhos().find((g) => g.id === ganhoId);
     if (!ganho) return;
@@ -369,90 +400,31 @@ const ganhos = {
     window.scrollTo(0, 0);
   },
 
-  // ATUALIZADO: Função principal com toda a lógica de filtros
-  atualizarUI: function () {
+  // FUNÇÃO CENTRALIZADA DE FILTROS
+  getGanhosFiltrados: function () {
     const usuario = storage.getUsuarioLogado();
-    if (!usuario || !$("listaGanhos")) return;
+    if (!usuario) return [];
 
     let ganhosUsuario = storage
       .getGanhos()
       .filter((g) => g.usuario === usuario.usuario);
 
-    // --- LÓGICA DE FILTRAGEM ---
+    // 1. Filtrar por período
     const periodo = $("filtro-periodo").value;
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
+    const dataInicio = $("filtro-data-inicio").value;
+    const dataFim = $("filtro-data-fim").value;
 
-    let dataInicio, dataFim;
-
-    switch (periodo) {
-      case "hoje":
-        dataInicio = hoje;
-        dataFim = new Date(hoje);
-        dataFim.setHours(23, 59, 59, 999);
-        break;
-      case "esta-semana":
-        const semana = getWeekRange(hoje);
-        dataInicio = semana.start;
-        dataFim = semana.end;
-        break;
-      case "este-mes":
-        dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-        dataFim = new Date(
-          hoje.getFullYear(),
-          hoje.getMonth() + 1,
-          0,
-          23,
-          59,
-          59,
-          999
-        );
-        break;
-      case "semana-passada":
-        const diaSemanaPassada = new Date(hoje);
-        diaSemanaPassada.setDate(hoje.getDate() - 7);
-        const semanaPassada = getWeekRange(diaSemanaPassada);
-        dataInicio = semanaPassada.start;
-        dataFim = semanaPassada.end;
-        break;
-      case "mes-passado":
-        dataInicio = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
-        dataFim = new Date(
-          hoje.getFullYear(),
-          hoje.getMonth(),
-          0,
-          23,
-          59,
-          59,
-          999
-        );
-        break;
-      case "personalizado":
-        const inicioStr = $("filtro-data-inicio").value;
-        const fimStr = $("filtro-data-fim").value;
-        if (inicioStr) dataInicio = new Date(inicioStr + "T00:00:00");
-        if (fimStr) dataFim = new Date(fimStr + "T23:59:59");
-        break;
-    }
-
-    if (dataInicio && dataFim) {
+    const { start, end } = getDateRange(periodo, dataInicio, dataFim);
+    if (start && end) {
       ganhosUsuario = ganhosUsuario.filter((g) => {
-        const dataGanho = new Date(g.data + "T03:00:00");
-        return dataGanho >= dataInicio && dataGanho <= dataFim;
+        const dataGanho = new Date(g.data + "T00:00:00");
+        return dataGanho >= start && dataGanho <= end;
       });
-    } else if (dataInicio) {
-      ganhosUsuario = ganhosUsuario.filter(
-        (g) => new Date(g.data + "T03:00:00") >= dataInicio
-      );
-    } else if (dataFim) {
-      ganhosUsuario = ganhosUsuario.filter(
-        (g) => new Date(g.data + "T03:00:00") <= dataFim
-      );
     }
 
-    // --- LÓGICA DE ORDENAÇÃO ---
-    const ordenarPor = $("filtro-ordenar").value;
-    switch (ordenarPor) {
+    // 2. Ordenar
+    const ordenacao = $("filtro-ordenar").value;
+    switch (ordenacao) {
       case "recentes":
         ganhosUsuario.sort((a, b) => new Date(b.data) - new Date(a.data));
         break;
@@ -467,26 +439,35 @@ const ganhos = {
         break;
     }
 
-    // --- RENDERIZAÇÃO ---
-    const total = ganhosUsuario.reduce((s, g) => s + g.valor, 0);
+    return ganhosUsuario;
+  },
+
+  atualizarUI: function () {
+    const usuario = storage.getUsuarioLogado();
+    if (!usuario || !$("listaGanhos")) return;
+
+    const ganhosFiltrados = this.getGanhosFiltrados();
+
+    const todosGanhos = storage
+      .getGanhos()
+      .filter((g) => g.usuario === usuario.usuario);
+    const totalGeral = todosGanhos.reduce((s, g) => s + g.valor, 0);
     this.setElementText(
       "totalGanhos",
-      `Ganhos (filtrados): ${formatarMoeda(total)}`
+      `Ganhos totais: ${formatarMoeda(totalGeral)}`
     );
 
-    const hojeParaMes = new Date();
-    const ganhosMes = storage
-      .getGanhos()
+    const hoje = new Date();
+    const ganhosMesCorrente = todosGanhos
       .filter(
         (g) =>
-          g.usuario === usuario.usuario &&
-          new Date(g.data).getMonth() === hojeParaMes.getMonth() &&
-          new Date(g.data).getFullYear() === hojeParaMes.getFullYear()
+          new Date(g.data).getMonth() === hoje.getMonth() &&
+          new Date(g.data).getFullYear() === hoje.getFullYear()
       )
       .reduce((s, g) => s + g.valor, 0);
     this.setElementText(
       "ganhoMes",
-      `Ganho do mês: ${formatarMoeda(ganhosMes)}`
+      `Ganho do mês: ${formatarMoeda(ganhosMesCorrente)}`
     );
 
     $("listaGanhos").innerHTML = "";
@@ -496,12 +477,13 @@ const ganhos = {
         .forEach((m) => (m.style.display = "none"))
     );
 
-    if (ganhosUsuario.length === 0) {
+    if (ganhosFiltrados.length === 0) {
       $("listaGanhos").innerHTML =
-        '<li class="ganho-item-vazio">Nenhum ganho encontrado para os filtros selecionados.</li>';
+        "<li class='ganho-item-vazio'>Nenhum ganho encontrado para este filtro.</li>";
+      return;
     }
 
-    ganhosUsuario.forEach((item) => {
+    ganhosFiltrados.forEach((item) => {
       const dataDoGanho = new Date(item.data + "T03:00:00");
       let diaDaSemana = dataDoGanho.toLocaleDateString("pt-BR", {
         weekday: "long",
@@ -546,8 +528,6 @@ const ganhos = {
       $("listaGanhos").appendChild(li);
     });
   },
-
-  // As outras funções permanecem as mesmas
   atualizarTelaInicio: function () {
     const usuario = storage.getUsuarioLogado();
     if (!usuario) return;
@@ -555,27 +535,32 @@ const ganhos = {
       .getGanhos()
       .filter((g) => g.usuario === usuario.usuario);
     const hoje = new Date();
-    const hojeStr = hoje.toISOString().slice(0, 10);
+
     const ganhosHoje = ganhosUsuario
-      .filter((g) => g.data === hojeStr)
+      .filter((g) => g.data === hoje.toISOString().slice(0, 10))
       .reduce((s, g) => s + g.valor, 0);
-    const semana = getWeekRange(hoje);
+
+    const semanaRange = getDateRange("esta-semana");
     const ganhosSemana = ganhosUsuario
       .filter((g) => {
-        const d = new Date(g.data + "T03:00:00");
-        return d >= semana.start && d <= semana.end;
+        const d = new Date(g.data + "T00:00:00");
+        return d >= semanaRange.start && d <= semanaRange.end;
       })
       .reduce((s, g) => s + g.valor, 0);
+
+    const mesRange = getDateRange("este-mes");
     const ganhosMes = ganhosUsuario
-      .filter(
-        (g) =>
-          new Date(g.data).getMonth() === hoje.getMonth() &&
-          new Date(g.data).getFullYear() === hoje.getFullYear()
-      )
+      .filter((g) => {
+        const d = new Date(g.data + "T00:00:00");
+        return d >= mesRange.start && d <= mesRange.end;
+      })
       .reduce((s, g) => s + g.valor, 0);
+
     let ultimaEntrega = "-";
     if (ganhosUsuario.length > 0) {
-      const ult = ganhosUsuario[ganhosUsuario.length - 1];
+      const ult = ganhosUsuario.sort(
+        (a, b) => new Date(b.data) - new Date(a.data)
+      )[0];
       ultimaEntrega = `${new Date(ult.data + "T03:00:00").toLocaleDateString(
         "pt-BR"
       )} (${formatarMoeda(ult.valor)})`;
@@ -641,10 +626,8 @@ const ganhos = {
   setElementText: (id, text) => {
     if ($(id)) $(id).textContent = text;
   },
-  setElementText: (id, text) => {
-    if ($(id)) $(id).textContent = text;
-  },
 };
+
 // =============================================
 // ============== PREVISÃO DO TEMPO ============
 // =============================================
@@ -669,7 +652,7 @@ const weather = {
         fetch(apiUrl)
           .then((res) => res.json())
           .then((data) => {
-            statusDiv.textContent = "";
+            statusDiv.style.display = "none";
             hourlyContainer.innerHTML = "";
             data.list.slice(0, 8).forEach((item) => {
               const date = new Date(item.dt * 1000);
@@ -723,19 +706,19 @@ const relatorios = {
     const ganhosDia = ganhosUsuario
       .filter((g) => g.data === hoje.toISOString().slice(0, 10))
       .reduce((s, g) => s + g.valor, 0);
-    const semana = getWeekRange(hoje);
+    const semanaRange = getDateRange("esta-semana");
     const ganhosSemana = ganhosUsuario
       .filter((g) => {
-        const d = new Date(g.data + "T03:00:00");
-        return d >= semana.start && d <= semana.end;
+        const d = new Date(g.data + "T00:00:00");
+        return d >= semanaRange.start && d <= semanaRange.end;
       })
       .reduce((s, g) => s + g.valor, 0);
+    const mesRange = getDateRange("este-mes");
     const ganhosMes = ganhosUsuario
-      .filter(
-        (g) =>
-          new Date(g.data).getMonth() === hoje.getMonth() &&
-          new Date(g.data).getFullYear() === hoje.getFullYear()
-      )
+      .filter((g) => {
+        const d = new Date(g.data + "T00:00:00");
+        return d >= mesRange.start && d <= mesRange.end;
+      })
       .reduce((s, g) => s + g.valor, 0);
     this.setElementText("valorGraficoDiario", formatarMoeda(ganhosDia));
     this.setElementText("valorGraficoSemanal", formatarMoeda(ganhosSemana));
@@ -796,16 +779,15 @@ const relatorios = {
       $("atalhoCompartilhar").onclick = this.compartilharWhatsApp;
     if ($("btnCompartilhar"))
       $("btnCompartilhar").addEventListener("click", () =>
-        this.compartilharResumoSemanalComOpcoes()
+        this.compartilharGanhosFiltrados()
       );
   },
   exportarRelatorioCSV: function () {
-    const ganhosUsuario = storage
-      .getGanhos()
-      .filter((g) => g.usuario === storage.getUsuarioLogado().usuario);
-    if (ganhosUsuario.length === 0) return alert("Nenhum ganho para exportar.");
+    const ganhosFiltrados = ganhos.getGanhosFiltrados();
+    if (ganhosFiltrados.length === 0)
+      return alert("Nenhum ganho (com base no filtro atual) para exportar.");
     let csv = "Data,Valor,Diária,Taxa Entrega,Qtde Entregas\n";
-    ganhosUsuario.forEach((g) => {
+    ganhosFiltrados.forEach((g) => {
       csv += `${g.data},${g.valor},${g.valorDiaria},${g.taxaEntrega},${g.qtdEntregas}\n`;
     });
     const blob = new Blob([csv], { type: "text/csv" });
@@ -823,12 +805,12 @@ const relatorios = {
     if (ganhosUsuario.length === 0)
       return alert("Nenhum ganho para compartilhar.");
     const hoje = new Date();
+    const mesRange = getDateRange("este-mes");
     const ganhosMes = ganhosUsuario
-      .filter(
-        (g) =>
-          new Date(g.data).getMonth() === hoje.getMonth() &&
-          new Date(g.data).getFullYear() === hoje.getFullYear()
-      )
+      .filter((g) => {
+        const d = new Date(g.data + "T00:00:00");
+        return d >= mesRange.start && d <= mesRange.end;
+      })
       .reduce((s, g) => s + g.valor, 0);
     const totalEntregas = ganhosUsuario.reduce((s, g) => s + g.qtdEntregas, 0);
     let msg = `Resumo do mês: ${formatarMoeda(
@@ -836,18 +818,16 @@ const relatorios = {
     )}\nTotal de entregas: ${totalEntregas}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   },
-  compartilharResumoSemanalComOpcoes: function () {
-    const ganhosUsuario = storage
-      .getGanhos()
-      .filter((g) => g.usuario === storage.getUsuarioLogado().usuario);
-    const semana = getWeekRange(new Date());
-    const ganhosDaSemana = ganhosUsuario.filter((g) => {
-      const d = new Date(g.data + "T03:00:00");
-      return d >= semana.start && d <= semana.end;
-    });
-    if (ganhosDaSemana.length === 0)
-      return alert("Nenhum ganho na semana atual para compartilhar.");
-    const totais = ganhosDaSemana.reduce(
+  compartilharGanhosFiltrados: function () {
+    const ganhosFiltrados = ganhos.getGanhosFiltrados();
+
+    if (ganhosFiltrados.length === 0) {
+      return alert(
+        "Nenhum ganho encontrado no período selecionado para compartilhar."
+      );
+    }
+
+    const totais = ganhosFiltrados.reduce(
       (acc, g) => ({
         entregas: acc.entregas + g.qtdEntregas,
         diarias: acc.diarias + g.valorDiaria,
@@ -855,10 +835,23 @@ const relatorios = {
       }),
       { entregas: 0, diarias: 0, total: 0 }
     );
-    let msg = `*Resumo da Semana (${semana.start.toLocaleDateString(
-      "pt-BR"
-    )} a ${semana.end.toLocaleDateString("pt-BR")})*:\n`;
+
+    const select = $("filtro-periodo");
+    const periodoTexto = select.options[select.selectedIndex].text;
+    let titulo = `*Resumo do Período: ${periodoTexto}*`;
+    if (select.value === "personalizado") {
+      const inicio = new Date(
+        $("filtro-data-inicio").value + "T03:00:00"
+      ).toLocaleDateString("pt-BR");
+      const fim = new Date(
+        $("filtro-data-fim").value + "T03:00:00"
+      ).toLocaleDateString("pt-BR");
+      titulo = `*Resumo do Período de ${inicio} a ${fim}*`;
+    }
+
+    let msg = `${titulo}:\n`;
     let infoAdicionada = false;
+
     if ($("compQtdEntregas")?.checked) {
       msg += `\n- Quantidade de Entregas: *${totais.entregas}*`;
       infoAdicionada = true;
@@ -871,8 +864,10 @@ const relatorios = {
       msg += `\n- *Total Geral: ${formatarMoeda(totais.total)}*`;
       infoAdicionada = true;
     }
+
     if (!infoAdicionada)
       return alert("Selecione pelo menos uma informação para compartilhar.");
+
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   },
   setElementText: (id, text) => {
