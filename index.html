@@ -236,8 +236,13 @@
           </form>
         </div>
 
-        <div class="card">
-          <h2>Histórico de Ganhos</h2>
+        <div class="card" id="card-historico">
+          <div class="card-header">
+            <h2>Histórico de Ganhos</h2>
+            <button id="btn-abrir-form-ganho" class="btn-add">
+              <span class="material-icons">add</span> Novo Ganho
+            </button>
+          </div>
 
           <div id="filtros-ganhos" class="filtros-container">
             <div class="filtro-item">
@@ -252,7 +257,6 @@
                 <option value="personalizado">Personalizado</option>
               </select>
             </div>
-
             <div id="filtro-datas-personalizadas" style="display: none">
               <div class="filtro-item">
                 <label for="filtro-data-inicio">De:</label>
@@ -263,7 +267,6 @@
                 <input type="date" id="filtro-data-fim" />
               </div>
             </div>
-
             <div class="filtro-item">
               <label for="filtro-ordenar">Ordenar por</label>
               <select id="filtro-ordenar">
@@ -273,7 +276,6 @@
                 <option value="menor-valor">Menor Valor</option>
               </select>
             </div>
-
             <button id="btn-limpar-filtros">Limpar Filtros</button>
           </div>
 
@@ -316,10 +318,7 @@
           </div>
         </div>
       </div>
-
-      <button id="btn-abrir-form-ganho" class="fab">+</button>
     </section>
-
     <section id="tela-perfil" class="pagina" style="display: none">
       <div class="container">
         <div class="card perfil-dados">

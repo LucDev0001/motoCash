@@ -299,16 +299,21 @@ const ganhos = {
         .forEach((m) => (m.style.display = "none"))
     );
   },
+
+  // app.js -> dentro do const ganhos = { ... }
+
   setupGanhos: function () {
     if ($("formGanho"))
       $("formGanho").addEventListener("submit", (e) => {
         e.preventDefault();
         this.ganhoEditandoId ? this.atualizarGanho() : this.adicionarGanho();
       });
+
+    // Lógica ATUALIZADA para mostrar/esconder os cards
     if ($("btn-abrir-form-ganho")) {
       $("btn-abrir-form-ganho").addEventListener("click", () => {
         $("card-formulario-ganho").style.display = "block";
-        $("btn-abrir-form-ganho").style.display = "none";
+        $("card-historico").style.display = "none"; // Esconde o card de histórico
         window.scrollTo(0, 0);
       });
     }
@@ -325,8 +330,9 @@ const ganhos = {
     $("btnSalvarGanho").textContent = "Adicionar Ganho";
     $("titulo-form-ganho").textContent = "Adicionar Novo Ganho";
     $("card-formulario-ganho").style.display = "none";
-    $("btn-abrir-form-ganho").style.display = "flex";
+    $("card-historico").style.display = "block"; // Mostra o card de histórico novamente
   },
+
   setupFiltros: function () {
     if ($("filtro-periodo")) {
       $("filtro-periodo").addEventListener("change", () => {

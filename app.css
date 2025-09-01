@@ -892,26 +892,33 @@ footer a i:hover {
 
 /* app.css -> Adicione no final do arquivo */
 
-/* Estilo do Botão Flutuante (FAB) */
-.fab {
-  position: fixed;
-  bottom: 80px; /* Acima da barra de navegação */
-  right: 20px;
-  width: 56px;
-  height: 56px;
-  background-color: #1ee66c;
+/* app.css */
+
+/* NOVO Estilo do botão de adicionar no topo */
+.btn-add {
+  background-color: var(--black);
   color: white;
-  border-radius: 50%;
   border: none;
-  font-size: 28px;
-  line-height: 56px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  z-index: 1000;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.4rem;
+  /* Removemos a largura total e a margem */
+  width: auto;
+  margin: 0;
+}
+
+.btn-add:hover {
+  background-color: var(--accent-light);
+  transform: translateY(-2px); /* Mantém um efeito legal */
+}
+
+.btn-add .material-icons {
+  font-size: 1.2rem;
 }
 
 /* Estilo do cabeçalho do card do formulário */
