@@ -289,6 +289,8 @@ const perfil = {
 // ============== GANHOS ======================
 // =============================================
 
+// app.js -> Substitua apenas o objeto 'ganhos'
+
 const ganhos = {
   ganhoEditandoId: null,
   init: function () {
@@ -301,6 +303,29 @@ const ganhos = {
         e.preventDefault();
         this.ganhoEditandoId ? this.atualizarGanho() : this.adicionarGanho();
       });
+
+    // Lógica para abrir e fechar o formulário com os novos botões
+    if ($("btn-abrir-form-ganho")) {
+      $("btn-abrir-form-ganho").addEventListener("click", () => {
+        $("card-formulario-ganho").style.display = "block";
+        $("btn-abrir-form-ganho").style.display = "none";
+        window.scrollTo(0, 0);
+      });
+    }
+    if ($("btn-fechar-form-ganho")) {
+      $("btn-fechar-form-ganho").addEventListener("click", () => {
+        this.resetarFormulario();
+      });
+    }
+  },
+  resetarFormulario: function () {
+    $("formGanho").reset();
+    $("data").value = new Date().toISOString().substr(0, 10);
+    this.ganhoEditandoId = null;
+    $("btnSalvarGanho").textContent = "Adicionar Ganho";
+    $("titulo-form-ganho").textContent = "Adicionar Novo Ganho";
+    $("card-formulario-ganho").style.display = "none";
+    $("btn-abrir-form-ganho").style.display = "flex";
   },
   setupFiltros: function () {
     if ($("filtro-periodo")) {
@@ -367,17 +392,13 @@ const ganhos = {
       valor: valorDiaria + taxaEntrega * qtdEntregas,
     };
     storage.setGanhos(ganhos);
-    this.ganhoEditandoId = null;
-    $("btnSalvarGanho").textContent = "Adicionar Ganho";
     this.finalizarAcaoDeGanho();
   },
   finalizarAcaoDeGanho: function () {
+    this.resetarFormulario();
     this.atualizarUI();
     this.atualizarTelaInicio();
     relatorios.atualizarGraficos();
-    $("formGanho").reset();
-    $("data").value = new Date().toISOString().substr(0, 10);
-    navegacao.mostrarTelaProtegida("tela-ganhos");
   },
   excluirGanho: function (ganhoId) {
     if (confirm("Tem certeza que deseja excluir este ganho?")) {
@@ -390,30 +411,28 @@ const ganhos = {
   editarGanho: function (ganhoId) {
     const ganho = storage.getGanhos().find((g) => g.id === ganhoId);
     if (!ganho) return;
+
+    // Preenche o formulário e o exibe
     $("data").value = ganho.data;
     $("valorDiaria").value = ganho.valorDiaria;
     $("taxaEntrega").value = ganho.taxaEntrega;
     $("qtdEntregas").value = ganho.qtdEntregas;
     this.ganhoEditandoId = ganhoId;
     $("btnSalvarGanho").textContent = "Atualizar Ganho";
-    navegacao.mostrarTelaProtegida("tela-ganhos");
+    $("titulo-form-ganho").textContent = "Editando Ganho";
+    $("card-formulario-ganho").style.display = "block";
+    $("btn-abrir-form-ganho").style.display = "none";
     window.scrollTo(0, 0);
   },
-
-  // FUNÇÃO CENTRALIZADA DE FILTROS
   getGanhosFiltrados: function () {
     const usuario = storage.getUsuarioLogado();
     if (!usuario) return [];
-
     let ganhosUsuario = storage
       .getGanhos()
       .filter((g) => g.usuario === usuario.usuario);
-
-    // 1. Filtrar por período
     const periodo = $("filtro-periodo").value;
     const dataInicio = $("filtro-data-inicio").value;
     const dataFim = $("filtro-data-fim").value;
-
     const { start, end } = getDateRange(periodo, dataInicio, dataFim);
     if (start && end) {
       ganhosUsuario = ganhosUsuario.filter((g) => {
@@ -421,8 +440,6 @@ const ganhos = {
         return dataGanho >= start && dataGanho <= end;
       });
     }
-
-    // 2. Ordenar
     const ordenacao = $("filtro-ordenar").value;
     switch (ordenacao) {
       case "recentes":
@@ -438,51 +455,36 @@ const ganhos = {
         ganhosUsuario.sort((a, b) => a.valor - b.valor);
         break;
     }
-
     return ganhosUsuario;
   },
-
   atualizarUI: function () {
     const usuario = storage.getUsuarioLogado();
     if (!usuario || !$("listaGanhos")) return;
 
     const ganhosFiltrados = this.getGanhosFiltrados();
 
-    const todosGanhos = storage
-      .getGanhos()
-      .filter((g) => g.usuario === usuario.usuario);
-    const totalGeral = todosGanhos.reduce((s, g) => s + g.valor, 0);
-    this.setElementText(
-      "totalGanhos",
-      `Ganhos totais: ${formatarMoeda(totalGeral)}`
+    // LÓGICA PARA ATUALIZAR O NOVO PAINEL DE RESUMO
+    const totalPeriodo = ganhosFiltrados.reduce((s, g) => s + g.valor, 0);
+    const totalEntregas = ganhosFiltrados.reduce(
+      (s, g) => s + g.qtdEntregas,
+      0
     );
+    const diasTrabalhados = new Set(ganhosFiltrados.map((g) => g.data)).size;
+    const mediaDiaria =
+      diasTrabalhados > 0 ? totalPeriodo / diasTrabalhados : 0;
 
-    const hoje = new Date();
-    const ganhosMesCorrente = todosGanhos
-      .filter(
-        (g) =>
-          new Date(g.data).getMonth() === hoje.getMonth() &&
-          new Date(g.data).getFullYear() === hoje.getFullYear()
-      )
-      .reduce((s, g) => s + g.valor, 0);
-    this.setElementText(
-      "ganhoMes",
-      `Ganho do mês: ${formatarMoeda(ganhosMesCorrente)}`
-    );
+    $("resumo-filtro-total").textContent = formatarMoeda(totalPeriodo);
+    $("resumo-filtro-entregas").textContent = totalEntregas;
+    $("resumo-filtro-dias").textContent = diasTrabalhados;
+    $("resumo-filtro-media").textContent = formatarMoeda(mediaDiaria);
 
+    // Lógica para renderizar a lista
     $("listaGanhos").innerHTML = "";
-    document.body.addEventListener("click", () =>
-      document
-        .querySelectorAll(".menu-ganho-opcoes")
-        .forEach((m) => (m.style.display = "none"))
-    );
-
     if (ganhosFiltrados.length === 0) {
       $("listaGanhos").innerHTML =
         "<li class='ganho-item-vazio'>Nenhum ganho encontrado para este filtro.</li>";
       return;
     }
-
     ganhosFiltrados.forEach((item) => {
       const dataDoGanho = new Date(item.data + "T03:00:00");
       let diaDaSemana = dataDoGanho.toLocaleDateString("pt-BR", {
@@ -529,17 +531,16 @@ const ganhos = {
     });
   },
   atualizarTelaInicio: function () {
+    // Esta função não precisa de alterações
     const usuario = storage.getUsuarioLogado();
     if (!usuario) return;
     const ganhosUsuario = storage
       .getGanhos()
       .filter((g) => g.usuario === usuario.usuario);
     const hoje = new Date();
-
     const ganhosHoje = ganhosUsuario
       .filter((g) => g.data === hoje.toISOString().slice(0, 10))
       .reduce((s, g) => s + g.valor, 0);
-
     const semanaRange = getDateRange("esta-semana");
     const ganhosSemana = ganhosUsuario
       .filter((g) => {
@@ -547,7 +548,6 @@ const ganhos = {
         return d >= semanaRange.start && d <= semanaRange.end;
       })
       .reduce((s, g) => s + g.valor, 0);
-
     const mesRange = getDateRange("este-mes");
     const ganhosMes = ganhosUsuario
       .filter((g) => {
@@ -555,7 +555,6 @@ const ganhos = {
         return d >= mesRange.start && d <= mesRange.end;
       })
       .reduce((s, g) => s + g.valor, 0);
-
     let ultimaEntrega = "-";
     if (ganhosUsuario.length > 0) {
       const ult = ganhosUsuario.sort(
@@ -627,7 +626,6 @@ const ganhos = {
     if ($(id)) $(id).textContent = text;
   },
 };
-
 // =============================================
 // ============== PREVISÃO DO TEMPO ============
 // =============================================
