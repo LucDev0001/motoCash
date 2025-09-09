@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://appmotocash.netlify.app/sitemap.xml
