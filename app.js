@@ -294,28 +294,22 @@ const ganhos = {
   init: function () {
     this.setupGanhos();
     this.setupFiltros();
-    // CORREÇÃO: Adiciona o listener para fechar o menu de 3 pontos aqui, para ser executado apenas uma vez.
     document.body.addEventListener("click", () =>
       document
         .querySelectorAll(".menu-ganho-opcoes")
         .forEach((m) => (m.style.display = "none"))
     );
   },
-
-  // app.js -> dentro do const ganhos = { ... }
-
   setupGanhos: function () {
     if ($("formGanho"))
       $("formGanho").addEventListener("submit", (e) => {
         e.preventDefault();
         this.ganhoEditandoId ? this.atualizarGanho() : this.adicionarGanho();
       });
-
-    // Lógica ATUALIZADA para mostrar/esconder os cards
     if ($("btn-abrir-form-ganho")) {
       $("btn-abrir-form-ganho").addEventListener("click", () => {
         $("card-formulario-ganho").style.display = "block";
-        $("card-historico").style.display = "none"; // Esconde o card de histórico
+        $("card-historico").style.display = "none";
         window.scrollTo(0, 0);
       });
     }
@@ -332,9 +326,8 @@ const ganhos = {
     $("btnSalvarGanho").textContent = "Adicionar Ganho";
     $("titulo-form-ganho").textContent = "Adicionar Novo Ganho";
     $("card-formulario-ganho").style.display = "none";
-    $("card-historico").style.display = "block"; // Mostra o card de histórico novamente
+    $("card-historico").style.display = "block";
   },
-
   setupFiltros: function () {
     if ($("filtro-periodo")) {
       $("filtro-periodo").addEventListener("change", () => {
@@ -920,23 +913,19 @@ function checarEExibirModalTelegram() {
   const modal = $("modal-telegram");
   const avisoVisto = localStorage.getItem("avisoTelegramVisto");
 
-  // Se o aviso ainda não foi visto, exibe o modal
   if (!avisoVisto) {
-    modal.style.display = "flex"; // Usa flex para centralizar
-    setTimeout(() => modal.classList.add("ativo"), 10); // Adiciona transição suave
+    modal.style.display = "flex";
+    setTimeout(() => modal.classList.add("ativo"), 10);
 
     const fecharModal = () => {
       modal.classList.remove("ativo");
-      setTimeout(() => (modal.style.display = "none"), 300); // Espera a transição acabar
-      localStorage.setItem("avisoTelegramVisto", "true"); // Marca como visto
+      setTimeout(() => (modal.style.display = "none"), 300);
+      localStorage.setItem("avisoTelegramVisto", "true");
     };
 
-    // Eventos para fechar
     $("modal-fechar").onclick = fecharModal;
     $("btn-agora-nao").onclick = fecharModal;
-    $("btn-entrar-telegram").onclick = fecharModal; // Fecha o modal mesmo se clicar para entrar
-
-    // Fecha se clicar fora da caixa de conteúdo
+    $("btn-entrar-telegram").onclick = fecharModal;
     modal.addEventListener("click", (e) => {
       if (e.target === modal) {
         fecharModal();
@@ -948,7 +937,6 @@ function checarEExibirModalTelegram() {
 // ============ INICIALIZAÇÃO ==================
 // =============================================
 
-// CÓDIGO CORRIGIDO
 function initApp() {
   auth.init();
   perfil.init();
@@ -956,9 +944,7 @@ function initApp() {
   relatorios.init();
   bottomNav.init();
   weather.init();
-
   if (!storage.getUsuarioLogado()) {
-    // CORRIGIDO:
     navegacao.mostrarTela("tela-login");
   } else {
     navegacao.mostrarTela("tela-inicio");
