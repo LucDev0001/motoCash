@@ -215,6 +215,8 @@ const auth = {
     ganhos.atualizarTelaInicio();
     weather.getAndDisplayDetailedWeather();
     if ($("formLogin")) $("formLogin").reset();
+
+    checarEExibirModalTelegram();
   },
 };
 
@@ -910,7 +912,38 @@ if ("serviceWorker" in navigator) {
       });
   });
 }
+// =============================================
+// ============= MODAL TELEGRAM ================
+// =============================================
 
+function checarEExibirModalTelegram() {
+  const modal = $("modal-telegram");
+  const avisoVisto = localStorage.getItem("avisoTelegramVisto");
+
+  // Se o aviso ainda não foi visto, exibe o modal
+  if (!avisoVisto) {
+    modal.style.display = "flex"; // Usa flex para centralizar
+    setTimeout(() => modal.classList.add("ativo"), 10); // Adiciona transição suave
+
+    const fecharModal = () => {
+      modal.classList.remove("ativo");
+      setTimeout(() => (modal.style.display = "none"), 300); // Espera a transição acabar
+      localStorage.setItem("avisoTelegramVisto", "true"); // Marca como visto
+    };
+
+    // Eventos para fechar
+    $("modal-fechar").onclick = fecharModal;
+    $("btn-agora-nao").onclick = fecharModal;
+    $("btn-entrar-telegram").onclick = fecharModal; // Fecha o modal mesmo se clicar para entrar
+
+    // Fecha se clicar fora da caixa de conteúdo
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        fecharModal();
+      }
+    });
+  }
+}
 // =============================================
 // ============ INICIALIZAÇÃO ==================
 // =============================================
