@@ -948,6 +948,7 @@ function checarEExibirModalTelegram() {
 // ============ INICIALIZAÇÃO ==================
 // =============================================
 
+// CÓDIGO CORRIGIDO
 function initApp() {
   auth.init();
   perfil.init();
@@ -955,8 +956,10 @@ function initApp() {
   relatorios.init();
   bottomNav.init();
   weather.init();
+
   if (!storage.getUsuarioLogado()) {
-    navegacao.mostrarTela("tela-ganhos");
+    // CORRIGIDO:
+    navegacao.mostrarTela("tela-login");
   } else {
     navegacao.mostrarTela("tela-inicio");
     perfil.atualizarUI();
