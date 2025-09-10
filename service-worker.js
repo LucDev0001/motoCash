@@ -20,16 +20,22 @@ self.addEventListener("install", (event) => {
 
 // Ativa o Service Worker e remove caches antigos se necessário
 self.addEventListener("activate", (event) => {
+  console.log("Service Worker ativado!");
+
+  const cacheWhitelist = [CACHE_NAME]; // O único cache que queremos manter
+
   event.waitUntil(
-    caches.keys().then((cacheNames) =>
-      Promise.all(
-        cacheNames.map((name) => {
-          if (name !== CACHE_NAME) {
-            return caches.delete(name);
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          // Se o cache não estiver na nossa "lista branca", ele será deletado
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log("Deletando cache antigo:", cacheName);
+            return caches.delete(cacheName);
           }
         })
-      )
-    )
+      );
+    })
   );
 });
 
