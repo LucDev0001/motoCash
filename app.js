@@ -37,6 +37,23 @@ function getDateRange(periodo, customStart, customEnd) {
       end = new Date(hoje);
       end.setHours(23, 59, 59, 999);
       break;
+
+    case "esta-semana": {
+      // Usei chaves para criar um escopo e ser consistente
+      const diaSemana = hoje.getDay();
+      const diff = hoje.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1);
+
+      start = new Date(hoje); // Cria uma cópia
+      start.setDate(diff); // Modifica a cópia
+      start.setHours(0, 0, 0, 0); // Zera o horário (importante!)
+
+      end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      end.setHours(23, 59, 59, 999);
+      break;
+    }
+
+    /*
     case "esta-semana":
       const diaSemana = hoje.getDay();
       const diff = hoje.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1);
@@ -45,11 +62,43 @@ function getDateRange(periodo, customStart, customEnd) {
       end.setDate(start.getDate() + 6);
       end.setHours(23, 59, 59, 999);
       break;
+      */
     case "este-mes":
       start = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
       end = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
       end.setHours(23, 59, 59, 999);
       break;
+
+    // CÓDIGO CORRIGIDO
+    case "semana-passada": {
+      const hoje = new Date();
+      const diaSemana = hoje.getDay();
+
+      const segundaDestaSemana = new Date(hoje);
+      const diff =
+        segundaDestaSemana.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1);
+      segundaDestaSemana.setDate(diff);
+
+      // CORREÇÃO: Removido o 'const' para atribuir às variáveis da função
+      start = new Date(segundaDestaSemana);
+      start.setDate(segundaDestaSemana.getDate() - 7);
+      start.setHours(0, 0, 0, 0);
+
+      // CORREÇÃO: Removido o 'const'
+      end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      end.setHours(23, 59, 59, 999);
+
+      console.log(
+        "Semana Passada:",
+        start.toLocaleDateString(),
+        "até",
+        end.toLocaleDateString()
+      );
+      break;
+    }
+
+    /*
     case "semana-passada":
       const fimSemanaPassada = new Date(hoje);
       fimSemanaPassada.setDate(
@@ -61,6 +110,7 @@ function getDateRange(periodo, customStart, customEnd) {
       start.setHours(0, 0, 0, 0);
       end = fimSemanaPassada;
       break;
+      */
     case "mes-passado":
       start = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
       end = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
