@@ -1,9 +1,32 @@
-const CACHE_NAME = "motocash-v2";
+const CACHE_NAME = "motocash-v3"; // Versão do cache atualizada
 const URLS_TO_CACHE = [
   "/",
   "/index.html",
-  "/app.css",
-  "/app.js",
+  // CSS
+  "/css/base.css",
+  "/css/components.css",
+  "/css/login.css",
+  "/css/inicio.css",
+  "/css/ganhos.css",
+  "/css/perfil.css",
+  "/css/responsive.css",
+  // JavaScript
+  "/js/main.js",
+  "/js/utils.js",
+  "/js/date.utils.js",
+  "/js/storage.js",
+  "/js/auth.js",
+  "/js/perfil.js",
+  "/js/ganhos.js",
+  "/js/reports.js",
+  "/js/weather.js",
+  // Templates HTML
+  "/templates/inicio.html",
+  "/templates/login.html",
+  "/templates/ganhos.html",
+  "/templates/perfil.html",
+  "/templates/modal.html",
+  // Outros
   "/manifest.json",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
@@ -13,6 +36,7 @@ const URLS_TO_CACHE = [
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
+      console.log("Cache aberto");
       return cache.addAll(URLS_TO_CACHE);
     })
   );
@@ -43,7 +67,9 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
+      // Retorna do cache se encontrar, senão busca na rede
       return response || fetch(event.request);
     })
   );
 });
+

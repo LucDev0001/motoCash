@@ -1,0 +1,148 @@
+/* css/base.css */
+/* Contém o reset, variáveis de cores, e estilos globais de tipografia e formulários. */
+
+/* ==========================================================================
+   1. Reset e Configurações Globais (Base)
+   ========================================================================== */
+
+/* Melhor prática para box-sizing: herança a partir do html */
+html {
+  box-sizing: border-box;
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  height: 100%; /* Essencial para o layout flex de 100% da altura */
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit; /* Garante que todos os elementos usem o box-sizing definido no html */
+  margin: 0;
+  padding: 0;
+}
+
+/* Configuração do "Sticky Footer" e estilos do corpo */
+body {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  color: var(--black);
+  overflow-wrap: break-word;
+  /* Aumente o valor para dar espaço ao footer e à barra de navegação */
+  padding-bottom: 150px; /* Valor sugerido. Ajuste se necessário. */
+}
+
+/* ==========================================================================
+   2. Variáveis de Cor (Paleta)
+   ========================================================================== */
+:root {
+  --black: #111;
+  --white: #fff;
+  --gray-light: #f5f5f5;
+  --gray: #e0e0e0;
+  --gray-dark: #888;
+  --accent: #111; /* Nota: --accent e --black são idênticos. Podem ser unificados. */
+  --accent-light: #222;
+}
+
+/* ==========================================================================
+   3. Estilos de Tipografia
+   ========================================================================== */
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  color: var(--black);
+  margin-bottom: 1rem;
+  letter-spacing: -1px;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 0.7rem;
+}
+
+h2 {
+  font-size: 1.3rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+  color: var(--accent-light);
+}
+
+label {
+  display: block;
+  font-size: 1rem;
+  color: var(--accent-light);
+  margin-bottom: 0.3rem;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+a:hover {
+  color: var(--gray-dark);
+}
+
+/* ==========================================================================
+   4. Formulários e Botões Globais
+   ========================================================================== */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="tel"],
+select {
+  /* Usar 'max-width' permite flexibilidade em containers menores */
+  width: 100%;
+  max-width: 400px; /* Exemplo de largura máxima para evitar inputs muito largos */
+  padding: 1rem;
+  margin-bottom: 1.1rem;
+  border: 1px solid var(--gray);
+  border-radius: 14px;
+  font-size: 1.1rem;
+  background: var(--gray-light);
+  color: var(--black);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+input[type="file"] {
+  margin-bottom: 1rem;
+}
+
+/* Efeito de foco mais suave */
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--white);
+  box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.2); /* Sombra de foco para acessibilidade */
+}
+
+button {
+  width: 100%;
+  padding: 1rem;
+  background: var(--black);
+  color: var(--white);
+  border: none;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  margin: 0.5rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.125);
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+/* Efeito de hover/focus para botões */
+button:hover,
+button:focus {
+  background: var(--accent-light);
+  transform: translateY(-2px);
+  outline: none; /* Garante que não haja contorno padrão no foco */
+}

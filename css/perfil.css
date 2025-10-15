@@ -1,0 +1,174 @@
+/* css/perfil.css */
+/* Estilos para a nova tela de perfil do usuário. */
+
+/* Título da Página */
+.titulo-pagina {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--black);
+}
+
+/* Container da Foto de Perfil */
+.foto-perfil-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1.5rem;
+}
+
+.foto-perfil {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid var(--white);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-alterar-foto {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: var(--black);
+  color: var(--white);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid var(--white);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.btn-alterar-foto .material-icons {
+  font-size: 1.2rem;
+}
+
+/* Estilo dos Cards de Informação */
+.info-card {
+  padding: 1rem 1.2rem;
+}
+
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--gray);
+  padding-bottom: 0.8rem;
+}
+
+.info-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.info-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem; /* Espaçamento entre os itens */
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.info-icon {
+  color: var(--gray-dark);
+  font-size: 1.8rem;
+}
+
+.info-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-label {
+  font-size: 0.9rem;
+  color: var(--gray-dark);
+  margin-bottom: 0.1rem;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  color: var(--black);
+  font-weight: 500;
+}
+
+/* Estilos para o Formulário de Edição */
+#formAlterarCadastro h3 {
+  margin-bottom: 1rem;
+}
+
+#formAlterarCadastro .form-group {
+  margin-bottom: 1rem;
+}
+
+#formAlterarCadastro label {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+#formAlterarCadastro input,
+#formAlterarCadastro select {
+  width: 100%;
+  margin-bottom: 0; /* Remove margem extra */
+}
+
+#formAlterarCadastro button,
+#btnSair {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* Botão de Sair */
+#btnSair {
+  background: #d32f2f; /* Vermelho para ação destrutiva */
+  color: white;
+}
+
+#btnSair:hover {
+  background: #b71c1c;
+}
+
+/* Adicione estas regras no final do seu perfil.css */
+
+/* Estilo para o novo botão "Editar" */
+/* Estilo para o novo botão "Editar" */
+.btn-texto {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.5rem 1rem; /* Aumenta a área clicável */
+  border-radius: 8px; /* Deixa as bordas arredondadas */
+  transition: background-color 0.3s ease, color 0.3s ease; /* Anima a transição */
+}
+
+.btn-texto:hover {
+  background-color: var(--black); /* Fundo preto */
+  color: var(--white); /* Texto branco */
+}
+
+/* =================================================== */
+
+/* Esconde o card de edição por padrão com alta prioridade */
+#cardEdicao {
+  display: none !important;
+}
+
+/* Mostra o card de edição quando ele tiver a classe 'ativo' */
+#cardEdicao.ativo {
+  display: block !important;
+}

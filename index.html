@@ -4,511 +4,115 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>MotoCash | App de Controle Financeiro para Motoboys e Entregadores</title>
-    <meta name="description" content="Controle seus ganhos como motoboy de forma fácil! O MotoCash é um app gratuito para lançar diárias, metas, taxas e ver seu desempenho financeiro.">
-    <meta name="keywords" content="motoboy, app, controle financeiro, entregador, delivery, ifood, rappi, ganhos, renda, motocash">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>
+      MotoCash | App de Controle Financeiro para Motoboys e Entregadores
+    </title>
+    <meta
+      name="description"
+      content="Controle seus ganhos como motoboy de forma fácil! O MotoCash é um app gratuito para lançar diárias, metas, taxas e ver seu desempenho financeiro."
+    />
+    <meta
+      name="keywords"
+      content="motoboy, app, controle financeiro, entregador, delivery, ifood, rappi, ganhos, renda, motocash"
+    />
     <link rel="canonical" href="https://appmotocash.netlify.app/" />
-    
+
     <meta property="og:title" content="MotoCash | Controle seus Ganhos" />
-    <meta property="og:description" content="O app gratuito e definitivo para motoboys e entregadores controlarem suas finanças e metas." />
-    <meta property="og:image" content="https://appmotocash.netlify.app/images/og-image.png" />
+    <meta
+      property="og:description"
+      content="O app gratuito e definitivo para motoboys e entregadores controlarem suas finanças e metas."
+    />
+    <meta
+      property="og:image"
+      content="https://appmotocash.netlify.app/images/og-image.png"
+    />
     <meta property="og:url" content="https://appmotocash.netlify.app/" />
     <meta property="og:type" content="website" />
-    
+
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#2196f3" />
-    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="MotoCash">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="MotoCash" />
 
     <link rel="icon" href="images/motoCash.ico" type="image/x-icon" />
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-    
-    <link rel="stylesheet" href="app.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6337009068819903" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <!-- CSS Modularizado -->
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/login.css" />
+    <link rel="stylesheet" href="css/inicio.css" />
+    <link rel="stylesheet" href="css/ganhos.css" />
+    <link rel="stylesheet" href="css/perfil.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      xintegrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6337009068819903"
+      crossorigin="anonymous"
+    ></script>
   </head>
   <body>
-    <section id="tela-login" class="pagina">
-      <div class="login-container card">
-        <h2 id="tituloLogin">Login</h2>
-        <form id="formLogin">
-          <input type="text" id="loginUsuario" placeholder="Usuário" required />
-          <input type="password" id="loginSenha" placeholder="Senha" required />
-          <button type="submit">Entrar</button>
-        </form>
-        <p>Não tem conta? <a href="#" id="linkCadastro">Cadastre-se</a></p>
-        <div id="loginErro" class="erro"></div>
-      </div>
+    <!-- O container principal agora carrega as telas dinamicamente -->
+    <main id="app-content"></main>
 
-      <div class="login-container card" id="cadastroBox" style="display: none">
-        <h2>Cadastro</h2>
-        <form id="formCadastro">
-          <div class="avatar-selecao">
-            <label>Escolha um avatar:</label>
-            <div class="opcoes-avatar">
-              <img
-                src="avatares/ava1.jpg"
-                class="avatar-opcao"
-                data-avatar="avatares/ava1.jpg"
-              />
-              <img
-                src="avatares/ava2.jpg"
-                class="avatar-opcao"
-                data-avatar="avatares/ava2.jpg"
-              />
-              <img
-                src="avatares/ava3.jpg"
-                class="avatar-opcao"
-                data-avatar="avatares/ava3.jpg"
-              />
-            </div>
-            <input type="hidden" id="avatarSelecionado" required />
-          </div>
-
-          <input
-            type="text"
-            id="cadastroUsuario"
-            placeholder="Usuário"
-            required
-          />
-          <input
-            type="password"
-            id="cadastroSenha"
-            placeholder="Senha"
-            required
-          />
-          <input
-            type="text"
-            id="cadastroNome"
-            placeholder="Nome completo"
-            required
-          />
-          <input
-            type="tel"
-            id="cadastroTelefone"
-            placeholder="Telefone"
-            pattern="[0-9]{10,13}"
-            required
-          />
-
-          <select id="cadastroMoto" required>
-            <option value="">Selecione o modelo da moto</option>
-            <option value="Honda CG 160">Honda CG 160</option>
-            <option value="Honda Biz 125">Honda Biz 125</option>
-            <option value="Honda Pop 110i">Honda Pop 110i</option>
-            <option value="Honda NXR Bros 160">Honda NXR Bros 160</option>
-            <option value="Honda CB 300F">Honda CB 300F</option>
-            <option value="Honda CB 250F">Honda CB 250F</option>
-            <option value="Yamaha YBR 150 Factor">Yamaha YBR 150 Factor</option>
-            <option value="Yamaha XTZ 250 Lander">Yamaha XTZ 250 Lander</option>
-            <option value="Yamaha Fazer 250">Yamaha Fazer 250</option>
-            <option value="Yamaha Crosser 150">Yamaha Crosser 150</option>
-            <option value="Honda PCX 160">Honda PCX 160</option>
-            <option value="Honda XRE 300 Sahara">Honda XRE 300 Sahara</option>
-          </select>
-
-          <input
-            type="number"
-            id="cadastroMetaSemanal"
-            placeholder="Meta semanal (R$)"
-            step="0.01"
-            min="0"
-            required
-            value="1000"
-          />
-
-          <button type="submit">Cadastrar</button>
-        </form>
-        <p>Já tem conta? <a href="#" id="linkLogin">Faça login</a></p>
-        <div id="cadastroErro" class="erro"></div>
-      </div>
-    </section>
-
-    <section id="tela-inicio" class="pagina" style="display: none">
-      <div class="container">
-        <div class="topo-inicio destaque-topo">
-          <div>
-            <div id="msgOlaInicio">Olá, Usuário</div>
-            <div id="metaMensagem" class="meta-mensagem"></div>
-          </div>
-        </div>
-
-        <div class="card-previsao">
-          <div class="previsao-header">
-            <h3>Previsão do Tempo</h3>
-            <button id="toggle-forecast-btn" class="toggle-button">
-              8 horas
-            </button>
-          </div>
-
-          <div id="hourly-forecast-container">
-            <div class="previsao-lista"></div>
-          </div>
-
-          <div id="weather-status">Carregando previsão...</div>
-        </div>
-        <div class="resumos-rapidos">
-          <div class="card-resumo">
-            <span class="material-icons icone-resumo">today</span>
-            <div class="resumo-titulo">Hoje</div>
-            <div id="resumoHoje" class="resumo-valor">R$ 0,00</div>
-          </div>
-          <div class="card-resumo">
-            <span class="material-icons icone-resumo">calendar_view_week</span>
-            <div class="resumo-titulo">Semana</div>
-            <div id="resumoSemana" class="resumo-valor">R$ 0,00</div>
-          </div>
-          <div class="card-resumo">
-            <span class="material-icons icone-resumo">calendar_month</span>
-            <div class="resumo-titulo">Mês</div>
-            <div id="resumoMes" class="resumo-valor">R$ 0,00</div>
-          </div>
-        </div>
-        <div class="graficos-circulares">
-          <div class="grafico-circular card">
-            <h3>Ganhos Diários</h3>
-            <canvas id="graficoDiario" width="120" height="120"></canvas>
-            <div id="valorGraficoDiario" class="valor-grafico">R$ 0,00</div>
-          </div>
-          <div class="grafico-circular card">
-            <h3>Ganhos Semanais</h3>
-            <canvas id="graficoSemanal" width="120" height="120"></canvas>
-            <div id="valorGraficoSemanal" class="valor-grafico">R$ 0,00</div>
-          </div>
-          <div class="grafico-circular card">
-            <h3>Ganhos Mensais</h3>
-            <canvas id="graficoMensal" width="120" height="120"></canvas>
-            <div id="valorGraficoMensal" class="valor-grafico">R$ 0,00</div>
-          </div>
-        </div>
-        <div class="ferramentas-rapidas">
-          <button id="atalhoAdicionarGanho">
-            <span class="material-icons">add_circle</span>Adicionar Ganho
-          </button>
-          <button id="atalhoExportar">
-            <span class="material-icons">file_download</span>Exportar Relatório
-          </button>
-          <button id="atalhoCompartilhar">
-            <span class="material-icons">share</span>Compartilhar WhatsApp
-          </button>
-        </div>
-        <div class="indicadores">
-          <div class="indicador">
-            <span class="material-icons">trending_up</span>
-            <span>Média de entregas/dia: <b id="mediaEntregas">0</b></span>
-          </div>
-          <div class="indicador">
-            <span class="material-icons">star</span>
-            <span>Melhor dia: <b id="melhorDia">-</b></span>
-          </div>
-          <div class="indicador">
-            <span class="material-icons">flag</span>
-            <span>Último Ganho: <b id="ultimaEntrega">-</b></span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="tela-ganhos" class="pagina" style="display: none">
-      <div class="container">
-        <div class="card" id="card-formulario-ganho" style="display: none">
-          <div class="card-header">
-            <h2 id="titulo-form-ganho">Adicionar Novo Ganho</h2>
-            <button id="btn-fechar-form-ganho" class="btn-fechar">
-              &times;
-            </button>
-          </div>
-          <form id="formGanho">
-            <input type="date" id="data" required />
-            <input
-              type="number"
-              id="valorDiaria"
-              placeholder="Valor da diária"
-              step="0.01"
-              min="0"
-              required
-            />
-            <input
-              type="number"
-              id="taxaEntrega"
-              placeholder="Taxa por entrega"
-              step="0.01"
-              min="0"
-              required
-            />
-            <input
-              type="number"
-              id="qtdEntregas"
-              placeholder="Quantidade de entregas"
-              min="0"
-              required
-            />
-            <button type="submit" id="btnSalvarGanho">Adicionar Ganho</button>
-          </form>
-        </div>
-
-        <div class="card" id="card-historico">
-          <div class="card-header">
-            <h2>Histórico de Ganhos</h2>
-            <button id="btn-abrir-form-ganho" class="btn-add">
-              <span class="material-icons">add</span> Novo Ganho
-            </button>
-          </div>
-
-          <div id="filtros-ganhos" class="filtros-container">
-            <div class="filtro-item">
-              <label for="filtro-periodo">Filtrar por Período</label>
-              <select id="filtro-periodo">
-                <option value="todos">Todos</option>
-                <option value="hoje">Hoje</option>
-                <option value="esta-semana" selected>Esta Semana</option>
-                <option value="este-mes">Este Mês</option>
-                <option value="semana-passada">Semana Passada</option>
-                <option value="mes-passado">Mês Passado</option>
-                <option value="personalizado">Personalizado</option>
-              </select>
-            </div>
-            <div id="filtro-datas-personalizadas" style="display: none">
-              <div class="filtro-item">
-                <label for="filtro-data-inicio">De:</label>
-                <input type="date" id="filtro-data-inicio" />
-              </div>
-              <div class="filtro-item">
-                <label for="filtro-data-fim">Até:</label>
-                <input type="date" id="filtro-data-fim" />
-              </div>
-            </div>
-            <div class="filtro-item">
-              <label for="filtro-ordenar">Ordenar por</label>
-              <select id="filtro-ordenar">
-                <option value="recentes">Mais Recentes</option>
-                <option value="antigos">Mais Antigos</option>
-                <option value="maior-valor">Maior Valor</option>
-                <option value="menor-valor">Menor Valor</option>
-              </select>
-            </div>
-            <button id="btn-limpar-filtros">Limpar Filtros</button>
-          </div>
-
-          <div id="card-resumo-filtro" class="resumo-filtro">
-            <div class="resumo-item">
-              <span class="resumo-label">Total do Período</span>
-              <strong id="resumo-filtro-total">R$ 0,00</strong>
-            </div>
-            <div class="resumo-item">
-              <span class="resumo-label">Nº de Entregas</span>
-              <strong id="resumo-filtro-entregas">0</strong>
-            </div>
-            <div class="resumo-item">
-              <span class="resumo-label">Dias Trabalhados</span>
-              <strong id="resumo-filtro-dias">0</strong>
-            </div>
-            <div class="resumo-item">
-              <span class="resumo-label">Média Diária</span>
-              <strong id="resumo-filtro-media">R$ 0,00</strong>
-            </div>
-          </div>
-
-          <ul id="listaGanhos"></ul>
-
-          <div class="compartilhar-whatsapp">
-            <h3>Compartilhar Resumo do Período</h3>
-            <label
-              ><input type="checkbox" id="compQtdEntregas" checked /> Quantidade
-              de entregas</label
-            >
-            <label
-              ><input type="checkbox" id="compValorDiaria" checked /> Soma das
-              diárias</label
-            >
-            <label
-              ><input type="checkbox" id="compValorTotal" checked /> Valor
-              total</label
-            >
-            <button id="btnCompartilhar">Compartilhar</button>
-          </div>
-        </div>
-      </div>
-    </section>
-    <section id="tela-perfil" class="pagina" style="display: none">
-      <div class="container">
-        <div class="card perfil-dados">
-          <div class="foto-perfil-container">
-            <img
-              id="fotoPerfil"
-              src="default-avatar.png"
-              alt="Foto de perfil"
-              class="foto-perfil"
-            />
-            <label for="inputFotoPerfil" class="btn-alterar-foto">
-              <span class="material-icons">edit</span>
-            </label>
-            <input
-              type="file"
-              id="inputFotoPerfil"
-              accept="image/*"
-              style="display: none"
-            />
-          </div>
-
-          <div class="dado-perfil">
-            <strong>Nome:</strong>
-            <span id="perfilNome" class="valor-dado"></span>
-          </div>
-
-          <div class="dado-perfil">
-            <strong>Usuário:</strong>
-            <span id="perfilUsuario" class="valor-dado"></span>
-          </div>
-
-          <div class="dado-perfil">
-            <strong>Telefone:</strong>
-            <span id="perfilTelefone" class="valor-dado"></span>
-          </div>
-
-          <div class="dado-perfil">
-            <strong>Modelo da moto:</strong>
-            <span id="perfilMoto" class="valor-dado"></span>
-          </div>
-
-          <div class="dado-perfil">
-            <strong>Meta semanal:</strong>
-            <span id="perfilMeta" class="valor-dado"></span>
-          </div>
-        </div>
-
-        <div class="card">
-          <form id="formAlterarCadastro">
-            <h3>Alterar Dados</h3>
-
-            <div class="form-group">
-              <label for="novaMetaSemanal">Meta Semanal (R$)</label>
-              <input
-                type="number"
-                id="novaMetaSemanal"
-                placeholder="Ex: 1000.00"
-                step="0.01"
-                min="0"
-                class="form-input"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="novoNome">Nome Completo</label>
-              <input
-                type="text"
-                id="novoNome"
-                placeholder="Seu novo nome"
-                class="form-input"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="novaSenha">Nova Senha</label>
-              <input
-                type="password"
-                id="novaSenha"
-                placeholder="Deixe em branco para não alterar"
-                class="form-input"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="novoTelefone">Telefone</label>
-              <input
-                type="tel"
-                id="novoTelefone"
-                placeholder="Novo telefone"
-                pattern="[0-9]{10,13}"
-                class="form-input"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="novaMoto">Modelo da Moto</label>
-              <select id="novaMoto" class="form-input">
-                <option value="">Selecione</option>
-                <option value="Honda CG 160">Honda CG 160</option>
-                <option value="Yamaha Factor 150">Yamaha Factor 150</option>
-                <option value="Honda Biz 125">Honda Biz 125</option>
-                <option value="Yamaha Fazer 250">Yamaha Fazer 250</option>
-              </select>
-            </div>
-
-            <button type="submit" class="btn-primario">
-              <span class="material-icons">save</span> Salvar Alterações
-            </button>
-          </form>
-
-          <button id="btnSair" class="btn-secundario">
-            <span class="material-icons">logout</span> Sair
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <div id="modal-telegram" class="modal-overlay" style="display: none;">
-      <div class="modal-conteudo">
-        <span id="modal-fechar" class="modal-fechar" title="Fechar">&times;</span>
-        <h2>Fique por Dentro! 📣</h2>
-        <p>
-          Participe do nosso grupo no Telegram para receber notícias,
-          dicas e atualizações exclusivas do MotoCash em primeira mão!
-        </p>
-        <div class="modal-botoes">
-          <a href="https://t.me/+I94Lf1DLJldiMTUx" target="_blank" id="btn-entrar-telegram" class="btn-primario">
-            <i class="fab fa-telegram-plane"></i> Entrar no Grupo
-          </a>
-          <button id="btn-agora-nao" class="btn-secundario">Agora não</button>
-        </div>
-      </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="app.js"></script>
-  </body>
-</html>
     <footer style="text-align: center; padding: 1rem">
       <a
         href="https://nubank.com.br/cobrar/599bu/689acc38-b21e-4f6d-9747-862b7566ec4d"
         target="_blank"
         class="btn-apoio"
         style="display: inline-block; margin-bottom: 0.5rem"
+        >🙌 Apoie o Projeto</a
       >
-        🙌 Apoie o Projeto
-      </a>
-      <div style="margin-top: 0.5rem">
-        <p style="margin: 0">© LucianoDev - Todos os direitos reservados</p>
+      <div>
+        <p style="margin: 0">© Santos Codes - Todos os direitos reservados</p>
         <a
           href="https://github.com/LucDev0001"
           target="_blank"
           style="color: inherit; text-decoration: none; font-size: 1.5rem"
           aria-label="GitHub"
-        >
-          <i class="fab fa-github"></i>
-        </a>
+          ><i class="fab fa-github"></i
+        ></a>
       </div>
     </footer>
-    <nav class="bottom-bar" id="bottomBar">
+
+    <nav class="bottom-bar" id="bottomBar" style="display: none">
       <button title="Início" id="btnNavInicio">
-        <span class="material-icons">home</span>
-        <span class="label">Início</span>
+        <span class="material-icons">home</span
+        ><span class="label">Início</span>
       </button>
       <button title="Ganhos" id="btnNavGanhos">
-        <span class="material-icons">attach_money</span>
-        <span class="label">Ganhos</span>
+        <span class="material-icons">attach_money</span
+        ><span class="label">Ganhos</span>
       </button>
       <button title="Perfil" id="btnNavPerfil">
-        <span class="material-icons">person</span>
-        <span class="label">Perfil</span>
+        <span class="material-icons">person</span
+        ><span class="label">Perfil</span>
       </button>
     </nav>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="app.js"></script>
+    <script type="module" src="js/main.js"></script>
   </body>
 </html>

@@ -1,0 +1,46 @@
+/* css/login.css */
+/* Estilos específicos para a tela de login e cadastro. */
+
+.login-container {
+  max-width: 370px;
+  margin: 40px auto;
+  padding: 2rem 1.2rem;
+  text-align: center;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 1rem;
+  margin: 0.7rem 0;
+  box-shadow: 0 1px 4px #0001;
+}
+
+.login-container button {
+  width: 100%;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.avatar-selecao {
+  margin-bottom: 1rem;
+}
+
+.opcoes-avatar {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.avatar-opcao {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border 0.2s ease;
+}
+
+.avatar-opcao.selecionado {
+  border-color: #2196f3;
+}

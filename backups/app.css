@@ -22,6 +22,12 @@ body {
   min-height: 100vh;
 }
 
+/* ==========================================================
+   TELA: Global (aplicável a todas as páginas/telas)
+   - Reset, variáveis de cores, containers, tipografia e botões
+   - Regras que afetam todo o aplicativo
+   ========================================================== */
+
 /* Paleta */
 :root {
   --black: #111;
@@ -49,6 +55,12 @@ body {
   margin-bottom: 1.2rem;
   border: 1px solid var(--gray);
 }
+
+/* ==========================================================
+   TELA: INÍCIO (id="tela-inicio")
+   - Topo do usuário, previsões, resumos rápidos, gráficos,
+     ferramentas rápidas e indicadores que aparecem na tela Inicial
+   ========================================================== */
 
 h1,
 h2,
@@ -166,6 +178,11 @@ a:hover {
   color: var(--black);
 }
 
+/* ----------------------------------------------------------
+   Sub-seção: Previsão do Tempo (TELA: INÍCIO)
+   - Estilos da caixa de previsão horária e status do clima
+   ---------------------------------------------------------- */
+
 /* Estilos para a nova seção de previsão do tempo */
 .card-previsao {
   background-color: #fff;
@@ -278,6 +295,11 @@ a:hover {
   color: var(--black);
 }
 
+/* ----------------------------------------------------------
+   Sub-seção: Gráficos Circulares (TELA: INÍCIO)
+   - Estilos dos cards contendo os canvases de gráficos
+   ---------------------------------------------------------- */
+
 /* Gráficos circulares */
 .graficos-circulares {
   display: flex;
@@ -339,6 +361,11 @@ a:hover {
   box-shadow: 0 2px 8px #0001;
   margin-bottom: 0.5rem;
 }
+
+/* ----------------------------------------------------------
+  Sub-seção: Indicadores (TELA: INÍCIO)
+  - Painel de indicadores mostrado na tela inicial
+  ---------------------------------------------------------- */
 
 /* Indicadores */
 .indicadores {
@@ -472,6 +499,11 @@ ul#listaGanhos {
   background-color: #f5f5f5;
 }
 
+/* ----------------------------------------------------------
+   Sub-seção: Compartilhamento (TELA: GANHOS)
+   - Caixa para montar e compartilhar resumo via WhatsApp
+   ---------------------------------------------------------- */
+
 /* Cores específicas para as ações */
 .menu-ganho-opcoes a.btn-excluir {
   color: #e63946; /* Vermelho para a ação de excluir */
@@ -499,6 +531,11 @@ ul#listaGanhos {
   background: var(--black);
   margin-top: 0.7rem;
 }
+
+/* ----------------------------------------------------------
+   TELA: PERFIL (id="tela-perfil")
+   - Foto de perfil, dados do usuário, alteração de cadastro
+   ---------------------------------------------------------- */
 
 /* Perfil */
 .perfil-topo {
@@ -701,6 +738,10 @@ ul#listaGanhos {
   background-color: #1ee66c;
 }
 
+/* ----------------------------------------------------------
+   FOOTER / RODAPÉ (aparece em várias telas) + BOTÃO DE APOIO
+   - Texto e ícone do GitHub, link de apoio e layout do rodapé
+   ---------------------------------------------------------- */
 footer {
   text-align: center;
   padding: 1rem;
@@ -730,6 +771,11 @@ footer {
   color: #fff;
 }
 
+.modal-overlay {
+/* ----------------------------------------------------------
+  MODAL: Telegram (modal-telegram)
+  - Estilos do overlay e conteúdo do modal usado em várias telas
+  ---------------------------------------------------------- */
 /* Estilos para o Modal Telegram */
 .modal-overlay {
   position: fixed;
@@ -1075,4 +1121,5 @@ footer a i:hover {
 .resumo-item strong {
   font-size: 1.1rem;
   color: #333;
+}
 }

@@ -1,0 +1,228 @@
+/* css/ganhos.css */
+/* Estilos para a tela de histórico de ganhos, formulário e filtros. */
+
+.btn-add {
+  background-color: var(--black);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: auto;
+  margin: 0;
+}
+
+.btn-add:hover {
+  background-color: var(--accent-light);
+  transform: translateY(-2px);
+}
+
+.btn-add .material-icons {
+  font-size: 1.2rem;
+}
+
+.btn-fechar {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #777;
+  cursor: pointer;
+}
+
+/* Filtros */
+.filtros-container {
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: flex-end;
+}
+
+.filtro-item {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.filtro-item label {
+  font-size: 0.9em;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.filtro-item select,
+.filtro-item input[type="date"] {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fff;
+  font-size: 1em;
+}
+
+#filtro-datas-personalizadas {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+}
+
+#btn-limpar-filtros {
+  padding: 8px 12px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  align-self: flex-end;
+  width: auto;
+}
+
+#btn-limpar-filtros:hover {
+  background-color: #5a6268;
+}
+
+/* Resumo do Filtro */
+.resumo-filtro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f7f9fc;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e0e0e0;
+}
+
+.resumo-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.resumo-label {
+  font-size: 0.8rem;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.resumo-item strong {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+/* Lista de Ganhos */
+ul#listaGanhos {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+
+.ganho-item {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid var(--gray);
+}
+
+.ganho-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+}
+
+.ganho-info {
+  flex-grow: 1;
+}
+
+.ganho-data {
+  font-size: 0.9rem;
+  color: #777;
+  margin-bottom: 0.2rem;
+}
+
+.ganho-valor {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #13b15a;
+}
+
+.ganho-acoes {
+  position: relative;
+}
+
+.btn-menu-ganho {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #888;
+  cursor: pointer;
+  padding: 0.5rem;
+  line-height: 1;
+  width: auto;
+}
+
+.menu-ganho-opcoes {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  min-width: 120px;
+  overflow: hidden;
+  display: none;
+  border: 1px solid var(--gray);
+}
+
+.menu-ganho-opcoes a {
+  display: block;
+  padding: 0.8rem 1rem;
+  text-decoration: none;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.menu-ganho-opcoes a:hover {
+  background-color: #f5f5f5;
+}
+
+.menu-ganho-opcoes a.btn-excluir {
+  color: #e63946;
+}
+
+/* Compartilhar WhatsApp */
+.compartilhar-whatsapp {
+  margin-top: 1.5rem;
+  background: var(--gray-light);
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 1px 4px #0001;
+  border: 1px solid var(--gray);
+}
+
+.compartilhar-whatsapp label {
+  font-size: 1rem;
+  color: var(--accent-light);
+  margin-right: 1.2rem;
+}
+
+.compartilhar-whatsapp button {
+  background: var(--black);
+  margin-top: 0.7rem;
+}

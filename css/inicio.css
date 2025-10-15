@@ -1,0 +1,229 @@
+/* css/inicio.css */
+/* Estilos específicos da tela inicial */
+
+/* Topo do usuário */
+.topo-inicio {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+#msgOlaInicio {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.meta-mensagem {
+  font-size: 0.98rem;
+  color: var(--accent);
+  margin-top: 0.2rem;
+  font-weight: 500;
+}
+
+.destaque-topo {
+  background: var(--gray-light);
+  border-radius: 18px;
+  padding: 1rem 0.7rem;
+  margin-bottom: 1.2rem;
+}
+
+/* Previsão do Tempo */
+.card-previsao {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  margin-top: 20px;
+  color: #333;
+}
+
+.previsao-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.previsao-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.toggle-button {
+  background-color: var(--black);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s;
+}
+
+.previsao-lista {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding-bottom: 10px;
+}
+
+.previsao-item {
+  flex: 0 0 80px;
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.previsao-item img {
+  width: 40px;
+  height: 40px;
+}
+
+.previsao-item p {
+  margin: 5px 0 0;
+}
+
+#weather-status {
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* Resumos Rápidos */
+.resumos-rapidos {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-bottom: 1.2rem;
+}
+.card-resumo {
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 1rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 90px;
+  flex: 1;
+  border: 1px solid var(--gray);
+}
+.icone-resumo {
+  color: var(--accent);
+  font-size: 2rem;
+  margin-bottom: 0.2rem;
+}
+.resumo-titulo {
+  font-size: 0.95rem;
+  color: var(--gray-dark);
+}
+.resumo-valor {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--black);
+}
+
+/* Gráficos Circulares */
+.graficos-circulares {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.grafico-circular {
+  background: var(--white);
+  border-radius: 20px;
+  box-shadow: 0 4px 24px #0001;
+  padding: 1.2rem 1rem 0.7rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90vw;
+  max-width: 340px;
+  min-width: 180px;
+  border: 1px solid var(--gray);
+}
+
+.valor-grafico {
+  margin-top: 0.6rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: center;
+}
+
+/* Ferramentas Rápidas */
+.ferramentas-rapidas {
+  display: flex;
+  gap: 0.7rem;
+  margin: 1.2rem 0 1.2rem 0;
+  flex-wrap: wrap;
+}
+.ferramentas-rapidas button {
+  flex: 1;
+  min-width: 120px;
+  background: var(--black);
+  color: var(--white);
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  box-shadow: 0 2px 8px #0001;
+  margin-bottom: 0.5rem;
+}
+
+/* Indicadores */
+.indicadores {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.indicador {
+  background: var(--gray-light);
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 1rem;
+  color: var(--accent-light);
+}
+.indicador .material-icons {
+  color: var(--accent);
+  font-size: 1.5rem;
+}
+
+/* ESTILOS RESTAURADOS PARA A BARRA DE PROGRESSO */
+.progresso-meta {
+  width: 100%;
+  height: 10px;
+  background-color: #eee;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progresso-barra {
+  height: 100%;
+  background-color: #4caf50;
+  transition: width 0.3s ease;
+}
+
+.progresso-barra.meta-completa {
+  background-color: #1ee66c;
+}
+
+.progresso-texto {
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 4px;
+}
+

@@ -1,0 +1,65 @@
+<section id="tela-ganhos" class="pagina">
+  <div class="container">
+    <div class="card" id="card-formulario-ganho" style="display: none">
+      <div class="card-header">
+        <h2 id="titulo-form-ganho">Adicionar Novo Ganho</h2>
+        <button id="btn-fechar-form-ganho" class="btn-fechar">&times;</button>
+      </div>
+      <form id="formGanho">
+        <input type="date" id="data" required />
+        <input type="number" id="valorDiaria" placeholder="Valor da diária" step="0.01" min="0" required />
+        <input type="number" id="taxaEntrega" placeholder="Taxa por entrega" step="0.01" min="0" required />
+        <input type="number" id="qtdEntregas" placeholder="Quantidade de entregas" min="0" required />
+        <button type="submit" id="btnSalvarGanho">Adicionar Ganho</button>
+      </form>
+    </div>
+    <div class="card" id="card-historico">
+      <div class="card-header">
+        <h2>Histórico de Ganhos</h2>
+        <button id="btn-abrir-form-ganho" class="btn-add"><span class="material-icons">add</span> Novo Ganho</button>
+      </div>
+      <div id="filtros-ganhos" class="filtros-container">
+        <div class="filtro-item">
+          <label for="filtro-periodo">Filtrar por Período</label>
+          <select id="filtro-periodo">
+            <option value="todos">Todos</option>
+            <option value="hoje">Hoje</option>
+            <option value="esta-semana" selected>Esta Semana</option>
+            <option value="este-mes">Este Mês</option>
+            <option value="semana-passada">Semana Passada</option>
+            <option value="mes-passado">Mês Passado</option>
+            <option value="personalizado">Personalizado</option>
+          </select>
+        </div>
+        <div id="filtro-datas-personalizadas" style="display: none">
+          <div class="filtro-item"><label for="filtro-data-inicio">De:</label><input type="date" id="filtro-data-inicio" /></div>
+          <div class="filtro-item"><label for="filtro-data-fim">Até:</label><input type="date" id="filtro-data-fim" /></div>
+        </div>
+        <div class="filtro-item">
+          <label for="filtro-ordenar">Ordenar por</label>
+          <select id="filtro-ordenar">
+            <option value="recentes">Mais Recentes</option>
+            <option value="antigos">Mais Antigos</option>
+            <option value="maior-valor">Maior Valor</option>
+            <option value="menor-valor">Menor Valor</option>
+          </select>
+        </div>
+        <button id="btn-limpar-filtros">Limpar Filtros</button>
+      </div>
+      <div id="card-resumo-filtro" class="resumo-filtro">
+        <div class="resumo-item"><span class="resumo-label">Total do Período</span><strong id="resumo-filtro-total">R$ 0,00</strong></div>
+        <div class="resumo-item"><span class="resumo-label">Nº de Entregas</span><strong id="resumo-filtro-entregas">0</strong></div>
+        <div class="resumo-item"><span class="resumo-label">Dias Trabalhados</span><strong id="resumo-filtro-dias">0</strong></div>
+        <div class="resumo-item"><span class="resumo-label">Média Diária</span><strong id="resumo-filtro-media">R$ 0,00</strong></div>
+      </div>
+      <ul id="listaGanhos"></ul>
+      <div class="compartilhar-whatsapp">
+        <h3>Compartilhar Resumo do Período</h3>
+        <label><input type="checkbox" id="compQtdEntregas" checked /> Quantidade de entregas</label>
+        <label><input type="checkbox" id="compValorDiaria" checked /> Soma das diárias</label>
+        <label><input type="checkbox" id="compValorTotal" checked /> Valor total</label>
+        <button id="btnCompartilhar">Compartilhar</button>
+      </div>
+    </div>
+  </div>
+</section>
