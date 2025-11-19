@@ -45,7 +45,8 @@
   height: 70px;
 }
 
-.bottom-bar button {
+.bottom-bar .nav-link {
+  text-decoration: none;
   background: none;
   border: none;
   outline: none;
@@ -59,8 +60,8 @@
   transition: color 0.2s;
 }
 
-.bottom-bar button:focus,
-.bottom-bar button:hover {
+.bottom-bar .nav-link:focus,
+.bottom-bar .nav-link:hover {
   color: var(--black);
 }
 

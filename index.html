@@ -77,39 +77,48 @@
     <!-- O container principal agora carrega as telas dinamicamente -->
     <main id="app-content"></main>
 
-    <footer style="text-align: center; padding: 1rem">
+    <footer class="main-footer">
       <a
         href="https://nubank.com.br/cobrar/599bu/689acc38-b21e-4f6d-9747-862b7566ec4d"
         target="_blank"
         class="btn-apoio"
-        style="display: inline-block; margin-bottom: 0.5rem"
-        >🙌 Apoie o Projeto</a
       >
-      <div>
-        <p style="margin: 0"><a style="text-decoration:none"; href="https://lucianodevfrontend.netlify.app/">© Santos Codes</a> - Todos os direitos reservados</p>
+        🙌 Apoie o Projeto
+      </a>
+      <div class="footer-info">
+        <p class="copyright">
+          <a href="https://lucianodevfrontend.netlify.app/">© Santos Codes</a> -
+          Todos os direitos reservados
+        </p>
         <a
           href="https://github.com/LucDev0001"
           target="_blank"
-          style="color: inherit; text-decoration: none; font-size: 1.5rem"
+          class="github-link"
           aria-label="GitHub"
-          ><i class="fab fa-github"></i
-        ></a>
+        >
+          <i class="fab fa-github"></i>
+        </a>
       </div>
     </footer>
 
     <nav class="bottom-bar" id="bottomBar" style="display: none">
-      <button title="Início" id="btnNavInicio">
+      <a
+        href="#inicio"
+        title="Início"
+        id="btnNavInicio"
+        class="nav-link active"
+      >
         <span class="material-icons">home</span
         ><span class="label">Início</span>
-      </button>
-      <button title="Ganhos" id="btnNavGanhos">
+      </a>
+      <a href="#ganhos" title="Ganhos" id="btnNavGanhos" class="nav-link">
         <span class="material-icons">attach_money</span
         ><span class="label">Ganhos</span>
-      </button>
-      <button title="Perfil" id="btnNavPerfil">
+      </a>
+      <a href="#perfil" title="Perfil" id="btnNavPerfil" class="nav-link">
         <span class="material-icons">person</span
         ><span class="label">Perfil</span>
-      </button>
+      </a>
     </nav>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
