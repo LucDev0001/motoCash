@@ -9,20 +9,3 @@
 #form-add-product textarea {
   resize: vertical;
 }
-
-.upload-group input[type="file"] {
-  padding: 0;
-  border: none;
-  background: none;
-}
-
-.image-preview-container {
-  margin-top: 1rem;
-}
-
-#image-preview {
-  max-width: 100%;
-  max-height: 200px;
-  border-radius: 8px;
-  object-fit: cover;
-}

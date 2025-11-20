@@ -2,7 +2,7 @@
 // Lógica para a página do marketplace.
 
 import { perfil } from "./perfil.js";
-import { db, storage } from "./firebase-config.js";
+import { db } from "./firebase-config.js";
 import {
   collection,
   getDocs,
@@ -13,11 +13,6 @@ import {
   serverTimestamp,
   deleteDoc,
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 import { $ } from "./utils.js";
 import { formatarMoeda } from "./utils.js";
 
@@ -177,19 +172,6 @@ export const marketplace = {
       e.preventDefault();
       this.handleAddProduct();
     });
-
-    // Lógica para pré-visualização da imagem
-    const imageInput = $("product-image-file");
-    const imagePreview = $("image-preview");
-    if (imageInput && imagePreview) {
-      imageInput.addEventListener("change", () => {
-        const file = imageInput.files[0];
-        if (file) {
-          imagePreview.src = URL.createObjectURL(file);
-          imagePreview.style.display = "block";
-        }
-      });
-    }
   },
 
   handleAddProduct: async function () {
@@ -201,7 +183,7 @@ export const marketplace = {
     const isAdmin = userProfile.role === "admin";
     const nome = $("product-name").value.trim();
     const preco = parseFloat($("product-price").value);
-    const imageFile = $("product-image-file").files[0];
+    const imagemURL = $("product-image-url").value.trim();
     const categoria = $("product-category").value;
     let link;
     let tipo;
@@ -222,7 +204,7 @@ export const marketplace = {
       tipo = "contato_direto";
     }
 
-    if (!nome || !preco || !imageFile || !categoria) {
+    if (!nome || !preco || !imagemURL || !categoria) {
       return alert("Por favor, preencha todos os campos obrigatórios.");
     }
 
@@ -230,34 +212,23 @@ export const marketplace = {
     btn.disabled = true;
     btn.textContent = "Salvando...";
 
+    const newProduct = {
+      id: String(Date.now()),
+      nome,
+      descricao: $("product-description").value.trim(),
+      preco,
+      categoria,
+      imagemURL, // URL vinda do campo de texto
+      link,
+      ownerId: userProfile.uid,
+      ownerName: userProfile.nome,
+      ownerAvatar: userProfile.avatar,
+      tipo: tipo,
+      createdAt: serverTimestamp(),
+    };
+
     try {
-      // 1. Fazer upload da imagem para o Firebase Storage
-      const uniqueFileName = `${Date.now()}-${imageFile.name}`;
-      const storageRef = ref(storage, `product-images/${uniqueFileName}`);
-      await uploadBytes(storageRef, imageFile);
-
-      // 2. Obter a URL de download da imagem
-      const imagemURL = await getDownloadURL(storageRef);
-
-      // 3. Criar o objeto do produto com a URL da imagem
-      const newProduct = {
-        id: String(Date.now()),
-        nome,
-        descricao: $("product-description").value.trim(),
-        preco,
-        categoria,
-        imagemURL, // URL obtida do Storage
-        link,
-        ownerId: userProfile.uid,
-        ownerName: userProfile.nome,
-        ownerAvatar: userProfile.avatar,
-        tipo: tipo,
-        createdAt: serverTimestamp(),
-      };
-
-      // 4. Salvar os dados do produto no Firestore
       await setDoc(doc(db, "produtos", newProduct.id), newProduct);
-
       alert("Produto adicionado com sucesso!");
       this.navegarPara("marketplace"); // Navega de volta
     } catch (error) {
