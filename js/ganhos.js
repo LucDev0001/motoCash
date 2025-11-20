@@ -1,6 +1,11 @@
 // js/ganhos.js
 // Lida com toda a lógica de adicionar, editar, excluir e exibir ganhos.
 
+// Importa as ferramentas do Firebase
+import { auth as firebaseAuth, db } from "./firebase-config.js";
+import { doc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+// Importa utilitários locais
 import { $ } from "./utils.js";
 import { storage } from "./storage.js";
 import { getDateRange } from "./date.utils.js";
@@ -76,15 +81,24 @@ export const ganhos = {
   },
 
   adicionarGanho: function () {
+  adicionarGanho: async function () {
+    const usuarioLogado = firebaseAuth.currentUser;
+    if (!usuarioLogado) {
+      alert("Você precisa estar logado para adicionar um ganho.");
+      return;
+    }
+
     const data = $("data").value;
     if (!data) return alert("Preencha a data.");
     const valorDiaria = parseFloat($("valorDiaria").value) || 0;
     const taxaEntrega = parseFloat($("taxaEntrega").value) || 0;
     const qtdEntregas = parseInt($("qtdEntregas").value) || 0;
     
+
     const novoGanho = {
       id: Date.now(),
       usuario: storage.getUsuarioLogado().usuario,
+      id: String(Date.now()), // Usamos o timestamp como ID único do ganho
       data,
       valorDiaria,
       taxaEntrega,
@@ -93,6 +107,17 @@ export const ganhos = {
     };
     storage.setGanhos([...storage.getGanhos(), novoGanho]);
     this.finalizarAcaoDeGanho();
+
+    try {
+      // Cria uma referência para o novo documento de ganho dentro da sub-coleção do usuário
+      const docRef = doc(db, "usuarios", usuarioLogado.uid, "ganhos", novoGanho.id);
+      // Salva o objeto 'novoGanho' no Firestore
+      await setDoc(docRef, novoGanho);
+      this.finalizarAcaoDeGanho();
+    } catch (error) {
+      console.error("Erro ao adicionar ganho no Firestore: ", error);
+      alert("Ocorreu um erro ao salvar seu ganho. Tente novamente.");
+    }
   },
 
   atualizarGanho: function () {
