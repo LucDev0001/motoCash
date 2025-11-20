@@ -68,6 +68,10 @@ const pages = {
     file: "templates/add-product.html",
     init: () => marketplace.initAddProductForm({ navegarPara }),
   },
+  "gerenciar-anuncios": {
+    file: "templates/gerenciar-anuncios.html",
+    init: () => perfil.initGerenciarAnuncios(),
+  },
   admin: {
     file: "templates/admin.html",
     init: async () => {

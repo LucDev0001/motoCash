@@ -1,4 +1,4 @@
-const CACHE_NAME = "motocash-v4-final-1.3"; // Versão do cache atualizada
+const CACHE_NAME = "motocash-v4-final-1.4"; // Versão do cache atualizada
 const URLS_TO_CACHE = [
   "./",
   "./index.html",
@@ -12,6 +12,7 @@ const URLS_TO_CACHE = [
   "./css/marketplace.css",
   "./css/responsive.css",
   "./css/add-product.css",
+  "./css/gerenciar-anuncios.css",
   "./css/legal.css",
   // JavaScript
   "./js/main.js",
@@ -32,6 +33,7 @@ const URLS_TO_CACHE = [
   "./templates/perfil.html",
   "./templates/marketplace.html",
   "./templates/add-product.html",
+  "./templates/gerenciar-anuncios.html",
   "./templates/modal.html",
   "./templates/termos-de-uso.html",
   "./templates/politica-de-privacidade.html",
@@ -45,6 +47,7 @@ const URLS_TO_CACHE = [
   "./avatares/ava1.jpg",
   "./avatares/ava2.jpg",
   "./avatares/ava3.jpg",
+  "./icons/zap.png",
 ];
 
 // --- INSTALAÇÃO INTELIGENTE ---

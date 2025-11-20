@@ -192,6 +192,13 @@
   margin-top: 1rem;
 }
 
+.product-modal .btn-product-action .icon-zap {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
 /* Estilo para o botão do WhatsApp */
 .product-modal .btn-product-action .material-icons {
   color: #25d366; /* Cor do WhatsApp */

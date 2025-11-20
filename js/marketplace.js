@@ -379,7 +379,9 @@ export const marketplace = {
       finalLink = `${product.link}?text=${encodeURIComponent(mensagem)}`;
     }
 
-    const buttonIcon = isAffiliate ? "shopping_cart" : "whatsapp";
+    const buttonIconHTML = isAffiliate
+      ? '<span class="material-icons">shopping_cart</span>'
+      : '<img src="icons/zap.png" alt="WhatsApp" class="icon-zap">';
     const imagemSegura = product.imagemURL || "https://via.placeholder.com/300";
 
     const modalHTML = `
@@ -400,7 +402,7 @@ export const marketplace = {
               : product.descricao || "Nenhuma descrição fornecida."
           }</p>
           <a href="${finalLink}" target="_blank" class="btn-product-action">
-            <span class="material-icons">${buttonIcon}</span> ${buttonText}
+            ${buttonIconHTML} ${buttonText}
           </a>
         </div>
       </div>

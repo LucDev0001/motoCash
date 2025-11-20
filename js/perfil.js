@@ -98,7 +98,11 @@ export const perfil = {
     // Atualiza elementos que podem estar em várias telas (como a tela de início)
     this.setElementText("msgOlaInicio", `Olá, ${usuario.nome || "Usuário"}`);
 
-    this.displayMyProducts(); // Chama a nova função
+    // Configura o botão para ir para a nova tela de gerenciamento
+    if ($("btn-gerenciar-anuncios")) {
+      $("btn-gerenciar-anuncios").onclick = () =>
+        this.navegarPara("gerenciar-anuncios");
+    }
 
     // Mostra a seção de admin se o usuário tiver a role
     if (usuario.role === "admin") {
@@ -169,14 +173,18 @@ export const perfil = {
     }
   },
 
-  displayMyProducts: async function () {
-    const container = $("meus-anuncios-lista");
+  initGerenciarAnuncios: async function () {
+    const container = $("lista-meus-anuncios");
     if (!container) return;
 
     const user = firebaseAuth.currentUser;
     if (!user) return;
 
     container.innerHTML = "<p>Carregando seus anúncios...</p>";
+
+    if ($("btn-voltar-perfil")) {
+      $("btn-voltar-perfil").onclick = () => this.navegarPara("perfil");
+    }
 
     try {
       // Cria uma consulta para buscar apenas os produtos do usuário logado.
