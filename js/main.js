@@ -50,6 +50,14 @@ const pages = {
       perfil.atualizarUI();
     },
   },
+  termos: {
+    file: "templates/termos-de-uso.html",
+    init: () => {}, // Nenhuma inicialização necessária
+  },
+  politica: {
+    file: "templates/politica-de-privacidade.html",
+    init: () => {}, // Nenhuma inicialização necessária
+  },
 };
 
 // Função principal que carrega o HTML de uma página e executa seus scripts

@@ -299,3 +299,26 @@ footer a i:hover {
   border-color: var(--accent);
   transform: scale(1.1);
 }
+
+/* Estilos para o aceite de termos */
+.termos-aceite {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  text-align: left;
+}
+
+.termos-aceite input[type="checkbox"] {
+  width: auto;
+  margin-top: 4px;
+}
+
+.termos-aceite label {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.termos-aceite a {
+  text-decoration: underline;
+}

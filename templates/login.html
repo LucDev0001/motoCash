@@ -96,8 +96,19 @@
         </div>
         <input type="hidden" id="avatarSelecionado" required />
       </div>
+
+      <div class="termos-aceite">
+        <input type="checkbox" id="aceiteTermos" required />
+        <label for="aceiteTermos">
+          Eu li e concordo com os
+          <a href="#termos" id="linkTermos">Termos de Uso</a> e com a
+          <a href="#politica" id="linkPolitica">Política de Privacidade</a>.
+        </label>
+      </div>
+
       <p id="cadastroErro" class="mensagem-erro"></p>
-      <button type="submit">Cadastrar</button>
+      <!-- O botão começa desabilitado -->
+      <button type="submit" id="btnCadastrar" disabled>Criar Conta</button>
     </form>
     <p class="link-alternativo">
       Já tem conta? <a href="#" id="linkLogin">Faça login</a>

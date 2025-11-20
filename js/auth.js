@@ -43,6 +43,20 @@ export const auth = {
       });
     }
 
+    // Links para páginas legais
+    if ($("linkTermos")) {
+      $("linkTermos").onclick = (e) => {
+        e.preventDefault();
+        this.navegarPara("termos");
+      };
+    }
+    if ($("linkPolitica")) {
+      $("linkPolitica").onclick = (e) => {
+        e.preventDefault();
+        this.navegarPara("politica");
+      };
+    }
+
     document.querySelectorAll(".avatar-opcao").forEach((img) => {
       img.addEventListener("click", () => {
         document
@@ -68,11 +82,24 @@ export const auth = {
         this.handleCadastro();
       });
     }
+
+    // Lógica para habilitar/desabilitar o botão de cadastro
+    const aceiteCheckbox = $("aceiteTermos");
+    const btnCadastrar = $("btnCadastrar");
+    if (aceiteCheckbox && btnCadastrar) {
+      aceiteCheckbox.addEventListener("change", () => {
+        btnCadastrar.disabled = !aceiteCheckbox.checked;
+      });
+    }
   },
 
   handleLogin: async function () {
     const email = $("loginUsuario").value.trim(); // Agora é um e-mail
     const senha = $("loginSenha").value;
+
+    if (!email || !senha) {
+      return this.showError("loginErro", "Preencha e-mail e senha.");
+    }
 
     try {
       await signInWithEmailAndPassword(firebaseAuth, email, senha);
@@ -88,9 +115,15 @@ export const auth = {
     const email = $("cadastroUsuario").value.trim(); // Agora é um e-mail
     const senha = $("cadastroSenha").value;
     const avatar = $("avatarSelecionado").value;
+    const aceite = $("aceiteTermos").checked;
 
     if (!email) return this.showError("cadastroErro", "E-mail inválido!");
     if (!avatar) return this.showError("cadastroErro", "Selecione um avatar!");
+    if (!aceite)
+      return this.showError(
+        "cadastroErro",
+        "Você deve aceitar os termos para continuar."
+      );
 
     try {
       // 1. Cria o usuário no Firebase Authentication
