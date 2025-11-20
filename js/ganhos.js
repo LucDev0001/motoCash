@@ -1,429 +1,214 @@
-// js/ganhos.js
-import { perfil } from "./perfil.js";
-import { auth as firebaseAuth, db } from "./firebase-config.js";
-import {
-  doc,
-  setDoc,
-  collection,
-  getDocs,
-  deleteDoc,
-} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+document.addEventListener("DOMContentLoaded", () => {
+  // Elementos da UI da tela de Ganhos
+  const fabMainButton = document.getElementById("fab-main-button");
+  const fabOptions = document.querySelector(".fab-options");
 
-import { $ } from "./utils.js";
-import { formatarMoeda } from "./utils.js";
+  const filtroPeriodo = document.getElementById("filtro-periodo");
+  const filtroDatasPersonalizadas = document.getElementById(
+    "filtro-datas-personalizadas"
+  );
+  const filtroCategoriasChips = document.getElementById("filtro-categorias");
+  const btnAplicarFiltros = document.getElementById("btn-aplicar-filtros");
+  const btnLimparFiltros = document.getElementById("btn-limpar-filtros");
 
-let isPrimeiraCargaGanhos = true;
+  const tabLinks = document.querySelectorAll(".tab-link");
+  const tabContents = document.querySelectorAll(".tab-content");
+  const listaGanhosGeral = document.getElementById("listaGanhos");
 
-export const ganhos = {
-  ganhoEditandoId: null,
-  localGanhosCache: null,
-
-  init: function () {
-    this.setupEventListeners();
-    this.setupFiltros();
-    this.atualizarUI();
-
-    // Lógica do botão "Ver por Categoria"
-    const btnDetalhes = $("btn-ver-detalhes-categoria");
-    const detalhesContainer = $("detalhes-por-categoria");
-
-    if (btnDetalhes && detalhesContainer) {
-      btnDetalhes.addEventListener("click", () => {
-        const isAtivo = btnDetalhes.classList.toggle("ativo");
-        detalhesContainer.style.display = isAtivo ? "grid" : "none";
-        btnDetalhes.querySelector("span").textContent = isAtivo
-          ? "expand_less"
-          : "expand_more";
-      });
-    }
-
-    // Fechar menus flutuantes ao clicar fora
-    document.body.addEventListener("click", () =>
-      document
-        .querySelectorAll(".menu-ganho-opcoes")
-        .forEach((m) => (m.style.display = "none"))
-    );
-  },
-
-  setupEventListeners: function () {
-    const cardForm = $("card-formulario-ganho");
-    const btnFechar = $("btn-fechar-form-ganho");
-
-    // 1. Abrir Modais pelos botões coloridos
-    document.querySelectorAll(".btn-acao-ganho").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        this.abrirModal(btn.dataset.target);
-      });
+  // --- Lógica do Botão de Ação Flutuante (FAB) ---
+  if (fabMainButton) {
+    fabMainButton.addEventListener("click", () => {
+      fabOptions.classList.toggle("active");
+      fabMainButton.classList.toggle("active");
     });
 
-    // 2. Fechar Modal
-    if (btnFechar) {
-      btnFechar.addEventListener(
-        "click",
-        () => (cardForm.style.display = "none")
-      );
-    }
-
-    // 3. Submits dos 3 Formulários
-    if ($("formGanhoLojaFixa"))
-      $("formGanhoLojaFixa").addEventListener("submit", (e) => {
-        e.preventDefault();
-        this.adicionarGanho("loja_fixa", e);
-      });
-    if ($("formGanhoPassageiros"))
-      $("formGanhoPassageiros").addEventListener("submit", (e) => {
-        e.preventDefault();
-        this.adicionarGanho("passageiros", e);
-      });
-    if ($("formGanhoEntregas"))
-      $("formGanhoEntregas").addEventListener("submit", (e) => {
-        e.preventDefault();
-        this.adicionarGanho("entregas", e);
-      });
-
-    // 4. Compartilhamento
-    if ($("btnCompartilhar")) {
-      $("btnCompartilhar").addEventListener("click", () =>
-        this.compartilharResumo()
-      );
-    }
-  },
-
-  abrirModal: function (tipo) {
-    const cardForm = $("card-formulario-ganho");
-    const titulo = $("titulo-form-ganho");
-
-    // Esconde todos e reseta
-    document
-      .querySelectorAll(".form-ganho-conteudo")
-      .forEach((f) => (f.style.display = "none"));
-    document.querySelectorAll("form").forEach((f) => f.reset());
-
-    // Mostra o específico
-    if (tipo === "loja_fixa") {
-      titulo.textContent = "Novo Ganho: Loja Fixa";
-      $("formGanhoLojaFixa").style.display = "block";
-    } else if (tipo === "passageiros") {
-      titulo.textContent = "Novo Ganho: App Passageiro";
-      $("formGanhoPassageiros").style.display = "block";
-    } else if (tipo === "entregas") {
-      titulo.textContent = "Novo Ganho: App Entrega";
-      $("formGanhoEntregas").style.display = "block";
-    }
-    cardForm.style.display = "block";
-  },
-
-  setupFiltros: function () {
-    const update = () => this.atualizarUI();
-    const filtroPeriodo = $("filtro-periodo");
-
-    if (filtroPeriodo) {
-      filtroPeriodo.addEventListener("change", () => {
-        const divPers = $("filtro-datas-personalizadas");
-        if (divPers)
-          divPers.style.display =
-            filtroPeriodo.value === "personalizado" ? "flex" : "none";
-        update();
-      });
-    }
-    if ($("filtro-data-inicio"))
-      $("filtro-data-inicio").addEventListener("change", update);
-    if ($("filtro-data-fim"))
-      $("filtro-data-fim").addEventListener("change", update);
-    if ($("btn-limpar-filtros")) {
-      $("btn-limpar-filtros").addEventListener("click", () => {
-        $("filtro-periodo").value = "todos";
-        update();
-      });
-    }
-  },
-
-  adicionarGanho: async function (categoria, event) {
-    this.localGanhosCache = null;
-    const usuarioLogado = firebaseAuth.currentUser;
-    if (!usuarioLogado) return alert("Você precisa estar logado.");
-
-    let novoGanho = { id: String(Date.now()), categoria: categoria };
-
-    // Captura dados conforme formulário
-    if (categoria === "loja_fixa") {
-      novoGanho.data = $("data-loja").value;
-      const vd = parseFloat($("valorDiaria-loja").value) || 0;
-      const te = parseFloat($("taxaEntrega-loja").value) || 0;
-      const qe = parseInt($("qtdEntregas-loja").value) || 0;
-      novoGanho.valor = vd + te * qe;
-      novoGanho.qtd = qe;
-      novoGanho.valorDiaria = vd;
-      novoGanho.taxaEntrega = te;
-    } else if (categoria === "passageiros") {
-      novoGanho.data = $("data-passageiros").value;
-      novoGanho.qtd = parseInt($("qtd-passageiros").value) || 0;
-      novoGanho.valor = parseFloat($("valor-passageiros").value) || 0;
-    } else if (categoria === "entregas") {
-      novoGanho.data = $("data-entregas").value;
-      novoGanho.qtd = parseInt($("qtd-entregas").value) || 0;
-      novoGanho.valor = parseFloat($("valor-entregas").value) || 0;
-    }
-
-    if (!novoGanho.data || (!novoGanho.valor && novoGanho.valor !== 0))
-      return alert("Dados inválidos. Verifique os valores.");
-
-    try {
-      const docRef = doc(
-        db,
-        "usuarios",
-        usuarioLogado.uid,
-        "ganhos",
-        novoGanho.id
-      );
-      await setDoc(docRef, novoGanho);
-
-      alert("Ganho salvo!");
-      $("card-formulario-ganho").style.display = "none";
-
-      this.atualizarUI();
-      this.atualizarTelaInicio();
-    } catch (e) {
-      console.error(e);
-      alert("Erro ao salvar.");
-    }
-  },
-
-  fetchGanhos: async function () {
-    const usuarioLogado = firebaseAuth.currentUser;
-    if (!usuarioLogado) return [];
-    if (this.localGanhosCache) return this.localGanhosCache;
-
-    const snap = await getDocs(
-      collection(db, "usuarios", usuarioLogado.uid, "ganhos")
-    );
-    const ganhos = [];
-    snap.forEach((d) => ganhos.push(d.data()));
-
-    this.localGanhosCache = ganhos;
-    return ganhos;
-  },
-
-  getGanhosFiltrados: async function () {
-    let lista = await this.fetchGanhos();
-    // Ordena por data (decrescente)
-    lista.sort((a, b) => new Date(b.data) - new Date(a.data));
-
-    const periodo = $("filtro-periodo") ? $("filtro-periodo").value : "todos";
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-
-    return lista.filter((item) => {
-      const dataItem = new Date(item.data + "T00:00:00");
-
-      if (periodo === "hoje") {
-        return dataItem.getTime() === hoje.getTime();
+    // Fecha o menu se clicar fora
+    document.addEventListener("click", (e) => {
+      if (!fabMainButton.contains(e.target) && !fabOptions.contains(e.target)) {
+        fabOptions.classList.remove("active");
+        fabMainButton.classList.remove("active");
       }
-      if (periodo === "esta-semana") {
-        const primeiroDia = new Date(hoje);
-        primeiroDia.setDate(hoje.getDate() - hoje.getDay());
-        return dataItem >= primeiroDia && dataItem <= hoje;
+    });
+  }
+
+  // --- Lógica dos Filtros Avançados ---
+
+  // Mostrar/ocultar datas personalizadas
+  if (filtroPeriodo) {
+    filtroPeriodo.addEventListener("change", () => {
+      if (filtroPeriodo.value === "personalizado") {
+        filtroDatasPersonalizadas.style.display = "flex";
+      } else {
+        filtroDatasPersonalizadas.style.display = "none";
       }
-      if (periodo === "este-mes") {
-        return (
-          dataItem.getMonth() === hoje.getMonth() &&
-          dataItem.getFullYear() === hoje.getFullYear()
+    });
+  }
+
+  // Lógica de seleção das categorias (chips)
+  if (filtroCategoriasChips) {
+    filtroCategoriasChips.addEventListener("click", (e) => {
+      const target = e.target.closest(".chip-categoria");
+      if (!target) return;
+
+      const categoria = target.dataset.categoria;
+      const todosChip = filtroCategoriasChips.querySelector(
+        '[data-categoria="todos"]'
+      );
+
+      if (categoria === "todos") {
+        // Se clicar em "Todos", ativa ele e desativa os outros
+        filtroCategoriasChips
+          .querySelectorAll(".chip-categoria")
+          .forEach((chip) => chip.classList.remove("active"));
+        target.classList.add("active");
+      } else {
+        // Se clicar em outra categoria, desativa "Todos"
+        todosChip.classList.remove("active");
+        target.classList.toggle("active");
+
+        // Se nenhuma outra categoria estiver ativa, reativa "Todos"
+        const algumaAtiva = filtroCategoriasChips.querySelector(
+          ".chip-categoria.active:not([data-categoria='todos'])"
         );
-      }
-      if (periodo === "personalizado") {
-        const inicio = $("filtro-data-inicio").value
-          ? new Date($("filtro-data-inicio").value + "T00:00:00")
-          : null;
-        const fim = $("filtro-data-fim").value
-          ? new Date($("filtro-data-fim").value + "T00:00:00")
-          : null;
-
-        if (inicio && dataItem < inicio) return false;
-        if (fim && dataItem > fim) return false;
-        return true;
-      }
-      return true;
-    });
-  },
-
-  atualizarUI: async function () {
-    if (!firebaseAuth.currentUser || !$("listaGanhos")) return;
-
-    const ganhosFiltrados = await this.getGanhosFiltrados();
-    const lista = $("listaGanhos");
-    lista.innerHTML = "";
-
-    // 1. Calcular Totais Gerais
-    const totalValor = ganhosFiltrados.reduce(
-      (acc, item) => acc + item.valor,
-      0
-    );
-    const totalQtd = ganhosFiltrados.reduce(
-      (acc, item) => acc + (item.qtd || 0),
-      0
-    );
-    const diasUnicos = new Set(ganhosFiltrados.map((g) => g.data)).size;
-    const mediaDiaria = diasUnicos > 0 ? totalValor / diasUnicos : 0;
-
-    // 2. Calcular Totais por Categoria
-    // CORREÇÃO: Usando 'reduce' para garantir a soma correta.
-    const totaisCat = ganhosFiltrados.reduce((acc, item) => {
-      const cat = item.categoria || 'indefinida';
-      if (!acc[cat]) {
-        acc[cat] = { valor: 0, qtd: 0 };
-      }
-      acc[cat].valor += item.valor;
-      acc[cat].qtd += (item.qtd || 0);
-      return acc;
-    }, {});
-
-    // 3. Atualizar DOM Resumo Geral
-    if ($("resumo-filtro-total"))
-      $("resumo-filtro-total").textContent = formatarMoeda(totalValor);
-    if ($("resumo-filtro-servicos"))
-      $("resumo-filtro-servicos").textContent = totalQtd; // Corrigido ID
-    if ($("resumo-filtro-dias"))
-      $("resumo-filtro-dias").textContent = diasUnicos;
-    if ($("resumo-filtro-media"))
-      $("resumo-filtro-media").textContent = formatarMoeda(mediaDiaria);
-
-    // 4. Atualizar DOM Detalhes Categoria
-    // Loja
-    ['loja_fixa', 'passageiros', 'entregas'].forEach(cat => {
-      const total = totaisCat[cat] || { valor: 0, qtd: 0 };
-      const labelQtd = cat === 'passageiros' ? 'corridas' : 'entregas';
-
-      if($(`total-${cat}`)) {
-        $(`total-${cat}`).textContent = formatarMoeda(total.valor);
-      }
-      if($(`qtd-${cat}`)) {
-        $(`qtd-${cat}`).textContent = `${total.qtd} ${labelQtd}`;
+        if (!algumaAtiva) {
+          todosChip.classList.add("active");
+        }
       }
     });
+  }
 
-    // Abre detalhes na primeira carga se houver dados
-    if (isPrimeiraCargaGanhos && ganhosFiltrados.length > 0) {
-      const details = $("detalhes-por-categoria");
-      const btn = $("btn-ver-detalhes-categoria");
-      if (details && btn) {
-        // Simula um clique para usar a mesma lógica do event listener
-        btn.click();
-      }
-      isPrimeiraCargaGanhos = false;
-    }
+  // Ação de aplicar filtros
+  if (btnAplicarFiltros) {
+    btnAplicarFiltros.addEventListener("click", () => {
+      // Aqui você chamaria a função principal que busca e renderiza os ganhos
+      // passando os valores dos filtros como parâmetros.
+      // Ex: carregarEExibirGanhos(obterFiltros());
+      console.log("Aplicando filtros:", obterFiltros());
+      alert("Lógica de aplicação de filtros a ser implementada!");
+      // Após filtrar, você deve atualizar o resumo e as listas nas abas.
+    });
+  }
 
-    // 5. Renderizar Lista
-    const configCat = {
-      loja_fixa: { nome: "Loja Fixa", classe: "badge-loja", label: "Entregas" },
-      passageiros: {
-        nome: "Passageiro",
-        classe: "badge-passageiro",
-        label: "Corridas",
-      },
-      entregas: {
-        nome: "Entrega App",
-        classe: "badge-entrega",
-        label: "Entregas",
-      },
-      undefined: { nome: "Geral", classe: "badge-loja", label: "Qtd" },
+  // Ação de limpar filtros
+  if (btnLimparFiltros) {
+    btnLimparFiltros.addEventListener("click", () => {
+      filtroPeriodo.value = "esta-semana";
+      filtroDatasPersonalizadas.style.display = "none";
+      document.getElementById("filtro-data-inicio").value = "";
+      document.getElementById("filtro-data-fim").value = "";
+
+      // Reseta as categorias para "Todos"
+      filtroCategoriasChips
+        .querySelectorAll(".chip-categoria")
+        .forEach((chip) => chip.classList.remove("active"));
+      filtroCategoriasChips
+        .querySelector('[data-categoria="todos"]')
+        .classList.add("active");
+
+      // Dispara a aplicação dos filtros padrão
+      btnAplicarFiltros.click();
+      console.log("Filtros limpos e redefinidos para o padrão.");
+    });
+  }
+
+  /**
+   * Função auxiliar para obter os valores atuais dos filtros.
+   * @returns {object} Objeto com os filtros selecionados.
+   */
+  function obterFiltros() {
+    const categoriasAtivas = [
+      ...filtroCategoriasChips.querySelectorAll(".chip-categoria.active"),
+    ].map((chip) => chip.dataset.categoria);
+
+    return {
+      periodo: filtroPeriodo.value,
+      dataInicio: document.getElementById("filtro-data-inicio").value,
+      dataFim: document.getElementById("filtro-data-fim").value,
+      categorias: categoriasAtivas.includes("todos") ? [] : categoriasAtivas, // Se "todos" está ativo, retorna array vazio para não filtrar por categoria
     };
+  }
 
-    if (ganhosFiltrados.length === 0) {
-      lista.innerHTML =
-        "<li style='padding:20px; text-align:center; color:#777;'>Nenhum ganho encontrado neste período.</li>";
-      return;
+  // --- Lógica da Navegação por Abas ---
+  if (tabLinks.length > 0) {
+    // Move a lista principal para dentro da primeira aba
+    const tabTodosContent = document.getElementById("tab-todos");
+    if (tabTodosContent && listaGanhosGeral) {
+      tabTodosContent.appendChild(listaGanhosGeral);
     }
 
-    ganhosFiltrados.forEach((item) => {
-      const d = new Date(item.data + "T12:00:00");
-      const diaSemana = d.toLocaleDateString("pt-BR", { weekday: "short" });
-      const conf = configCat[item.categoria] || configCat.undefined;
+    tabLinks.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        // Remove a classe 'active' de todas as abas e conteúdos
+        tabLinks.forEach((link) => link.classList.remove("active"));
+        tabContents.forEach((content) => content.classList.remove("active"));
 
-      // Detalhes extras visuais para Loja Fixa
-      let detalhesHTML = `<p class="info-secundaria">${conf.label}: ${
-        item.qtd || 0
-      }</p>`;
-      if (item.categoria === "loja_fixa" && item.valorDiaria) {
-        detalhesHTML = `
-          <div class="info-detalhes-loja">
-             <span>Diária: ${formatarMoeda(item.valorDiaria)} + Entregas: ${
-          item.qtd
-        }</span>
-          </div>`;
-      }
+        // Adiciona 'active' à aba clicada e ao conteúdo correspondente
+        tab.classList.add("active");
+        const tabId = tab.dataset.tab;
+        const activeTabContent = document.getElementById(tabId);
+        if (activeTabContent) {
+          activeTabContent.classList.add("active");
+        }
 
-      const li = document.createElement("li");
-      li.className = "ganho-item";
-      li.innerHTML = `
-          <div class="ganho-info">
-              <span class="badge-categoria ${conf.classe}">${conf.nome}</span>
-              <p class="ganho-data"><strong>${diaSemana}</strong>, ${d.toLocaleDateString(
-        "pt-BR"
-      )}</p>
-              <p class="ganho-valor">${formatarMoeda(item.valor)}</p>
-              ${detalhesHTML}
-          </div>
-          <div class="ganho-acoes">
-               <button class="btn-excluir-direto" style="color:red; border:none; background:none; font-size:1.2rem; cursor:pointer;">&times;</button>
-          </div>`;
-
-      li.querySelector(".btn-excluir-direto").addEventListener("click", (e) => {
-        e.stopPropagation();
-        this.excluirGanho(item.id);
+        // Aqui você chamaria uma função para renderizar o conteúdo da aba
+        // com base nos dados já filtrados.
+        // Ex: renderizarConteudoAba(tabId, dadosFiltrados);
+        console.log(`Aba ${tabId} ativada.`);
       });
-      lista.appendChild(li);
     });
-  },
+  }
 
-  excluirGanho: async function (id) {
-    if (confirm("Excluir este registro permanentemente?")) {
-      await deleteDoc(
-        doc(db, "usuarios", firebaseAuth.currentUser.uid, "ganhos", id)
-      );
-      this.localGanhosCache = null; // Limpa cache para forçar reload
-      this.atualizarUI();
-      this.atualizarTelaInicio();
-    }
-  },
+  /**
+   * Exemplo de como você poderia distribuir os ganhos nas abas após o filtro.
+   * Esta função deve ser chamada após a aplicação dos filtros.
+   * @param {Array} ganhosFiltrados - A lista de ganhos já filtrada.
+   */
+  function distribuirGanhosNasAbas(ganhosFiltrados) {
+    // Limpa todas as listas antes de preencher
+    listaGanhosGeral.innerHTML = ""; // Aba "Todos"
+    document.getElementById("tab-loja").innerHTML =
+      '<ul class="lista-ganhos-moderna"></ul>';
+    document.getElementById("tab-passageiros").innerHTML =
+      '<ul class="lista-ganhos-moderna"></ul>';
+    document.getElementById("tab-entregas").innerHTML =
+      '<ul class="lista-ganhos-moderna"></ul>';
 
-  compartilharResumo: function () {
-    const total = $("resumo-filtro-total").textContent;
-    const qtd = $("resumo-filtro-servicos").textContent;
-    const media = $("resumo-filtro-media").textContent;
-    const periodo =
-      $("filtro-periodo").options[$("filtro-periodo").selectedIndex].text;
-
-    let texto = `*Resumo de Ganhos (${periodo})*:\n`;
-    let check = false;
-
-    if ($("compValorTotal")?.checked) {
-      texto += `💰 Total: *${total}*\n`;
-      check = true;
-    }
-    if ($("compQtdEntregas")?.checked) {
-      texto += `📦 Serviços: *${qtd}*\n`;
-      check = true;
-    }
-    if ($("compMedia")?.checked) {
-      texto += `📊 Média Diária: *${media}*\n`;
-      check = true;
-    }
-
-    if (!check) return alert("Selecione pelo menos uma opção.");
-
-    window.open(
-      `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`,
-      "_blank"
+    const listaLoja = document.querySelector("#tab-loja .lista-ganhos-moderna");
+    const listaPassageiros = document.querySelector(
+      "#tab-passageiros .lista-ganhos-moderna"
     );
-  },
+    const listaEntregas = document.querySelector(
+      "#tab-entregas .lista-ganhos-moderna"
+    );
 
-  atualizarTelaInicio: async function () {
-    if (perfil && perfil.atualizarTelaInicio) {
-      await perfil.atualizarTelaInicio();
-    }
-  },
+    ganhosFiltrados.forEach((ganho) => {
+      // Supondo que você tenha uma função `criarElementoGanhoHTML(ganho)`
+      const elementoGanhoHTML = criarElementoGanhoHTML(ganho);
 
-  setElementText: (id, text) => {
-    if ($(id)) $(id).textContent = text;
-  },
-};
+      // Adiciona a todas as listas relevantes
+      listaGanhosGeral.insertAdjacentHTML("beforeend", elementoGanhoHTML);
+
+      switch (ganho.categoria) {
+        case "loja_fixa":
+          listaLoja.insertAdjacentHTML("beforeend", elementoGanhoHTML);
+          break;
+        case "passageiros":
+          listaPassageiros.insertAdjacentHTML("beforeend", elementoGanhoHTML);
+          break;
+        case "entregas":
+          listaEntregas.insertAdjacentHTML("beforeend", elementoGanhoHTML);
+          break;
+      }
+    });
+
+    // Exibe mensagem se uma lista estiver vazia
+    [listaGanhosGeral, listaLoja, listaPassageiros, listaEntregas].forEach(
+      (lista) => {
+        if (!lista.hasChildNodes()) {
+          lista.innerHTML =
+            '<li class="item-vazio">Nenhum ganho encontrado para esta categoria no período selecionado.</li>';
+        }
+      }
+    );
+  }
+});
