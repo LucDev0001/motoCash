@@ -120,6 +120,13 @@ export const auth = {
       console.error("Erro de cadastro:", error.code);
       if (error.code === "auth/email-already-in-use") {
         this.showError("cadastroErro", "Este e-mail já está em uso!");
+      } else if (error.code === "auth/invalid-email") {
+        this.showError("cadastroErro", "Por favor, insira um e-mail válido.");
+      } else if (error.code === "auth/weak-password") {
+        this.showError(
+          "cadastroErro",
+          "A senha deve ter pelo menos 6 caracteres."
+        );
       } else {
         this.showError("cadastroErro", "Erro ao criar conta. Tente novamente.");
       }
