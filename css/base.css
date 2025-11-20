@@ -32,6 +32,11 @@ body {
   padding-bottom: 150px; /* Valor sugerido. Ajuste se necessário. */
 }
 
+/* Garante que o conteúdo principal ocupe o espaço disponível */
+main {
+  flex-grow: 1;
+}
+
 /* ==========================================================================
    2. Variáveis de Cor (Paleta)
    ========================================================================== */
