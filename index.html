@@ -3,49 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MotoManager App</title>
+    <title>MotoManager Final</title>
     
+    <!-- PWA Config -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#111827">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="Icon-192.png">
 
+    <!-- Bibliotecas -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- FIREBASE COMPAT -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <style>
-        /* Ajuste crítico para Mobile */
+        /* CSS Mobile-First Robusto */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #111827;
-            height: 100dvh; /* Altura dinâmica real */
+            height: 100dvh; 
             width: 100vw;
             overflow: hidden;
         }
         
-        /* Container Principal */
         #app-container {
             height: 100%;
             display: flex;
             flex-direction: column;
             background-color: #f3f4f6;
-            max-width: 500px; /* Limite para desktop */
+            max-width: 500px; 
             margin: 0 auto;
             position: relative;
         }
 
-        /* Barra de Navegação Segura */
         nav {
             padding-bottom: env(safe-area-inset-bottom);
-            height: calc(4rem + env(safe-area-inset-bottom));
+            height: calc(3.5rem + env(safe-area-inset-bottom));
         }
 
-        /* Área de Conteúdo com espaço para não esconder atrás do menu */
         #content-area {
             padding-bottom: calc(5rem + env(safe-area-inset-bottom));
         }
@@ -60,25 +61,46 @@
 
     <div id="app-container" class="shadow-2xl">
         
-        <div id="share-modal" class="hidden absolute inset-0 z-[70] bg-black/80 flex items-end justify-center transition-opacity">
-            <div class="bg-white w-full rounded-t-2xl p-6 modal-enter pb-safe">
+        <!-- MODAL DE EDIÇÃO -->
+        <div id="edit-modal" class="hidden absolute inset-0 z-[80] bg-black/80 flex items-center justify-center transition-opacity p-4">
+            <div class="bg-white w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-800">Editar Ganho</h3>
+                    <button onclick="closeEditModal()" class="text-gray-500"><i data-lucide="x"></i></button>
+                </div>
+                <form onsubmit="saveEdit(event)" class="space-y-3">
+                    <input type="hidden" id="edit-id">
+                    <div><label class="text-xs font-bold text-gray-500">Data</label><input type="date" id="edit-date" class="w-full p-2 border rounded bg-gray-50"></div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><label class="text-xs font-bold text-gray-500">Total (R$)</label><input type="number" step="0.01" id="edit-total" class="w-full p-2 border rounded font-bold"></div>
+                        <div><label class="text-xs font-bold text-gray-500">Qtd</label><input type="number" id="edit-count" class="w-full p-2 border rounded"></div>
+                    </div>
+                    <button type="submit" class="w-full bg-gray-900 text-white font-bold py-3 rounded-lg mt-2">Salvar Alterações</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL DE COMPARTILHAMENTO -->
+        <div id="share-modal" class="hidden absolute inset-0 z-[70] bg-black/80 flex items-end sm:items-center justify-center transition-opacity">
+            <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl p-6 modal-enter pb-10 sm:pb-6">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-bold text-gray-800">Compartilhar</h3>
-                    <button onclick="closeShareModal()" class="text-gray-500"><i data-lucide="x" class="w-6 h-6"></i></button>
+                    <button onclick="closeShareModal()" class="text-gray-500"><i data-lucide="x"></i></button>
                 </div>
                 <div class="grid grid-cols-3 gap-3">
                     <button onclick="shareCategory('loja_fixa')" class="flex flex-col items-center p-4 bg-red-50 border border-red-100 rounded-xl"><i data-lucide="store" class="text-red-500 mb-2"></i><span class="text-xs font-bold text-red-700">Loja</span></button>
                     <button onclick="shareCategory('app_passageiro')" class="flex flex-col items-center p-4 bg-blue-50 border border-blue-100 rounded-xl"><i data-lucide="bike" class="text-blue-500 mb-2"></i><span class="text-xs font-bold text-blue-700">Uber/99</span></button>
                     <button onclick="shareCategory('app_entrega')" class="flex flex-col items-center p-4 bg-yellow-50 border border-yellow-100 rounded-xl"><i data-lucide="package" class="text-yellow-500 mb-2"></i><span class="text-xs font-bold text-yellow-700">iFood</span></button>
                 </div>
-                <button onclick="shareCategory('geral')" class="w-full mt-4 py-3 bg-gray-900 text-white rounded-lg font-bold flex justify-center gap-2 mb-4"><i data-lucide="file-text" class="w-4"></i> Geral</button>
+                <button onclick="shareCategory('geral')" class="w-full mt-4 py-3 bg-gray-900 text-white rounded-lg font-bold flex justify-center gap-2"><i data-lucide="file-text" class="w-4"></i> Relatório Geral</button>
             </div>
         </div>
 
-        <div id="login-screen" class="absolute inset-0 z-50 bg-gray-900 flex flex-col items-center justify-center text-white p-6 h-full">
+        <!-- LOGIN -->
+        <div id="login-screen" class="absolute inset-0 z-50 bg-gray-900 flex flex-col items-center justify-center text-white p-6 h-full w-full">
             <div class="bg-yellow-500 p-4 rounded-full mb-4"><i data-lucide="bike" class="w-12 h-12 text-black"></i></div>
             <h1 class="text-3xl font-bold mb-1">MotoManager</h1>
-            <p class="text-gray-400 text-center mb-6 text-sm">O App do Motoboy</p>
+            <p class="text-gray-400 text-center mb-6 text-sm">Versão PWA Pro</p>
             <div class="w-full max-w-xs space-y-3">
                 <input type="email" id="login-email" placeholder="E-mail" class="w-full p-3 rounded bg-gray-800 border border-gray-700 text-white outline-none">
                 <input type="password" id="login-pass" placeholder="Senha" class="w-full p-3 rounded bg-gray-800 border border-gray-700 text-white outline-none">
@@ -89,14 +111,11 @@
                 <div class="flex items-center py-2"><div class="flex-grow border-t border-gray-700"></div><span class="mx-2 text-xs text-gray-500">OU</span><div class="flex-grow border-t border-gray-700"></div></div>
                 <button onclick="handleAnonLogin()" class="w-full border border-gray-600 text-gray-400 py-2 rounded text-sm">Entrar como Visitante</button>
             </div>
-            
-            <button id="pwa-install-btn" class="hidden mt-8 bg-white/10 backdrop-blur px-4 py-2 rounded-full flex items-center gap-2 text-sm border border-white/20 hover:bg-white/20 transition">
-                <i data-lucide="download-cloud" class="w-4 h-4 text-yellow-500"></i> Instalar Aplicativo
-            </button>
-            
+            <button id="pwa-install-btn" class="hidden mt-8 bg-white/10 backdrop-blur px-4 py-2 rounded-full flex items-center gap-2 text-sm border border-white/20 hover:bg-white/20 transition"><i data-lucide="download-cloud" class="w-4 h-4 text-yellow-500"></i> Instalar Aplicativo</button>
             <div id="login-error-box" class="hidden mt-4 p-3 bg-red-900/50 border border-red-500 rounded text-red-200 text-sm text-center max-w-xs w-full"><p id="login-error-msg">Erro</p></div>
         </div>
 
+        <!-- APP MAIN -->
         <div id="main-app" class="hidden flex-col h-full w-full">
             <header class="bg-gray-900 text-white p-4 pt-10 flex justify-between items-center shadow-md z-20 shrink-0">
                 <h1 id="page-title" class="text-xl font-bold flex items-center gap-2">Meu Painel</h1>
@@ -106,54 +125,15 @@
             <main id="content-area" class="flex-1 overflow-y-auto bg-gray-100 p-4 w-full"></main>
 
             <nav class="fixed bottom-0 w-full max-w-[500px] bg-white border-t border-gray-200 flex justify-around items-start pt-2 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-                <button onclick="router('dashboard')" class="nav-btn flex flex-col items-center justify-center w-full text-yellow-600 font-bold" id="nav-dashboard">
-                    <i data-lucide="dollar-sign" class="w-6 h-6"></i><span class="text-[10px] mt-1">Ganhos</span>
-                </button>
-                
-                <div class="relative -top-6">
-                    <button onclick="router('finance')" class="bg-yellow-500 hover:bg-yellow-400 text-black w-14 h-14 rounded-full shadow-lg flex items-center justify-center transform active:scale-95 transition">
-                        <i data-lucide="plus" class="w-8 h-8 stroke-[3]"></i>
-                    </button>
-                </div>
-
-                <button onclick="router('market')" class="nav-btn flex flex-col items-center justify-center w-full text-gray-400" id="nav-market">
-                    <i data-lucide="shopping-bag" class="w-6 h-6"></i><span class="text-[10px] mt-1">Loja</span>
-                </button>
-                
-                <button onclick="router('profile')" class="nav-btn flex flex-col items-center justify-center w-full text-gray-400" id="nav-profile">
-                    <i data-lucide="user" class="w-6 h-6"></i><span class="text-[10px] mt-1">Perfil</span>
-                </button>
+                <button onclick="router('dashboard')" class="nav-btn flex flex-col items-center justify-center w-full h-full text-yellow-600 font-bold" id="nav-dashboard"><i data-lucide="dollar-sign" class="w-5 h-5"></i><span class="text-[10px] mt-1">Ganhos</span></button>
+                <div class="relative -top-5"><button onclick="router('finance')" class="bg-yellow-500 hover:bg-yellow-400 text-black w-14 h-14 rounded-full shadow-lg flex items-center justify-center transform active:scale-95 transition"><i data-lucide="plus" class="w-8 h-8 stroke-[3]"></i></button></div>
+                <button onclick="router('market')" class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400" id="nav-market"><i data-lucide="shopping-bag" class="w-5 h-5"></i><span class="text-[10px] mt-1">Loja</span></button>
+                <button onclick="router('profile')" class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400" id="nav-profile"><i data-lucide="user" class="w-5 h-5"></i><span class="text-[10px] mt-1">Perfil</span></button>
             </nav>
         </div>
     </div>
 
     <script>
-        // --- PWA INSTALL LOGIC ---
-        let deferredPrompt;
-        const installBtn = document.getElementById('pwa-install-btn');
-        
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBtn.classList.remove('hidden'); // Mostra o botão
-        });
-
-        installBtn.addEventListener('click', async () => {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                installBtn.classList.add('hidden');
-            }
-            deferredPrompt = null;
-        });
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js')
-            .then(() => console.log('SW Registrado'))
-            .catch(err => console.log('SW Falhou', err));
-        }
-
         // ======================================================
         // ⚠️ SUAS CHAVES FIREBASE AQUI ⚠️
         // ======================================================
@@ -168,20 +148,32 @@
         };
         // ======================================================
 
+        // --- PWA INSTALL ---
+        let deferredPrompt;
+        const installBtn = document.getElementById('pwa-install-btn');
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.classList.remove('hidden'); });
+        installBtn.addEventListener('click', async () => { if (!deferredPrompt) return; deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') installBtn.classList.add('hidden'); deferredPrompt = null; });
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(console.error); }
+
+        // --- INIT FIREBASE ---
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
         const appId = 'moto-manager-v1';
 
-        let currentUser = null, currentChart = null, unsubscribeListeners = [], currentStats = {}, currentPeriod = 'week';
+        let currentUser = null, currentChart = null, unsubscribeListeners = [];
+        let currentStats = { total: 0, count: 0, loja: {val:0,dailySum:0,deliveries:0}, pass: {val:0,runs:0}, deliv: {val:0,deliveries:0} };
+        let currentPeriod = 'week';
+        let customRange = { start: null, end: null };
+        let allLoadedEarnings = []; // Para edição
 
-        // LOGIN & AUTH
+        // --- AUTH ---
         function handleEmailLogin(mode) {
             const email = document.getElementById('login-email').value, pass = document.getElementById('login-pass').value;
             if(!email || !pass) return showLoginError("Preencha tudo.");
             const btn = document.getElementById(mode==='login'?'btn-signin':'btn-signup'); const orig = btn.innerText; btn.innerText='...';
             (mode==='login' ? auth.signInWithEmailAndPassword(email,pass) : auth.createUserWithEmailAndPassword(email,pass))
-            .catch(err => { btn.innerText=orig; showLoginError(err.message); });
+            .catch(err => { btn.innerText=orig; showLoginError(err.code); });
         }
         function handleAnonLogin() { auth.signInAnonymously().catch(e => showLoginError(e.message)); }
         function showLoginError(msg) { document.getElementById('login-error-msg').innerText = msg; document.getElementById('login-error-box').classList.remove('hidden'); }
@@ -191,38 +183,62 @@
             else { currentUser=null; document.getElementById('login-screen').classList.remove('hidden'); document.getElementById('main-app').classList.add('hidden'); document.getElementById('main-app').classList.remove('flex'); }
         });
 
+        // --- ROUTER ---
         function router(view) {
             unsubscribeListeners.forEach(u=>u()); unsubscribeListeners=[];
             const content = document.getElementById('content-area');
-            document.getElementById('page-title').innerText = view==='dashboard'?'Meu Painel':(view==='finance'?'Adicionar Ganho':(view==='market'?'Classificados':(view==='market-add'?'Criar Anúncio':'Meu Perfil')));
+            const title = document.getElementById('page-title');
             document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('text-yellow-600','font-bold'); b.classList.add('text-gray-400'); });
-            if(view==='dashboard') { document.getElementById('nav-dashboard').classList.add('text-yellow-600','font-bold'); renderDashboard(content); }
-            else if(view==='finance') renderAddFinance(content);
-            else if(view==='market') { document.getElementById('nav-market').classList.add('text-yellow-600','font-bold'); renderMarketplace(content); }
-            else if(view==='market-add') renderAddMarketItem(content);
-            else if(view==='profile') { document.getElementById('nav-profile').classList.add('text-yellow-600','font-bold'); renderProfile(content); }
+            
+            if(view==='dashboard') { 
+                title.innerText='Meu Painel'; document.getElementById('nav-dashboard').classList.add('text-yellow-600','font-bold'); 
+                renderDashboard(content); 
+            } else if(view==='finance') {
+                title.innerText='Adicionar Ganho'; renderAddFinance(content);
+            } else if(view==='market') { 
+                title.innerText='Classificados'; document.getElementById('nav-market').classList.add('text-yellow-600','font-bold'); renderMarketplace(content); 
+            } else if(view==='market-add') {
+                title.innerText='Criar Anúncio'; renderAddMarketItem(content);
+            } else if(view==='profile') { 
+                title.innerText='Perfil'; document.getElementById('nav-profile').classList.add('text-yellow-600','font-bold'); renderProfile(content); 
+            }
             setTimeout(()=>lucide.createIcons(), 100);
         }
 
-        // --- DASHBOARD ---
+        // --- DASHBOARD & LOGIC ---
         function renderDashboard(c) {
             c.innerHTML = `
                 <div class="space-y-4 fade-in">
-                    <div class="flex bg-white rounded-lg p-1 shadow-sm overflow-x-auto">
-                        <button onclick="filterDashboard('day')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap" id="filter-day">Hoje</button>
-                        <button onclick="filterDashboard('week')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded bg-gray-900 text-white whitespace-nowrap" id="filter-week">7 Dias</button>
-                        <button onclick="filterDashboard('month')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap" id="filter-month">Mês</button>
-                    </div>
-                    <div class="bg-white rounded-xl shadow p-6 flex flex-col relative">
-                        <button onclick="openShareModal()" class="absolute top-4 right-4 text-green-600 bg-green-50 p-2 rounded-full"><i data-lucide="share-2" class="w-5 h-5"></i></button>
-                        <div class="text-center mb-6"><h2 class="text-gray-500 text-xs font-bold uppercase" id="period-label">Período</h2><p class="text-4xl font-bold text-gray-900" id="total-value">R$ 0.00</p></div>
-                        <div class="w-full border-t border-gray-100 my-2"></div>
-                        <div class="grid grid-cols-3 gap-2 pt-2">
-                            <div class="bg-red-50 p-2 rounded-lg border border-red-100 text-center"><p class="text-[10px] font-bold text-red-500 uppercase">Loja</p><p class="text-xs font-bold text-gray-800" id="lbl-loja-total">R$ 0</p></div>
-                            <div class="bg-blue-50 p-2 rounded-lg border border-blue-100 text-center"><p class="text-[10px] font-bold text-blue-500 uppercase">Apps</p><p class="text-xs font-bold text-gray-800" id="lbl-pass-total">R$ 0</p></div>
-                            <div class="bg-yellow-50 p-2 rounded-lg border border-yellow-100 text-center"><p class="text-[10px] font-bold text-yellow-600 uppercase">iFood</p><p class="text-xs font-bold text-gray-800" id="lbl-deliv-total">R$ 0</p></div>
+                    <div class="flex flex-col space-y-2">
+                        <div class="flex bg-white rounded-lg p-1 shadow-sm overflow-x-auto">
+                            <button onclick="filterDashboard('day')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap" id="filter-day">Hoje</button>
+                            <button onclick="filterDashboard('week')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded bg-gray-900 text-white whitespace-nowrap" id="filter-week">7 Dias</button>
+                            <button onclick="filterDashboard('month')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap" id="filter-month">Este Mês</button>
+                            <button onclick="filterDashboard('last-month')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap border-l border-gray-100" id="filter-last-month">Mês Passado</button>
+                            <button onclick="toggleCustomPicker()" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap border-l border-gray-100" id="filter-custom">Personalizado</button>
+                        </div>
+                        <div id="custom-date-picker" class="hidden bg-white p-3 rounded-lg shadow-sm border border-gray-200 flex gap-2 items-end">
+                            <div class="flex-1"><label class="text-[10px] font-bold text-gray-500">Início</label><input type="date" id="custom-start" class="w-full p-1 border rounded text-sm"></div>
+                            <div class="flex-1"><label class="text-[10px] font-bold text-gray-500">Fim</label><input type="date" id="custom-end" class="w-full p-1 border rounded text-sm"></div>
+                            <button onclick="applyCustomFilter()" class="bg-gray-900 text-white p-2 rounded hover:bg-gray-700 h-8 flex items-center"><i data-lucide="check" class="w-4 h-4"></i></button>
                         </div>
                     </div>
+
+                    <div class="bg-white rounded-xl shadow p-6 flex flex-col relative overflow-hidden">
+                        <button onclick="openShareModal()" class="absolute top-4 right-4 text-green-600 bg-green-50 p-2 rounded-full z-10"><i data-lucide="share-2" class="w-5 h-5"></i></button>
+                        <div class="text-center mb-6">
+                            <h2 class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1" id="period-label">Últimos 7 Dias</h2>
+                            <p class="text-4xl font-bold text-gray-900" id="total-value">R$ 0.00</p>
+                            <p class="text-sm text-gray-400 mt-1" id="total-count">0 registros</p>
+                        </div>
+                        <div class="w-full border-t border-gray-100 my-2"></div>
+                        <div class="grid grid-cols-3 gap-2 pt-2">
+                            <div class="bg-red-50 p-2 rounded-lg border border-red-100 flex flex-col justify-between h-24"><p class="text-[10px] font-bold text-red-500 uppercase border-b border-red-200 pb-1 mb-1">Loja Fixa</p><div class="flex flex-col gap-0.5"><div class="flex justify-between text-[9px] text-gray-600"><span>Diárias:</span><span class="font-bold" id="lbl-loja-daily">R$0</span></div><div class="flex justify-between text-[9px] text-gray-600"><span>Entregas:</span><span class="font-bold" id="lbl-loja-qtd">0</span></div></div><p class="text-xs font-bold text-gray-900 text-right mt-1" id="lbl-loja-total">R$ 0</p></div>
+                            <div class="bg-blue-50 p-2 rounded-lg border border-blue-100 flex flex-col justify-between h-24"><p class="text-[10px] font-bold text-blue-500 uppercase border-b border-blue-200 pb-1 mb-1">Uber/99</p><div class="flex flex-col gap-0.5 mt-2"><div class="flex justify-between text-[9px] text-gray-600"><span>Corridas:</span><span class="font-bold" id="lbl-pass-qtd">0</span></div></div><p class="text-xs font-bold text-gray-900 text-right mt-auto" id="lbl-pass-total">R$ 0</p></div>
+                            <div class="bg-yellow-50 p-2 rounded-lg border border-yellow-100 flex flex-col justify-between h-24"><p class="text-[10px] font-bold text-yellow-600 uppercase border-b border-yellow-200 pb-1 mb-1">iFood</p><div class="flex flex-col gap-0.5 mt-2"><div class="flex justify-between text-[9px] text-gray-600"><span>Entregas:</span><span class="font-bold" id="lbl-deliv-qtd">0</span></div></div><p class="text-xs font-bold text-gray-900 text-right mt-auto" id="lbl-deliv-total">R$ 0</p></div>
+                        </div>
+                    </div>
+
                     <div class="bg-white rounded-xl shadow p-4 h-48 flex justify-center items-center relative"><canvas id="earningsChart"></canvas></div>
                     <div class="space-y-2" id="history-list"><p class="text-center text-gray-400 py-4">Carregando...</p></div>
                 </div>`;
@@ -230,42 +246,79 @@
         }
 
         function filterDashboard(p) {
+            document.getElementById('custom-date-picker').classList.add('hidden');
             document.querySelectorAll('.filter-btn').forEach(b => b.className='filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 hover:bg-gray-100 whitespace-nowrap');
             document.getElementById(`filter-${p}`).className='filter-btn px-3 py-2 text-xs font-bold uppercase rounded bg-gray-900 text-white whitespace-nowrap';
-            currentPeriod=p; document.getElementById('period-label').innerText = p==='day'?'Hoje':(p==='week'?'7 Dias':'Mês');
+            currentPeriod=p;
+            const labels = { 'day':'Hoje', 'week':'Últimos 7 Dias', 'last-week':'Semana Passada', 'month':'Este Mês', 'last-month':'Mês Passado' };
+            document.getElementById('period-label').innerText=labels[p] || 'Personalizado';
             loadDashboardData(p);
+        }
+
+        function toggleCustomPicker() { document.getElementById('custom-date-picker').classList.toggle('hidden'); }
+        function applyCustomFilter() {
+            const s = document.getElementById('custom-start').value, e = document.getElementById('custom-end').value;
+            if(!s || !e) return alert("Selecione as datas.");
+            customRange = { start: new Date(s+'T00:00:00'), end: new Date(e+'T23:59:59') };
+            document.getElementById('custom-date-picker').classList.add('hidden');
+            currentPeriod = 'custom'; document.getElementById('period-label').innerText = `${new Date(s+'T00:00:00').toLocaleDateString()} - ${new Date(e+'T00:00:00').toLocaleDateString()}`;
+            loadDashboardData('custom');
         }
 
         function loadDashboardData(p) {
             const unsub = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('earnings').orderBy('date','desc').onSnapshot(snap => {
                 const items = snap.docs.map(d => ({id:d.id,...d.data()}));
+                allLoadedEarnings = items;
                 const now = new Date(); now.setHours(0,0,0,0);
+                
                 const filtered = items.filter(i => {
                     const d = new Date(i.date+'T00:00:00');
                     if(p==='day') return d.getTime()===now.getTime();
                     if(p==='week') return (now-d)/(1000*60*60*24) < 7 && (now-d)>=0;
-                    if(p==='month') return d.getMonth()===now.getMonth();
+                    if(p==='last-week') { const w=now.getDay()||7; const ls=new Date(now); ls.setDate(now.getDate()-w); const lm=new Date(ls); lm.setDate(ls.getDate()-6); return d>=lm && d<=ls; }
+                    if(p==='month') return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+                    if(p==='last-month') { const lm=new Date(now.getFullYear(), now.getMonth()-1, 1); const lme=new Date(now.getFullYear(), now.getMonth(), 0); return d>=lm && d<=lme; }
+                    if(p==='custom') return d >= customRange.start && d <= customRange.end;
                     return true;
                 });
                 
-                let stats = { total:0, count:0, loja:{val:0}, pass:{val:0}, deliv:{val:0} };
-                filtered.forEach(c => {
-                    const v = parseFloat(c.totalValue)||0; stats.total+=v; stats.count+=(parseInt(c.count)||0);
-                    if(c.category==='loja_fixa') stats.loja.val+=v; else if(c.category==='app_passageiro') stats.pass.val+=v; else stats.deliv.val+=v;
+                let stats = { total: 0, count: 0, loja: { val: 0, dailySum: 0, deliveries: 0 }, pass: { val: 0, runs: 0 }, deliv: { val: 0, deliveries: 0 } };
+                filtered.forEach(curr => {
+                    const val = parseFloat(curr.totalValue)||0, cnt = parseInt(curr.count)||0;
+                    stats.total += val; stats.count += cnt;
+                    if (curr.category === 'loja_fixa') { stats.loja.val += val; stats.loja.dailySum += (parseFloat(curr.details?.daily)||0); stats.loja.deliveries += (parseInt(curr.details?.count)||cnt); } 
+                    else if (curr.category === 'app_passageiro') { stats.pass.val += val; stats.pass.runs += cnt; } 
+                    else if (curr.category === 'app_entrega') { stats.deliv.val += val; stats.deliv.deliveries += cnt; }
                 });
                 currentStats = stats;
 
                 if(document.getElementById('total-value')) {
                     document.getElementById('total-value').innerText = `R$ ${stats.total.toFixed(2)}`;
+                    document.getElementById('total-count').innerText = `${stats.count} registros`;
+                    document.getElementById('lbl-loja-daily').innerText = `R$${stats.loja.dailySum.toFixed(0)}`;
+                    document.getElementById('lbl-loja-qtd').innerText = stats.loja.deliveries;
                     document.getElementById('lbl-loja-total').innerText = `R$ ${stats.loja.val.toFixed(2)}`;
+                    document.getElementById('lbl-pass-qtd').innerText = stats.pass.runs;
                     document.getElementById('lbl-pass-total').innerText = `R$ ${stats.pass.val.toFixed(2)}`;
+                    document.getElementById('lbl-deliv-qtd').innerText = stats.deliv.deliveries;
                     document.getElementById('lbl-deliv-total').innerText = `R$ ${stats.deliv.val.toFixed(2)}`;
                     
-                    document.getElementById('history-list').innerHTML = filtered.slice(0,15).map(i => `
-                        <div class="bg-white p-3 rounded-lg shadow-sm border-l-4 ${i.category==='loja_fixa'?'border-red-500':(i.category==='app_passageiro'?'border-blue-500':'border-yellow-500')} mb-2 flex justify-between">
-                            <div><p class="font-bold text-sm text-gray-800">${i.category==='loja_fixa'?'Loja':(i.category==='app_passageiro'?'App Moto':'Delivery')}</p><p class="text-xs text-gray-400">${new Date(i.date+'T00:00:00').toLocaleDateString()}</p></div>
-                            <div class="text-right"><p class="font-bold text-gray-900">R$ ${parseFloat(i.totalValue).toFixed(2)}</p><button onclick="deleteItem('${i.id}')" class="text-red-400 text-xs"><i data-lucide="trash-2" class="w-3 h-3 inline"></i></button></div>
-                        </div>`).join('') || '<p class="text-center text-gray-400">Sem dados.</p>';
+                    document.getElementById('history-list').innerHTML = filtered.slice(0,20).map(i => `
+                        <div class="bg-white p-3 rounded-lg shadow-sm border-l-4 ${i.category==='loja_fixa'?'border-red-500':(i.category==='app_passageiro'?'border-blue-500':'border-yellow-500')} mb-2 flex justify-between items-center group">
+                            <div class="flex-1">
+                                <p class="font-bold text-sm text-gray-800">${i.category==='loja_fixa'?'Loja Fixa':(i.category==='app_passageiro'?'Uber/99 Moto':'iFood/Entregas')}</p>
+                                <p class="text-xs text-gray-400">${new Date(i.date+'T00:00:00').toLocaleDateString()}</p>
+                                ${i.details && i.category==='loja_fixa' ? `<div class="text-[10px] text-gray-500">Diária R$${i.details.daily} + ${i.details.count} ent.</div>` : ''}
+                            </div>
+                            <div class="text-right mr-3">
+                                <p class="font-bold text-gray-900">R$ ${parseFloat(i.totalValue).toFixed(2)}</p>
+                                <p class="text-xs text-gray-500">${i.count} qtd</p>
+                            </div>
+                            <div class="flex gap-1">
+                                <button onclick="openEditModal('${i.id}')" class="bg-gray-100 p-2 rounded text-blue-500"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                                <button onclick="deleteItem('${i.id}')" class="bg-gray-100 p-2 rounded text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>`).join('') || '<p class="text-center text-gray-400 text-sm">Sem dados.</p>';
                     
                     if(currentChart) currentChart.destroy();
                     const ctx = document.getElementById('earningsChart');
@@ -276,12 +329,22 @@
             unsubscribeListeners.push(unsub);
         }
 
+        // --- ACTIONS ---
         function deleteItem(id) { if(confirm('Excluir?')) db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('earnings').doc(id).delete(); }
+        function openEditModal(id) { const item = allLoadedEarnings.find(i => i.id === id); if(!item) return; document.getElementById('edit-id').value = id; document.getElementById('edit-date').value = item.date; document.getElementById('edit-total').value = item.totalValue; document.getElementById('edit-count').value = item.count; document.getElementById('edit-modal').classList.remove('hidden'); }
+        function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
+        function saveEdit(e) { e.preventDefault(); db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('earnings').doc(document.getElementById('edit-id').value).update({ date: document.getElementById('edit-date').value, totalValue: parseFloat(document.getElementById('edit-total').value), count: parseInt(document.getElementById('edit-count').value) }).then(() => { alert('Salvo!'); closeEditModal(); }); }
         function openShareModal(){ document.getElementById('share-modal').classList.remove('hidden'); }
         function closeShareModal(){ document.getElementById('share-modal').classList.add('hidden'); }
+        
         function shareCategory(type) {
-             let txt = `💰 *MotoManager Resumo*\nTotal: R$ ${currentStats.total.toFixed(2)}\n\n_Gerado automaticamente_`;
-             window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`,'_blank');
+            const pn = document.getElementById('period-label').innerText;
+            let txt = `🏍️ *Relatório - ${pn}*\n\n`;
+            if(type==='loja_fixa') { txt += `🔴 *Loja Fixa*\n📅 Diárias: R$ ${currentStats.loja.dailySum.toFixed(2)}\n📦 Entregas: ${currentStats.loja.deliveries}\n💰 *Total: R$ ${currentStats.loja.val.toFixed(2)}*`; } 
+            else if(type==='app_passageiro') { txt += `🔵 *Uber/99 Moto*\n🏁 Corridas: ${currentStats.pass.runs}\n💰 *Total: R$ ${currentStats.pass.val.toFixed(2)}*`; } 
+            else if(type==='app_entrega') { txt += `🟡 *iFood/Entregas*\n📦 Entregas: ${currentStats.deliv.deliveries}\n💰 *Total: R$ ${currentStats.deliv.val.toFixed(2)}*`; } 
+            else { txt += `💰 *TOTAL: R$ ${currentStats.total.toFixed(2)}*\n\n🔴 Loja: R$ ${currentStats.loja.val.toFixed(2)}\n🔵 Uber: R$ ${currentStats.pass.val.toFixed(2)}\n🟡 iFood: R$ ${currentStats.deliv.val.toFixed(2)}`; }
+            txt += `\n\n_Gerado via MotoManager_`; window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`,'_blank'); closeShareModal();
         }
 
         // --- FINANCE ---
@@ -289,21 +352,27 @@
             c.innerHTML = `
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden fade-in">
                     <div class="flex border-b">
-                        <button onclick="setFinanceTab('app_entrega')" id="tab-app_entrega" class="fin-tab flex-1 py-3 text-[11px] sm:text-xs font-bold bg-yellow-100 text-yellow-700 border-b-2 border-yellow-500">iFood</button>
-                        <button onclick="setFinanceTab('app_passageiro')" id="tab-app_passageiro" class="fin-tab flex-1 py-3 text-[11px] sm:text-xs font-bold text-gray-500">Uber</button>
-                        <button onclick="setFinanceTab('loja_fixa')" id="tab-loja_fixa" class="fin-tab flex-1 py-3 text-[11px] sm:text-xs font-bold text-gray-500">Loja</button>
+                        <button onclick="setFinanceTab('app_entrega')" id="tab-app_entrega" class="fin-tab flex-1 py-3 text-[11px] sm:text-xs font-bold bg-yellow-100 text-yellow-700 border-b-2 border-yellow-500 px-1">iFood</button>
+                        <button onclick="setFinanceTab('app_passageiro')" id="tab-app_passageiro" class="fin-tab flex-1 py-3 text-[11px] sm:text-xs font-bold text-gray-500 px-1">Uber</button>
+                        <button onclick="setFinanceTab('loja_fixa')" id="tab-loja_fixa" class="fin-tab flex-1 py-3 text-[11px] sm:text-xs font-bold text-gray-500 px-1">Loja</button>
                     </div>
                     <form onsubmit="submitFinance(event)" class="p-6 space-y-4">
                         <input type="hidden" id="fin-category" value="app_entrega">
                         <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Data</label><input required type="date" id="fin-date" class="w-full p-3 bg-gray-50 rounded border border-gray-200 outline-none"></div>
                         <div id="dynamic-fields">
                             <div id="fields-app">
-                                <div class="mb-4"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Qtd</label><input required type="number" id="fin-count" class="w-full p-3 bg-gray-50 rounded border border-gray-200" placeholder="0"></div>
-                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Valor</label><input required type="number" step="0.01" id="fin-total" class="w-full p-3 bg-gray-50 rounded border border-gray-200 text-lg font-semibold" placeholder="0.00"></div>
+                                <div class="mb-4"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Quantidade</label><input required type="number" id="fin-count" class="w-full p-3 bg-gray-50 rounded border border-gray-200" placeholder="0"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Valor Total (R$)</label><input required type="number" step="0.01" id="fin-total" class="w-full p-3 bg-gray-50 rounded border border-gray-200 text-lg font-semibold" placeholder="0.00"></div>
                             </div>
                             <div id="fields-loja" class="hidden space-y-4">
-                                <div class="grid grid-cols-2 gap-4"><div><label class="text-xs font-bold text-gray-500">Diária</label><input type="number" step="0.01" id="fin-daily" class="w-full p-3 bg-gray-50 border rounded"></div><div><label class="text-xs font-bold text-gray-500">Qtd</label><input type="number" id="fin-loja-count" class="w-full p-3 bg-gray-50 border rounded"></div></div>
-                                <div class="grid grid-cols-2 gap-4"><div><label class="text-xs font-bold text-gray-500">Taxa</label><input type="number" step="0.01" id="fin-fee" class="w-full p-3 bg-gray-50 border rounded"></div><div><label class="text-xs font-bold text-gray-500">Extra</label><input type="number" step="0.01" id="fin-extra" class="w-full p-3 bg-gray-50 border rounded"></div></div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label class="text-xs font-bold text-gray-500">Diária</label><input type="number" step="0.01" id="fin-daily" class="w-full p-3 bg-gray-50 border rounded"></div>
+                                    <div><label class="text-xs font-bold text-gray-500">Qtd</label><input type="number" id="fin-loja-count" class="w-full p-3 bg-gray-50 border rounded"></div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label class="text-xs font-bold text-gray-500">Taxa</label><input type="number" step="0.01" id="fin-fee" class="w-full p-3 bg-gray-50 border rounded"></div>
+                                    <div><label class="text-xs font-bold text-gray-500">Extra</label><input type="number" step="0.01" id="fin-extra" class="w-full p-3 bg-gray-50 border rounded"></div>
+                                </div>
                             </div>
                         </div>
                         <button type="submit" class="w-full bg-gray-900 text-white font-bold py-4 rounded-lg hover:bg-gray-800 shadow-lg mt-4">Salvar</button>
@@ -311,34 +380,35 @@
                 </div>`;
             document.getElementById('fin-date').valueAsDate = new Date();
         }
-        
         function setFinanceTab(cat) {
             document.getElementById('fin-category').value = cat;
-            document.querySelectorAll('.fin-tab').forEach(t => t.className = 'fin-tab flex-1 py-3 text-[11px] sm:text-xs font-bold text-gray-500');
-            document.getElementById(`tab-${cat}`).className = `fin-tab flex-1 py-3 text-[11px] sm:text-xs font-bold border-b-2 ${cat==='app_entrega'?'bg-yellow-100 text-yellow-700 border-yellow-500':(cat==='app_passageiro'?'bg-blue-100 text-blue-700 border-blue-500':'bg-red-100 text-red-700 border-red-500')}`;
-            if (cat === 'loja_fixa') { document.getElementById('fields-app').classList.add('hidden'); document.getElementById('fields-loja').classList.remove('hidden'); } 
-            else { document.getElementById('fields-app').classList.remove('hidden'); document.getElementById('fields-loja').classList.add('hidden'); }
+            document.querySelectorAll('.fin-tab').forEach(t => t.className = 'fin-tab flex-1 py-3 text-[11px] sm:text-xs font-bold text-gray-500 px-1');
+            const active = document.getElementById(`tab-${cat}`);
+            const colors = { 'app_entrega': 'bg-yellow-100 text-yellow-700 border-yellow-500', 'app_passageiro': 'bg-blue-100 text-blue-700 border-blue-500', 'loja_fixa': 'bg-red-100 text-red-700 border-red-500' };
+            active.className = `fin-tab flex-1 py-3 text-[11px] sm:text-xs font-bold border-b-2 px-1 ${colors[cat]}`;
+            if (cat === 'loja_fixa') { document.getElementById('fields-app').classList.add('hidden'); document.getElementById('fields-loja').classList.remove('hidden'); } else { document.getElementById('fields-app').classList.remove('hidden'); document.getElementById('fields-loja').classList.add('hidden'); }
         }
-
         function submitFinance(e) {
-            e.preventDefault();
-            const cat = document.getElementById('fin-category').value, date = document.getElementById('fin-date').value;
-            let tot=0, cnt=0, det={};
-            if (cat === 'loja_fixa') {
-                const d = parseFloat(document.getElementById('fin-daily').value||0), f = parseFloat(document.getElementById('fin-fee').value||0), ex = parseFloat(document.getElementById('fin-extra').value||0);
-                cnt = parseInt(document.getElementById('fin-loja-count').value||0);
-                tot = d + (cnt * f) + ex;
-                det = { daily:d, fee:f, extra:ex, count:cnt };
-            } else {
-                tot = parseFloat(document.getElementById('fin-total').value);
-                cnt = parseInt(document.getElementById('fin-count').value);
-            }
+            e.preventDefault(); const cat = document.getElementById('fin-category').value, date = document.getElementById('fin-date').value; let tot=0, cnt=0, det={};
+            if (cat === 'loja_fixa') { const d = parseFloat(document.getElementById('fin-daily').value||0), f = parseFloat(document.getElementById('fin-fee').value||0), ex = parseFloat(document.getElementById('fin-extra').value||0); cnt = parseInt(document.getElementById('fin-loja-count').value||0); tot = d + (cnt * f) + ex; det = { daily:d, fee:f, extra:ex, count:cnt }; } else { tot = parseFloat(document.getElementById('fin-total').value); cnt = parseInt(document.getElementById('fin-count').value); }
             db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('earnings').add({category:cat, date, totalValue:tot, count:cnt, details:det, createdAt: firebase.firestore.FieldValue.serverTimestamp()}).then(()=>router('dashboard')).catch(e=>alert(e.message));
         }
 
-        // --- OUTRAS ---
-        function renderMarketplace(c) { c.innerHTML=`<div class="fade-in p-4"><p class="text-center text-gray-500">Classificados em breve.</p></div>`; }
-        function renderProfile(c) { c.innerHTML=`<div class="p-4 text-center"><h2 class="text-xl font-bold mb-4">Perfil</h2><button onclick="auth.signOut()" class="text-red-500 border border-red-500 px-4 py-2 rounded">Sair</button></div>`; }
+        // --- MARKET & PROFILE ---
+        function renderMarketplace(c) {
+             c.innerHTML=`<div class="sticky top-0 bg-gray-100 pt-2 pb-4 z-10 fade-in"><input onkeyup="searchMarket()" id="market-search" type="text" placeholder="Buscar..." class="w-full p-3 rounded-full shadow-sm outline-none mb-3"><button onclick="router('market-add')" class="w-full bg-yellow-500 text-black font-bold py-3 rounded-lg shadow flex justify-center gap-2"><i data-lucide="plus-circle"></i> Criar Anúncio</button></div><div id="market-list" class="grid grid-cols-1 gap-4 fade-in"><p class="text-center text-gray-400 mt-10">Carregando...</p></div>`;
+             db.collection('artifacts').doc(appId).collection('public').doc('data').collection('marketplace').orderBy('createdAt','desc').onSnapshot(s => { const i = s.docs.map(d => ({id:d.id,...d.data()})); const l = document.getElementById('market-list'); if(!l) return; l.innerHTML = i.map(x => `<div class="market-item bg-white rounded-xl shadow-sm overflow-hidden flex flex-col border border-gray-100" data-title="${x.title.toLowerCase()}">${x.image ? `<div class="h-48 bg-gray-200"><img src="${x.image}" class="w-full h-full object-cover"></div>` : ''}<div class="p-4"><h3 class="font-bold text-lg">${x.title}</h3><p class="text-gray-500 text-sm line-clamp-2">${x.description}</p><div class="mt-3 flex justify-between items-center"><span class="text-xl font-bold text-green-600">R$ ${parseFloat(x.price).toFixed(2)}</span>${x.userId===currentUser.uid ? `<button onclick="deleteMarketItem('${x.id}')" class="text-red-500"><i data-lucide="trash-2"></i></button>` : `<a href="https://wa.me/${x.whatsapp}?text=${encodeURIComponent('Olá, vi seu anúncio '+x.title)}" target="_blank" class="bg-green-500 text-white px-3 py-2 rounded font-bold text-sm flex gap-1"><i data-lucide="message-circle" class="w-4"></i> Zap</a>`}</div></div></div>`).join('') || '<p class="text-center text-gray-400">Sem anúncios.</p>'; lucide.createIcons(); });
+        }
+        function searchMarket() { const t=document.getElementById('market-search').value.toLowerCase(); document.querySelectorAll('.market-item').forEach(e => e.style.display=e.getAttribute('data-title').includes(t)?'flex':'none'); }
+        function deleteMarketItem(id) { if(confirm('Apagar?')) db.collection('artifacts').doc(appId).collection('public').doc('data').collection('marketplace').doc(id).delete(); }
+        function renderAddMarketItem(c) { c.innerHTML=`<div class="bg-white rounded-xl shadow-lg p-6 fade-in"><h2 class="text-xl font-bold mb-4">Novo Anúncio</h2><form onsubmit="submitAd(event)" class="space-y-3"><input required id="ad-title" placeholder="Título" class="w-full p-3 bg-gray-50 border rounded"><div class="grid grid-cols-2 gap-3"><input required type="number" id="ad-price" placeholder="Preço" class="w-full p-3 bg-gray-50 border rounded"><select id="ad-cat" class="w-full p-3 bg-gray-50 border rounded"><option>Peças</option><option>Acessórios</option><option>Motos</option><option>Outros</option></select></div><textarea required id="ad-desc" placeholder="Descrição" class="w-full p-3 bg-gray-50 border rounded"></textarea><input type="url" id="ad-img" placeholder="Link Imagem" class="w-full p-3 bg-gray-50 border rounded"><input required type="tel" id="ad-zap" placeholder="WhatsApp (DDD+Num)" class="w-full p-3 bg-gray-50 border rounded"><button type="submit" class="w-full bg-yellow-500 text-black font-bold py-3 rounded">Publicar</button></form><button onclick="router('market')" class="w-full text-gray-500 mt-3">Cancelar</button></div>`; }
+        function submitAd(e) { e.preventDefault(); const btn=e.target.querySelector('button'); btn.disabled=true; const p = document.getElementById('ad-zap').value.replace(/\D/g,''); if(p.length<10){alert('Zap inválido');btn.disabled=false;return;} db.collection('artifacts').doc(appId).collection('public').doc('data').collection('marketplace').add({ title:document.getElementById('ad-title').value, price:parseFloat(document.getElementById('ad-price').value), category:document.getElementById('ad-cat').value, description:document.getElementById('ad-desc').value, image:document.getElementById('ad-img').value, whatsapp:p, userId:currentUser.uid, createdAt:firebase.firestore.FieldValue.serverTimestamp() }).then(()=>router('market')).catch(e=>{alert(e.message);btn.disabled=false;}); }
+        function renderProfile(c) { c.innerHTML=`<div class="bg-white rounded-xl shadow-lg p-6 text-center fade-in"><div class="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center"><i data-lucide="user" class="w-10 text-gray-400"></i></div><h2 class="text-xl font-bold">${currentUser.displayName||currentUser.email||'User'}</h2><p class="text-gray-400 text-sm mb-4">ID: ${currentUser.uid.slice(0,6)}</p><div class="text-left space-y-3"><label class="text-xs font-bold text-gray-500">Nome</label><input id="prof-name" value="${currentUser.displayName||''}" class="w-full p-3 bg-gray-50 border rounded"><button onclick="saveProfile()" class="w-full bg-gray-900 text-white py-3 rounded font-bold">Salvar</button></div></div><button onclick="auth.signOut()" class="w-full flex justify-center gap-2 text-red-500 font-bold p-4 mt-4"><i data-lucide="log-out"></i> Sair</button>`; lucide.createIcons(); }
+        function saveProfile(){ currentUser.updateProfile({displayName:document.getElementById('prof-name').value}).then(()=>alert('Salvo!')); }
+
+        setTimeout(()=>lucide.createIcons(), 500);
     </script>
 </body>
 </html>
+
+
