@@ -25,12 +25,13 @@ const pages = {
   },
   inicio: {
     file: "templates/inicio.html",
-    init: () => {
+    init: async () => {
       // Inicializa os módulos necessários APENAS para a tela de início
       perfil.atualizarUI(); // Para a mensagem de "Olá"
-      ganhos.atualizarTelaInicio();
+      await ganhos.atualizarTelaInicio(); // Agora é async
       relatorios.init({ ganhos }); // Passa o módulo de ganhos para relatórios
-      relatorios.atualizarGraficos();
+      const ganhosData = await ganhos.fetchGanhos(); // Busca os dados uma vez
+      relatorios.atualizarGraficos(ganhosData); // Passa os dados para os gráficos
       weather.getAndDisplayDetailedWeather();
     },
   },

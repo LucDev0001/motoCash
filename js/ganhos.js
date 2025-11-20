@@ -326,13 +326,11 @@ export const ganhos = {
     });
   },
 
-  atualizarTelaInicio: function () {
-    const usuario = storage.getUsuarioLogado();
+  atualizarTelaInicio: async function () {
+    const usuario = firebaseAuth.currentUser;
     if (!usuario) return;
 
-    const ganhosUsuario = storage
-      .getGanhos()
-      .filter((g) => g.usuario === usuario.usuario);
+    const ganhosUsuario = await this.fetchGanhos();
     const hoje = new Date().toISOString().slice(0, 10);
     const ganhosHoje = ganhosUsuario
       .filter((g) => g.data === hoje)
@@ -392,7 +390,13 @@ export const ganhos = {
         )} (${formatarMoeda(melhor[1])})`;
     }
 
-    const metaSemanal = usuario.metaSemanal || 1000;
+    // TODO: A meta semanal ainda vem do localStorage.
+    // O ideal é buscar o perfil do usuário do Firestore também.
+    const perfilUsuario = storage.getUsuarioLogado();
+    const metaSemanal = perfilUsuario
+      ? perfilUsuario.metaSemanal || 1000
+      : 1000;
+
     const faltaMeta = Math.max(0, metaSemanal - ganhosSemana);
     if ($("metaMensagem")) {
       $("metaMensagem").innerHTML =
