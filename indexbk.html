@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoManager Pro V3</title>
+    
+    <!-- Bibliotecas -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- FIREBASE COMPAT -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        body { font-family: system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Animação do Modal */
+        .modal-enter { animation: slideUp 0.3s ease-out forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-900 flex justify-center h-screen overflow-hidden">
+
+    <div id="app-container" class="w-full max-w-md h-full bg-gray-100 relative shadow-2xl flex flex-col">
+        
+        <!-- MODAL DE COMPARTILHAMENTO (Novo) -->
+        <div id="share-modal" class="hidden absolute inset-0 z-[60] bg-black/80 flex items-end sm:items-center justify-center transition-opacity">
+            <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl p-6 modal-enter">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-800">Compartilhar Relatório</h3>
+                    <button onclick="closeShareModal()" class="text-gray-500 hover:text-red-500"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </div>
+                <p class="text-sm text-gray-500 mb-4">Escolha qual categoria deseja enviar pelo WhatsApp baseada no filtro atual:</p>
+                
+                <div class="grid grid-cols-3 gap-3">
+                    <!-- Botão Loja -->
+                    <button onclick="shareCategory('loja_fixa')" class="flex flex-col items-center p-4 bg-red-50 border border-red-100 rounded-xl hover:bg-red-100 transition">
+                        <div class="bg-red-500 text-white p-3 rounded-full mb-2"><i data-lucide="store" class="w-6 h-6"></i></div>
+                        <span class="text-xs font-bold text-red-700">Loja Fixa</span>
+                    </button>
+                    <!-- Botão Passageiro -->
+                    <button onclick="shareCategory('app_passageiro')" class="flex flex-col items-center p-4 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-100 transition">
+                        <div class="bg-blue-500 text-white p-3 rounded-full mb-2"><i data-lucide="bike" class="w-6 h-6"></i></div>
+                        <span class="text-xs font-bold text-blue-700">Uber/99</span>
+                    </button>
+                    <!-- Botão Entrega -->
+                    <button onclick="shareCategory('app_entrega')" class="flex flex-col items-center p-4 bg-yellow-50 border border-yellow-100 rounded-xl hover:bg-yellow-100 transition">
+                        <div class="bg-yellow-500 text-white p-3 rounded-full mb-2"><i data-lucide="package" class="w-6 h-6"></i></div>
+                        <span class="text-xs font-bold text-yellow-700">iFood</span>
+                    </button>
+                </div>
+                
+                <button onclick="shareCategory('geral')" class="w-full mt-4 py-3 bg-gray-900 text-white rounded-lg font-bold flex items-center justify-center gap-2">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> Relatório Geral
+                </button>
+            </div>
+        </div>
+
+        <!-- TELA DE LOGIN -->
+        <div id="login-screen" class="absolute inset-0 z-50 bg-gray-900 flex flex-col items-center justify-center text-white p-6">
+            <div class="bg-yellow-500 p-4 rounded-full mb-4"><i data-lucide="bike" class="w-12 h-12 text-black"></i></div>
+            <h1 class="text-3xl font-bold mb-1">MotoManager</h1>
+            <p class="text-gray-400 text-center mb-6 text-sm">Gestão financeira e classificados.</p>
+            <div class="w-full max-w-xs space-y-3">
+                <input type="email" id="login-email" placeholder="Seu E-mail" class="w-full p-3 rounded bg-gray-800 border border-gray-700 text-white focus:border-yellow-500 outline-none">
+                <input type="password" id="login-pass" placeholder="Sua Senha" class="w-full p-3 rounded bg-gray-800 border border-gray-700 text-white focus:border-yellow-500 outline-none">
+                <div class="flex gap-2">
+                    <button onclick="handleEmailLogin('login')" id="btn-signin" class="flex-1 bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 rounded transition-transform active:scale-95">Entrar</button>
+                    <button onclick="handleEmailLogin('register')" id="btn-signup" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded transition-transform active:scale-95">Cadastrar</button>
+                </div>
+                <div class="relative flex py-2 items-center">
+                    <div class="flex-grow border-t border-gray-700"></div><span class="flex-shrink mx-2 text-gray-500 text-xs">OU</span><div class="flex-grow border-t border-gray-700"></div>
+                </div>
+                <button onclick="handleAnonLogin()" class="w-full border border-gray-600 text-gray-400 hover:text-white py-2 rounded text-sm">Entrar sem cadastro</button>
+            </div>
+            <div id="login-error-box" class="hidden mt-4 p-3 bg-red-900/50 border border-red-500 rounded text-red-200 text-sm text-center max-w-xs w-full"><p id="login-error-msg">Erro</p></div>
+        </div>
+
+        <!-- APP PRINCIPAL -->
+        <div id="main-app" class="hidden flex-col h-full">
+            <header class="bg-gray-900 text-white p-4 pt-8 flex justify-between items-center shadow-md z-10">
+                <h1 id="page-title" class="text-xl font-bold flex items-center gap-2">Meu Painel</h1>
+                <div id="pro-badge" class="text-yellow-500 font-bold text-sm border border-yellow-500 px-2 py-1 rounded hidden">PRO</div>
+            </header>
+
+            <main id="content-area" class="flex-1 overflow-y-auto pb-20 bg-gray-50 scrollbar-hide p-4"></main>
+
+            <nav class="absolute bottom-0 w-full bg-white border-t border-gray-200 flex justify-around items-center h-16 text-xs z-20">
+                <button onclick="router('dashboard')" class="nav-btn flex flex-col items-center justify-center w-full h-full text-yellow-600 font-bold" id="nav-dashboard"><i data-lucide="dollar-sign" class="w-5 h-5"></i><span class="mt-1">Ganhos</span></button>
+                <div class="relative -top-5"><button onclick="router('finance')" class="bg-yellow-500 hover:bg-yellow-400 text-black p-4 rounded-full shadow-lg transform transition hover:scale-105 flex items-center justify-center"><i data-lucide="plus" class="w-6 h-6 stroke-[3]"></i></button></div>
+                <button onclick="router('market')" class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400" id="nav-market"><i data-lucide="shopping-bag" class="w-5 h-5"></i><span class="mt-1">Loja</span></button>
+                <button onclick="router('profile')" class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400" id="nav-profile"><i data-lucide="user" class="w-5 h-5"></i><span class="mt-1">Perfil</span></button>
+            </nav>
+        </div>
+    </div>
+
+    <script>
+        // ======================================================
+        // ⚠️ COLE SUAS CHAVES AQUI ⚠️
+        // ======================================================
+        const firebaseConfig = {
+        apiKey: "AIzaSyDv_ZbrWZGmsdHSQ6oqfxNvJFKdPQRI8II",
+        authDomain: "app-da-web-7d419.firebaseapp.com",
+        projectId: "app-da-web-7d419",
+        storageBucket: "app-da-web-7d419.firebasestorage.app",
+        messagingSenderId: "398968396582",
+        appId: "1:398968396582:web:a40503a0a03304e27b7fe7",
+        measurementId: "G-GE1VWW7VY4"
+        };
+        // ======================================================
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const appId = 'moto-manager-v1';
+
+        let currentUser = null;
+        let currentChart = null;
+        let unsubscribeListeners = [];
+        let currentTotals = { total: 0, count: 0, loja: 0, pass: 0, deliv: 0 };
+        let currentPeriod = 'week';
+
+        // --- LOGIN ---
+        function handleEmailLogin(mode) {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            const errBox = document.getElementById('login-error-box');
+            if(!email || !pass) return showLoginError("Preencha e-mail e senha.");
+            
+            errBox.classList.add('hidden');
+            const btn = document.getElementById(mode === 'login' ? 'btn-signin' : 'btn-signup');
+            const original = btn.innerText;
+            btn.innerText = '...';
+
+            const promise = mode === 'login' ? auth.signInWithEmailAndPassword(email, pass) : auth.createUserWithEmailAndPassword(email, pass);
+            promise.catch(error => {
+                btn.innerText = original;
+                let msg = "Erro: " + error.code;
+                if(error.code === 'auth/invalid-email') msg = "E-mail inválido.";
+                if(error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') msg = "Dados incorretos.";
+                if(error.code === 'auth/weak-password') msg = "Senha fraca.";
+                showLoginError(msg);
+            });
+        }
+
+        function handleAnonLogin() {
+            auth.signInAnonymously().catch(err => showLoginError("Login Anônimo deve estar ativado no Firebase Console."));
+        }
+
+        function showLoginError(msg) {
+            document.getElementById('login-error-msg').innerText = msg;
+            document.getElementById('login-error-box').classList.remove('hidden');
+        }
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                document.getElementById('main-app').classList.add('flex');
+                router('dashboard');
+            } else {
+                currentUser = null;
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('main-app').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('flex');
+            }
+        });
+
+        // --- ROTAS ---
+        function router(view) {
+            unsubscribeListeners.forEach(u => u()); unsubscribeListeners = [];
+            const content = document.getElementById('content-area');
+            const title = document.getElementById('page-title');
+            
+            document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('text-yellow-600','font-bold'); b.classList.add('text-gray-400'); });
+            content.innerHTML = '';
+
+            if (view === 'dashboard') {
+                title.innerText = 'Meu Painel';
+                document.getElementById('nav-dashboard').classList.add('text-yellow-600', 'font-bold');
+                renderDashboard(content);
+            } else if (view === 'finance') {
+                title.innerText = 'Adicionar Ganho';
+                renderAddFinance(content);
+            } else if (view === 'market') {
+                title.innerText = 'Classificados';
+                document.getElementById('nav-market').classList.add('text-yellow-600', 'font-bold');
+                renderMarketplace(content);
+            } else if (view === 'market-add') {
+                title.innerText = 'Criar Anúncio';
+                renderAddMarketItem(content);
+            } else if (view === 'profile') {
+                title.innerText = 'Meu Perfil';
+                document.getElementById('nav-profile').classList.add('text-yellow-600', 'font-bold');
+                renderProfile(content);
+            }
+            setTimeout(() => lucide.createIcons(), 100);
+        }
+
+        // --- DASHBOARD ---
+        function renderDashboard(container) {
+            container.innerHTML = `
+                <div class="space-y-4 fade-in pb-10">
+                    <!-- Filtros de Período -->
+                    <div class="flex bg-white rounded-lg p-1 shadow-sm overflow-x-auto">
+                        <button onclick="filterDashboard('day')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap" id="filter-day">Hoje</button>
+                        <button onclick="filterDashboard('week')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded bg-gray-900 text-white whitespace-nowrap" id="filter-week">7 Dias</button>
+                        <button onclick="filterDashboard('last-week')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap border-l border-gray-100" id="filter-last-week">Semana Passada</button>
+                        <button onclick="filterDashboard('month')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap" id="filter-month">Mês</button>
+                    </div>
+
+                    <!-- Total Card -->
+                    <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center relative overflow-hidden">
+                        <h2 class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1" id="period-label">Últimos 7 Dias</h2>
+                        <p class="text-4xl font-bold text-gray-900" id="total-value">R$ 0.00</p>
+                        <p class="text-sm text-gray-400 mt-1" id="total-count">0 registros</p>
+                        <button onclick="openShareModal()" class="absolute top-4 right-4 text-green-600 hover:text-green-700 p-2 bg-green-50 rounded-full transition hover:scale-110">
+                            <i data-lucide="share-2" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <!-- Gráfico -->
+                    <div class="bg-white rounded-xl shadow p-4 h-48 flex justify-center items-center relative">
+                        <canvas id="earningsChart"></canvas>
+                    </div>
+
+                    <!-- Cards Resumo por Categoria (NOVO) -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="bg-white p-3 rounded-lg shadow-sm border-l-4 border-red-500 text-center">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase">Loja Fixa</p>
+                            <p class="text-sm font-bold text-gray-900" id="card-loja">R$ 0</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg shadow-sm border-l-4 border-blue-500 text-center">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase">Uber/99</p>
+                            <p class="text-sm font-bold text-gray-900" id="card-pass">R$ 0</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg shadow-sm border-l-4 border-yellow-500 text-center">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase">iFood</p>
+                            <p class="text-sm font-bold text-gray-900" id="card-deliv">R$ 0</p>
+                        </div>
+                    </div>
+
+                    <!-- Lista -->
+                    <div class="space-y-2" id="history-list"><p class="text-center text-gray-400 py-4">Carregando...</p></div>
+                </div>
+            `;
+            loadDashboardData('week');
+        }
+
+        function filterDashboard(period) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.className = 'filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 hover:bg-gray-100 whitespace-nowrap');
+            document.getElementById(`filter-${period}`).className = 'filter-btn px-3 py-2 text-xs font-bold uppercase rounded bg-gray-900 text-white whitespace-nowrap';
+            currentPeriod = period;
+            
+            // Atualiza label
+            const labels = { 'day': 'Hoje', 'week': 'Últimos 7 Dias', 'last-week': 'Segunda a Domingo (Passada)', 'month': 'Este Mês' };
+            document.getElementById('period-label').innerText = labels[period];
+            
+            loadD32ashboardData(period);
+        }
+
+        function loadDashboardData(period) {
+            const ref = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('earnings').orderBy('date', 'desc');
+            
+            const unsub = ref.onSnapshot((snapshot) => {
+                const earnings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const now = new Date();
+                now.setHours(0,0,0,0); // Zera hora para comparação
+
+                const filtered = earnings.filter(item => {
+                    const itemDate = new Date(item.date + 'T00:00:00'); // Data do item
+                    
+                    if (period === 'day') {
+                        return itemDate.getTime() === now.getTime();
+                    }
+                    if (period === 'week') {
+                        const diffDays = (now - itemDate) / (1000 * 60 * 60 * 24);
+                        return diffDays >= 0 && diffDays < 7;
+                    }
+                    if (period === 'last-week') {
+                        // Lógica Semana Passada (Segunda a Domingo anterior)
+                        const dayOfWeek = now.getDay() || 7; // Domingo vira 7 para facilitar conta
+                        const lastSunday = new Date(now);
+                        lastSunday.setDate(now.getDate() - dayOfWeek); // Domingo passado
+                        const lastMonday = new Date(lastSunday);
+                        lastMonday.setDate(lastSunday.getDate() - 6); // Segunda passada
+                        return itemDate >= lastMonday && itemDate <= lastSunday;
+                    }
+                    if (period === 'month') {
+                        return itemDate.getMonth() === now.getMonth() && itemDate.getFullYear() === now.getFullYear();
+                    }
+                    return true;
+                });
+
+                const totals = filtered.reduce((acc, curr) => {
+                    const val = parseFloat(curr.totalValue) || 0;
+                    acc.total += val;
+                    acc.count += (parseInt(curr.count) || 0);
+                    if (curr.category === 'loja_fixa') acc.loja += val;
+                    if (curr.category === 'app_passageiro') acc.pass += val;
+                    if (curr.category === 'app_entrega') acc.deliv += val;
+                    return acc;
+                }, { total: 0, count: 0, loja: 0, pass: 0, deliv: 0 });
+
+                currentTotals = totals;
+
+                // Update UI
+                const totalEl = document.getElementById('total-value');
+                if(totalEl) {
+                    totalEl.innerText = `R$ ${totals.total.toFixed(2)}`;
+                    document.getElementById('total-count').innerText = `${totals.count} registros`;
+                    
+                    // Update Mini Cards
+                    document.getElementById('card-loja').innerText = `R$ ${totals.loja.toFixed(2)}`;
+                    document.getElementById('card-pass').innerText = `R$ ${totals.pass.toFixed(2)}`;
+                    document.getElementById('card-deliv').innerText = `R$ ${totals.deliv.toFixed(2)}`;
+
+                    // Lista
+                    const listEl = document.getElementById('history-list');
+                    listEl.innerHTML = '<h3 class="font-bold text-gray-700 ml-1">Histórico</h3>' + 
+                    filtered.slice(0, 10).map(item => {
+                        const colors = { 'loja_fixa': 'border-red-500', 'app_passageiro': 'border-blue-500', 'app_entrega': 'border-yellow-500' };
+                        let details = '';
+                        if (item.category === 'loja_fixa' && item.details) {
+                            details = `<div class="text-xs text-gray-500 mt-1 pt-1 border-t border-gray-50">Diária: R$${item.details.daily} | Taxa: R$${item.details.fee}</div>`;
+                        }
+                        return `<div class="bg-white p-3 rounded-lg shadow-sm border-l-4 ${colors[item.category]} mb-2">
+                            <div class="flex justify-between">
+                                <div>
+                                    <p class="font-bold text-sm text-gray-800">${item.category === 'loja_fixa' ? 'Loja Fixa' : (item.category === 'app_passageiro' ? 'Uber/99' : 'Delivery')}</p>
+                                    <p class="text-xs text-gray-400">${new Date(item.date+'T00:00:00').toLocaleDateString()}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-gray-900">R$ ${parseFloat(item.totalValue).toFixed(2)}</p>
+                                    <p class="text-xs text-gray-500">${item.count} qtd</p>
+                                </div>
+                            </div>
+                            ${details}
+                        </div>`;
+                    }).join('');
+                    if(filtered.length === 0) listEl.innerHTML = '<p class="text-center text-gray-400 text-sm mt-4">Sem dados neste período.</p>';
+                }
+                updateChart(totals);
+            });
+            unsubscribeListeners.push(unsub);
+        }
+
+        function updateChart(totals) {
+            const ctx = document.getElementById('earningsChart');
+            if (!ctx) return;
+            if (currentChart) currentChart.destroy();
+            currentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Loja', 'Passageiro', 'Delivery'],
+                    datasets: [{ data: [totals.loja, totals.pass, totals.deliv], backgroundColor: ['#EF4444', '#3B82F6', '#F59E0B'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+            });
+        }
+
+        // --- COMPARTILHAMENTO (Lógica Nova) ---
+        function openShareModal() {
+            document.getElementById('share-modal').classList.remove('hidden');
+        }
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.add('hidden');
+        }
+
+        function shareCategory(type) {
+            const periodName = document.getElementById('period-label').innerText;
+            let text = `🏍️ *MotoManager - ${periodName}*\n\n`;
+            
+            if (type === 'loja_fixa') {
+                text += `🔴 *Loja Fixa*\n💰 Total: R$ ${currentTotals.loja.toFixed(2)}`;
+            } else if (type === 'app_passageiro') {
+                text += `🔵 *Uber/99 Moto*\n💰 Total: R$ ${currentTotals.pass.toFixed(2)}`;
+            } else if (type === 'app_entrega') {
+                text += `🟡 *iFood/Delivery*\n💰 Total: R$ ${currentTotals.deliv.toFixed(2)}`;
+            } else {
+                // Geral
+                text += `💰 *TOTAL GERAL:* R$ ${currentTotals.total.toFixed(2)}\n📦 *Corridas:* ${currentTotals.count}\n\n🔴 Loja: R$ ${currentTotals.loja.toFixed(2)}\n🔵 Apps: R$ ${currentTotals.pass.toFixed(2)}\n🟡 Deliv: R$ ${currentTotals.deliv.toFixed(2)}`;
+            }
+            
+            text += `\n\n_Gerado via MotoManager_`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+            closeShareModal();
+        }
+
+        // --- DEMAIS FUNÇÕES (Finance, Market, Profile) ---
+        // (Mantidas iguais, apenas garantindo que funcionem no contexto global)
+
+        function renderAddFinance(container) {
+            // Código igual ao anterior para renderAddFinance
+             container.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden fade-in">
+                    <div class="flex border-b">
+                        <button onclick="setFinanceTab('app_entrega')" id="tab-app_entrega" class="fin-tab flex-1 py-3 text-sm font-bold bg-yellow-100 text-yellow-700 border-b-2 border-yellow-500">iFood</button>
+                        <button onclick="setFinanceTab('app_passageiro')" id="tab-app_passageiro" class="fin-tab flex-1 py-3 text-sm font-bold text-gray-500">Uber</button>
+                        <button onclick="setFinanceTab('loja_fixa')" id="tab-loja_fixa" class="fin-tab flex-1 py-3 text-sm font-bold text-gray-500">Loja</button>
+                    </div>
+                    <form onsubmit="submitFinance(event)" class="p-6 space-y-4">
+                        <input type="hidden" id="fin-category" value="app_entrega">
+                        <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Data</label><input required type="date" id="fin-date" class="w-full p-3 bg-gray-50 rounded border border-gray-200 outline-none"></div>
+                        <div id="dynamic-fields">
+                            <div id="fields-app">
+                                <div class="mb-4"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Qtd</label><input required type="number" id="fin-count" class="w-full p-3 bg-gray-50 rounded border border-gray-200" placeholder="0"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Valor Total (R$)</label><input required type="number" step="0.01" id="fin-total" class="w-full p-3 bg-gray-50 rounded border border-gray-200 text-lg font-semibold" placeholder="0.00"></div>
+                            </div>
+                            <div id="fields-loja" class="hidden space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label class="text-xs font-bold text-gray-500">Diária</label><input type="number" step="0.01" id="fin-daily" class="w-full p-3 bg-gray-50 border rounded"></div>
+                                    <div><label class="text-xs font-bold text-gray-500">Qtd</label><input type="number" id="fin-loja-count" class="w-full p-3 bg-gray-50 border rounded"></div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label class="text-xs font-bold text-gray-500">Taxa</label><input type="number" step="0.01" id="fin-fee" class="w-full p-3 bg-gray-50 border rounded"></div>
+                                    <div><label class="text-xs font-bold text-gray-500">Extra</label><input type="number" step="0.01" id="fin-extra" class="w-full p-3 bg-gray-50 border rounded"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-gray-900 text-white font-bold py-4 rounded-lg hover:bg-gray-800 shadow-lg mt-4">Salvar</button>
+                    </form>
+                </div>`;
+             document.getElementById('fin-date').valueAsDate = new Date();
+        }
+
+        function setFinanceTab(cat) {
+            document.getElementById('fin-category').value = cat;
+            document.querySelectorAll('.fin-tab').forEach(t => t.className = 'fin-tab flex-1 py-3 text-sm font-bold text-gray-500');
+            const active = document.getElementById(`tab-${cat}`);
+            const colors = { 'app_entrega': 'bg-yellow-100 text-yellow-700 border-yellow-500', 'app_passageiro': 'bg-blue-100 text-blue-700 border-blue-500', 'loja_fixa': 'bg-red-100 text-red-700 border-red-500' };
+            active.className = `fin-tab flex-1 py-3 text-sm font-bold border-b-2 ${colors[cat]}`;
+
+            if (cat === 'loja_fixa') {
+                document.getElementById('fields-app').classList.add('hidden');
+                document.getElementById('fields-loja').classList.remove('hidden');
+                document.getElementById('fin-total').removeAttribute('required');
+                document.getElementById('fin-count').removeAttribute('required');
+            } else {
+                document.getElementById('fields-app').classList.remove('hidden');
+                document.getElementById('fields-loja').classList.add('hidden');
+                document.getElementById('fin-total').setAttribute('required', 'true');
+                document.getElementById('fin-count').setAttribute('required', 'true');
+            }
+        }
+
+        function submitFinance(e) {
+            e.preventDefault();
+            const category = document.getElementById('fin-category').value;
+            const date = document.getElementById('fin-date').value;
+            let totalValue = 0, count = 0, details = {};
+            if (category === 'loja_fixa') {
+                const daily = parseFloat(document.getElementById('fin-daily').value || 0);
+                count = parseInt(document.getElementById('fin-loja-count').value || 0);
+                const fee = parseFloat(document.getElementById('fin-fee').value || 0);
+                const extra = parseFloat(document.getElementById('fin-extra').value || 0);
+                totalValue = daily + (count * fee) + extra;
+                details = { daily, fee, extra, count };
+            } else {
+                totalValue = parseFloat(document.getElementById('fin-total').value);
+                count = parseInt(document.getElementById('fin-count').value);
+            }
+            db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('earnings').add({
+                category, date, totalValue, count, details, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => router('dashboard')).catch(err => alert(err.message));
+        }
+
+        function renderMarketplace(container) {
+            container.innerHTML = `
+                <div class="sticky top-0 bg-gray-100 pt-2 pb-4 z-10 fade-in">
+                    <input onkeyup="searchMarket()" id="market-search" type="text" placeholder="Buscar peças..." class="w-full p-3 rounded-full border-none shadow-sm focus:ring-2 focus:ring-yellow-500 outline-none mb-3">
+                    <button onclick="router('market-add')" class="w-full bg-yellow-500 text-black font-bold py-3 rounded-lg shadow flex items-center justify-center gap-2"><i data-lucide="plus-circle" class="w-5 h-5"></i> Criar Anúncio</button>
+                </div>
+                <div id="market-list" class="grid grid-cols-1 gap-4 fade-in"><p class="text-center text-gray-400 mt-10">Carregando...</p></div>
+            `;
+            db.collection('artifacts').doc(appId).collection('public').doc('data').collection('marketplace').orderBy('createdAt', 'desc').onSnapshot(snap => {
+                const items = snap.docs.map(d => ({id:d.id, ...d.data()}));
+                const list = document.getElementById('market-list');
+                if(!list) return;
+                list.innerHTML = items.map(i => `
+                    <div class="market-item bg-white rounded-xl shadow-sm overflow-hidden flex flex-col border border-gray-100" data-title="${i.title.toLowerCase()}">
+                        ${i.image ? `<div class="h-48 bg-gray-200"><img src="${i.image}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400'"></div>` : ''}
+                        <div class="p-4">
+                            <div class="flex justify-between"><span class="bg-gray-100 text-xs px-2 py-1 rounded font-bold uppercase">${i.category}</span><span class="text-xs text-gray-400">${i.createdAt ? new Date(i.createdAt.seconds*1000).toLocaleDateString() : ''}</span></div>
+                            <h3 class="font-bold text-lg mt-1">${i.title}</h3>
+                            <p class="text-gray-500 text-sm line-clamp-2">${i.description}</p>
+                            <div class="mt-3 flex justify-between items-center">
+                                <span class="text-xl font-bold text-green-600">R$ ${parseFloat(i.price).toFixed(2)}</span>
+                                ${i.userId === currentUser.uid ? `<button onclick="deleteItem('${i.id}')" class="text-red-500"><i data-lucide="trash-2"></i></button>` : `<a href="https://wa.me/${i.whatsapp}?text=${encodeURIComponent('Olá, vi seu anúncio '+i.title)}" target="_blank" class="bg-green-500 text-white px-3 py-2 rounded font-bold text-sm flex gap-1"><i data-lucide="message-circle" class="w-4 h-4"></i> Zap</a>`}
+                            </div>
+                        </div>
+                    </div>`).join('') || '<p class="text-center text-gray-400">Sem anúncios.</p>';
+                lucide.createIcons();
+            });
+        }
+
+        function searchMarket() {
+            const term = document.getElementById('market-search').value.toLowerCase();
+            document.querySelectorAll('.market-item').forEach(el => { el.style.display = el.getAttribute('data-title').includes(term) ? 'flex' : 'none'; });
+        }
+        function deleteItem(id) {
+            if(confirm('Apagar?')) db.collection('artifacts').doc(appId).collection('public').doc('data').collection('marketplace').doc(id).delete();
+        }
+
+        function renderAddMarketItem(container) {
+            container.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg p-6 fade-in">
+                    <h2 class="text-xl font-bold mb-4">Novo Anúncio</h2>
+                    <form onsubmit="submitAd(event)" class="space-y-3">
+                        <input required id="ad-title" placeholder="Título" class="w-full p-3 bg-gray-50 border rounded">
+                        <div class="grid grid-cols-2 gap-3">
+                            <input required type="number" id="ad-price" placeholder="Preço (R$)" class="w-full p-3 bg-gray-50 border rounded">
+                            <select id="ad-cat" class="w-full p-3 bg-gray-50 border rounded"><option>Peças</option><option>Acessórios</option><option>Motos</option><option>Outros</option></select>
+                        </div>
+                        <textarea required id="ad-desc" placeholder="Descrição" class="w-full p-3 bg-gray-50 border rounded"></textarea>
+                        <input type="url" id="ad-img" placeholder="Link da Imagem (opcional)" class="w-full p-3 bg-gray-50 border rounded">
+                        <input required type="tel" id="ad-zap" placeholder="WhatsApp (DDD+Num)" class="w-full p-3 bg-gray-50 border rounded">
+                        <button type="submit" class="w-full bg-yellow-500 text-black font-bold py-3 rounded">Publicar</button>
+                    </form>
+                    <button onclick="router('market')" class="w-full text-gray-500 mt-3">Cancelar</button>
+                </div>`;
+        }
+
+        function submitAd(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerText = '...'; btn.disabled = true;
+            const phone = document.getElementById('ad-zap').value.replace(/\D/g, '');
+            if(phone.length < 10) { alert('Zap inválido'); btn.innerText='Publicar'; btn.disabled=false; return; }
+            
+            db.collection('artifacts').doc(appId).collection('public').doc('data').collection('marketplace').add({
+                title: document.getElementById('ad-title').value,
+                price: parseFloat(document.getElementById('ad-price').value),
+                category: document.getElementById('ad-cat').value,
+                description: document.getElementById('ad-desc').value,
+                image: document.getElementById('ad-img').value,
+                whatsapp: phone,
+                userId: currentUser.uid,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => router('market')).catch(err => { alert(err.message); btn.disabled=false; });
+        }
+
+        function renderProfile(container) {
+            container.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center fade-in">
+                    <div class="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center"><i data-lucide="user" class="w-10 h-10 text-gray-400"></i></div>
+                    <h2 class="text-xl font-bold">${currentUser.displayName || currentUser.email || 'Usuário'}</h2>
+                    <p class="text-gray-400 text-sm mb-4">ID: ${currentUser.uid.slice(0,6)}...</p>
+                    <div class="text-left space-y-3">
+                        <label class="text-xs font-bold text-gray-500">Nome de Exibição</label>
+                        <input id="prof-name" value="${currentUser.displayName || ''}" class="w-full p-3 bg-gray-50 border rounded">
+                        <button onclick="saveProfile()" class="w-full bg-gray-900 text-white py-3 rounded font-bold">Salvar</button>
+                    </div>
+                </div>
+                <button onclick="auth.signOut()" class="w-full flex items-center justify-center gap-2 text-red-500 font-bold p-4 mt-4"><i data-lucide="log-out" class="w-5 h-5"></i> Sair</button>`;
+            lucide.createIcons();
+        }
+        function saveProfile() { currentUser.updateProfile({displayName: document.getElementById('prof-name').value}).then(()=>alert('Salvo!')); }
+    </script>
+</body>
+</html>
+
