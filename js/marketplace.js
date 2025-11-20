@@ -120,7 +120,7 @@ export const marketplace = {
     const isOwner = userProfile && userProfile.uid === product.ownerId;
 
     return `
-      <div class="product-card">
+      <div class="product-card" data-product-id="${product.id}">
         ${
           isOwner
             ? `
@@ -146,9 +146,9 @@ export const marketplace = {
     }" class="owner-avatar">
             <span>${product.ownerName}</span>
           </div>
-          <a href="${product.link}" target="_blank" class="btn-product-action">
+          <button class="btn-product-action-dummy">
             <span class="material-icons">${buttonIcon}</span> ${buttonText}
-          </a>
+          </button>
         </div>
       </div>
     `;
@@ -228,6 +228,16 @@ export const marketplace = {
       });
     });
 
+    // Adiciona o evento para abrir o modal de detalhes
+    document.querySelectorAll(".product-card").forEach((card) => {
+      card.addEventListener("click", (e) => {
+        if (!e.target.closest(".product-owner-actions")) {
+          // Não abre o modal se clicar no menu '...'
+          this.openProductModal(card.dataset.productId);
+        }
+      });
+    });
+
     // A lógica de edição pode ser adicionada aqui no futuro
     // document.querySelectorAll('.btn-edit-product').forEach...
 
@@ -252,5 +262,60 @@ export const marketplace = {
       console.error("Erro ao excluir produto:", error);
       alert("Ocorreu um erro ao excluir o produto.");
     }
+  },
+
+  openProductModal: function (productId) {
+    const product = this.allProductsCache.find((p) => p.id === productId);
+    if (!product) return;
+
+    // Remove qualquer modal antigo
+    const oldModal = document.getElementById("product-detail-modal");
+    if (oldModal) oldModal.remove();
+
+    const isAffiliate = product.tipo === "afiliado";
+    const buttonText = isAffiliate
+      ? "Ver Oferta na Loja"
+      : "Chamar Vendedor no Zap";
+    const buttonIcon = isAffiliate ? "shopping_cart" : "whatsapp";
+
+    const modalHTML = `
+      <div class="modal-overlay" id="product-detail-modal">
+        <div class="modal-conteudo product-modal">
+          <span class="modal-fechar" id="product-modal-fechar">&times;</span>
+          <img src="${product.imagemURL}" alt="${
+      product.nome
+    }" class="product-modal-image">
+          <h3 class="product-modal-title">${product.nome}</h3>
+          <p class="product-modal-price">${formatarMoeda(product.preco)}</p>
+          <div class="product-modal-owner">
+            Vendido por: <strong>${product.ownerName}</strong>
+          </div>
+          <p class="product-modal-description">${
+            product.descricao || "Nenhuma descrição fornecida."
+          }</p>
+          <a href="${product.link}" target="_blank" class="btn-product-action">
+            <span class="material-icons">${buttonIcon}</span> ${buttonText}
+          </a>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+    const modal = $("product-detail-modal");
+    const closeModal = () => {
+      modal.classList.remove("ativo");
+      setTimeout(() => modal.remove(), 300);
+    };
+
+    // Adiciona a classe 'ativo' para a animação de entrada
+    setTimeout(() => modal.classList.add("ativo"), 10);
+
+    $("product-modal-fechar").onclick = closeModal;
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
   },
 };
