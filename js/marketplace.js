@@ -351,10 +351,14 @@ export const marketplace = {
     try {
       await deleteDoc(doc(db, "produtos", productId));
       alert("Produto excluído com sucesso!");
-      this.fetchAndDisplayProducts(true);
+      this.allProductsCache = this.allProductsCache.filter(
+        (p) => p.id !== productId
+      ); // Remove do cache local
+      return true; // Retorna sucesso
     } catch (error) {
       console.error("Erro ao excluir produto:", error);
       alert("Ocorreu um erro ao excluir o produto.");
+      return false; // Retorna falha
     }
   },
 

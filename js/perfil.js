@@ -208,7 +208,20 @@ export const perfil = {
           marketplace.createProductCardHTML(product)
         );
       });
-      marketplace.setupProductActionButtons(); // Reutiliza a função para adicionar os eventos de editar/excluir
+
+      // Configura os botões de ação com a lógica de recarregar a página
+      container.querySelectorAll(".btn-delete-product").forEach((button) => {
+        button.addEventListener("click", async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const productId = e.currentTarget.dataset.productId;
+          const sucesso = await marketplace.handleDeleteProduct(productId);
+          if (sucesso) {
+            this.initGerenciarAnuncios(); // Recarrega a lista de anúncios
+          }
+        });
+      });
+      // Adicione a lógica para o botão de editar aqui quando for implementá-lo
     } catch (error) {
       console.error("Erro ao buscar 'Meus Anúncios':", error);
       container.innerHTML =
