@@ -1,4 +1,4 @@
-const CACHE_NAME = "motocash-v3.2.11"; // Versão do cache atualizada
+const CACHE_NAME = "motocash-v3.2.12"; // Versão do cache atualizada
 const URLS_TO_CACHE = [
   "/",
   "/index.html",
