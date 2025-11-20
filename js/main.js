@@ -9,8 +9,6 @@ import { perfil } from "./perfil.js";
 import { marketplace } from "./marketplace.js";
 import { admin } from "./admin.js";
 import { relatorios } from "./reports.js";
-import { weather } from "./weather.js";
-import { storage } from "./storage.js";
 import { $ } from "./utils.js";
 
 const appContent = $("app-content");
