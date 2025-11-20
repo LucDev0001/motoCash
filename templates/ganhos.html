@@ -2,64 +2,149 @@
   <div class="container">
     <div class="card" id="card-formulario-ganho" style="display: none">
       <div class="card-header">
-        <h2 id="titulo-form-ganho">Adicionar Novo Ganho</h2>
+        <h2 id="titulo-form-ganho">Adicionar Ganho</h2>
         <button id="btn-fechar-form-ganho" class="btn-fechar">&times;</button>
       </div>
-      <form id="formGanho">
-        <input type="date" id="data" required />
-        <input type="number" id="valorDiaria" placeholder="Valor da diária" step="0.01" min="0" required />
-        <input type="number" id="taxaEntrega" placeholder="Taxa por entrega" step="0.01" min="0" required />
-        <input type="number" id="qtdEntregas" placeholder="Quantidade de entregas" min="0" required />
-        <button type="submit" id="btnSalvarGanho">Adicionar Ganho</button>
+
+      <form
+        id="formGanhoLojaFixa"
+        class="form-ganho-conteudo"
+        style="display: none"
+      >
+        <input type="date" id="data-loja" required />
+        <input
+          type="number"
+          id="valorDiaria-loja"
+          placeholder="Valor da diária (R$)"
+          step="0.01"
+          min="0"
+          required
+        />
+        <input
+          type="number"
+          id="taxaEntrega-loja"
+          placeholder="Taxa por entrega (R$)"
+          step="0.01"
+          min="0"
+          required
+        />
+        <input
+          type="number"
+          id="qtdEntregas-loja"
+          placeholder="Qtd. Entregas Realizadas"
+          min="0"
+          required
+        />
+        <button type="submit" class="btn-salvar-ganho">Salvar Loja Fixa</button>
+      </form>
+
+      <form
+        id="formGanhoPassageiros"
+        class="form-ganho-conteudo"
+        style="display: none"
+      >
+        <input type="date" id="data-passageiros" required />
+        <input
+          type="number"
+          id="qtd-passageiros"
+          placeholder="Quantidade de Corridas"
+          min="0"
+          required
+        />
+        <input
+          type="number"
+          id="valor-passageiros"
+          placeholder="Valor Total do Dia (R$)"
+          step="0.01"
+          min="0"
+          required
+        />
+        <button
+          type="submit"
+          class="btn-salvar-ganho"
+          style="background-color: #f1c40f; color: #000"
+        >
+          Salvar App Passageiro
+        </button>
+      </form>
+
+      <form
+        id="formGanhoEntregas"
+        class="form-ganho-conteudo"
+        style="display: none"
+      >
+        <input type="date" id="data-entregas" required />
+        <input
+          type="number"
+          id="qtd-entregas"
+          placeholder="Quantidade de Entregas"
+          min="0"
+          required
+        />
+        <input
+          type="number"
+          id="valor-entregas"
+          placeholder="Valor Total do Dia (R$)"
+          step="0.01"
+          min="0"
+          required
+        />
+        <button
+          type="submit"
+          class="btn-salvar-ganho"
+          style="background-color: #e74c3c"
+        >
+          Salvar App Entrega
+        </button>
       </form>
     </div>
+
     <div class="card" id="card-historico">
       <div class="card-header">
         <h2>Histórico de Ganhos</h2>
-        <button id="btn-abrir-form-ganho" class="btn-add"><span class="material-icons">add</span> Novo Ganho</button>
+      </div>
+
+      <div class="acoes-ganhos-container">
+        <button class="btn-acao-ganho btn-loja" data-target="loja_fixa">
+          <span class="material-icons">store</span>
+          <span>Loja Fixa</span>
+        </button>
+        <button class="btn-acao-ganho btn-passageiro" data-target="passageiros">
+          <span class="material-icons">directions_car</span>
+          <span>Passageiros</span>
+        </button>
+        <button class="btn-acao-ganho btn-entrega" data-target="entregas">
+          <span class="material-icons">two_wheeler</span>
+          <span>Entregas App</span>
+        </button>
       </div>
       <div id="filtros-ganhos" class="filtros-container">
         <div class="filtro-item">
-          <label for="filtro-periodo">Filtrar por Período</label>
           <select id="filtro-periodo">
             <option value="todos">Todos</option>
             <option value="hoje">Hoje</option>
             <option value="esta-semana" selected>Esta Semana</option>
             <option value="este-mes">Este Mês</option>
-            <option value="semana-passada">Semana Passada</option>
-            <option value="mes-passado">Mês Passado</option>
-            <option value="personalizado">Personalizado</option>
           </select>
         </div>
         <div id="filtro-datas-personalizadas" style="display: none">
-          <div class="filtro-item"><label for="filtro-data-inicio">De:</label><input type="date" id="filtro-data-inicio" /></div>
-          <div class="filtro-item"><label for="filtro-data-fim">Até:</label><input type="date" id="filtro-data-fim" /></div>
+          <input type="date" id="filtro-data-inicio" />
+          <input type="date" id="filtro-data-fim" />
         </div>
-        <div class="filtro-item">
-          <label for="filtro-ordenar">Ordenar por</label>
-          <select id="filtro-ordenar">
-            <option value="recentes">Mais Recentes</option>
-            <option value="antigos">Mais Antigos</option>
-            <option value="maior-valor">Maior Valor</option>
-            <option value="menor-valor">Menor Valor</option>
-          </select>
-        </div>
-        <button id="btn-limpar-filtros">Limpar Filtros</button>
       </div>
+
       <div id="card-resumo-filtro" class="resumo-filtro">
-        <div class="resumo-item"><span class="resumo-label">Total do Período</span><strong id="resumo-filtro-total">R$ 0,00</strong></div>
-        <div class="resumo-item"><span class="resumo-label">Nº de Entregas</span><strong id="resumo-filtro-entregas">0</strong></div>
-        <div class="resumo-item"><span class="resumo-label">Dias Trabalhados</span><strong id="resumo-filtro-dias">0</strong></div>
-        <div class="resumo-item"><span class="resumo-label">Média Diária</span><strong id="resumo-filtro-media">R$ 0,00</strong></div>
+        <div class="resumo-item">
+          <span class="resumo-label">Total</span
+          ><strong id="resumo-filtro-total">R$ 0,00</strong>
+        </div>
+        <div class="resumo-item">
+          <span class="resumo-label">Entregas/Runs</span
+          ><strong id="resumo-filtro-entregas">0</strong>
+        </div>
       </div>
-      <ul id="listaGanhos"></ul>
-      <div class="compartilhar-whatsapp">
-        <h3>Compartilhar Resumo do Período</h3>
-        <label><input type="checkbox" id="compQtdEntregas" checked /> Quantidade de entregas</label>
-        <label><input type="checkbox" id="compValorDiaria" checked /> Soma das diárias</label>
-        <label><input type="checkbox" id="compValorTotal" checked /> Valor total</label>
-        <button id="btnCompartilhar">Compartilhar</button>
-      </div>
+
+      <ul id="listaGanhos" class="lista-ganhos-moderna"></ul>
     </div>
   </div>
 </section>

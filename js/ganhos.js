@@ -1,8 +1,5 @@
 // js/ganhos.js
-// Lida com toda a lógica de adicionar, editar, excluir e exibir ganhos.
-
 import { perfil } from "./perfil.js";
-// Importa as ferramentas do Firebase
 import { auth as firebaseAuth, db } from "./firebase-config.js";
 import {
   doc,
@@ -12,22 +9,18 @@ import {
   deleteDoc,
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-// Importa utilitários locais
 import { $ } from "./utils.js";
 import { getDateRange } from "./date.utils.js";
 import { formatarMoeda } from "./utils.js";
 
-let relatoriosModule;
-
 export const ganhos = {
   ganhoEditandoId: null,
-  localGanhosCache: null, // Cache para evitar múltiplas buscas no Firestore
+  localGanhosCache: null,
 
   init: function (dependencies) {
-    relatoriosModule = dependencies ? dependencies.relatorios : null;
     this.setupEventListeners();
     this.setupFiltros();
-    this.atualizarUI(); // Carrega o histórico ao iniciar
+    this.atualizarUI();
 
     // Fecha menus flutuantes ao clicar fora
     document.body.addEventListener("click", () =>
@@ -38,94 +31,112 @@ export const ganhos = {
   },
 
   setupEventListeners: function () {
-    // 1. Lógica para Abrir e Fechar o Modal (Adicionado para compatibilidade com HTML)
-    const btnAbrir = $("btn-abrir-form-ganho");
-    const btnFechar = $("btn-fechar-form-ganho");
     const cardForm = $("card-formulario-ganho");
+    const btnFechar = $("btn-fechar-form-ganho");
 
-    if (btnAbrir && cardForm) {
-      btnAbrir.addEventListener("click", () => {
-        cardForm.style.display = "block";
-        // Reseta o formulário ao abrir para novo cadastro
-        if ($("formGanho")) $("formGanho").reset();
-        this.ganhoEditandoId = null;
-        $("titulo-form-ganho").textContent = "Adicionar Novo Ganho";
-        $("btnSalvarGanho").textContent = "Adicionar Ganho";
+    // 1. Botões das Categorias (Loja, Passageiro, Entrega)
+    document.querySelectorAll(".btn-acao-ganho").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.target; // 'loja_fixa', 'passageiros', 'entregas'
+        this.abrirModal(target);
       });
-    }
+    });
 
+    // 2. Botão Fechar
     if (btnFechar && cardForm) {
       btnFechar.addEventListener("click", () => {
         cardForm.style.display = "none";
       });
     }
 
-    // 2. Lógica do Formulário Único (Adaptado ao seu HTML)
-    if ($("formGanho")) {
-      $("formGanho").addEventListener("submit", (e) => {
+    // 3. Submits dos 3 Formulários
+    if ($("formGanhoLojaFixa")) {
+      $("formGanhoLojaFixa").addEventListener("submit", (e) => {
         e.preventDefault();
-        if (this.ganhoEditandoId) {
-          this.atualizarGanho();
-        } else {
-          // Como o formulário HTML é de diária/taxa, assumimos categoria 'loja_fixa'
-          this.adicionarGanho("loja_fixa", e);
-        }
+        this.adicionarGanho("loja_fixa", e);
       });
     }
+    if ($("formGanhoPassageiros")) {
+      $("formGanhoPassageiros").addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.adicionarGanho("passageiros", e);
+      });
+    }
+    if ($("formGanhoEntregas")) {
+      $("formGanhoEntregas").addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.adicionarGanho("entregas", e);
+      });
+    }
+  },
+
+  abrirModal: function (tipo) {
+    const cardForm = $("card-formulario-ganho");
+    const titulo = $("titulo-form-ganho");
+
+    // Esconde todos os forms primeiro
+    document
+      .querySelectorAll(".form-ganho-conteudo")
+      .forEach((f) => (f.style.display = "none"));
+
+    // Reseta formulários
+    document.querySelectorAll("form").forEach((f) => f.reset());
+
+    // Mostra o correto
+    if (tipo === "loja_fixa") {
+      titulo.textContent = "Novo Ganho: Loja Fixa";
+      $("formGanhoLojaFixa").style.display = "block";
+    } else if (tipo === "passageiros") {
+      titulo.textContent = "Novo Ganho: App Passageiro";
+      $("formGanhoPassageiros").style.display = "block";
+    } else if (tipo === "entregas") {
+      titulo.textContent = "Novo Ganho: App Entrega";
+      $("formGanhoEntregas").style.display = "block";
+    }
+
+    cardForm.style.display = "block";
   },
 
   setupFiltros: function () {
     const update = () => this.atualizarUI();
-    const filtroPeriodo = $("filtro-periodo");
-
-    if (filtroPeriodo) {
-      filtroPeriodo.addEventListener("change", () => {
-        const divPersonalizada = $("filtro-datas-personalizadas");
-        if (divPersonalizada) {
-          divPersonalizada.style.display =
-            filtroPeriodo.value === "personalizado" ? "flex" : "none";
-        }
-        update();
-      });
-    }
-    if ($("filtro-data-inicio"))
-      $("filtro-data-inicio").addEventListener("change", update);
-    if ($("filtro-data-fim"))
-      $("filtro-data-fim").addEventListener("change", update);
-    if ($("filtro-ordenar"))
-      $("filtro-ordenar").addEventListener("change", update);
+    if ($("filtro-periodo"))
+      $("filtro-periodo").addEventListener("change", update);
   },
 
   adicionarGanho: async function (categoria, event) {
-    this.localGanhosCache = null; // Invalida o cache
+    this.localGanhosCache = null;
     const usuarioLogado = firebaseAuth.currentUser;
 
-    if (!usuarioLogado) {
-      alert("Você precisa estar logado para adicionar um ganho.");
-      return;
-    }
+    if (!usuarioLogado) return alert("Você precisa estar logado.");
 
     let novoGanho = {
       id: String(Date.now()),
       categoria: categoria,
     };
 
-    // Mapeando os IDs conforme o seu HTML (ganhos.html)
-    // O HTML usa IDs genéricos: data, valorDiaria, taxaEntrega, qtdEntregas
-    novoGanho.data = $("data").value;
+    // Captura de dados baseada na categoria
+    if (categoria === "loja_fixa") {
+      novoGanho.data = $("data-loja").value;
+      const valorDiaria = parseFloat($("valorDiaria-loja").value) || 0;
+      const taxaEntrega = parseFloat($("taxaEntrega-loja").value) || 0;
+      const qtdEntregas = parseInt($("qtdEntregas-loja").value) || 0;
 
-    // Lógica para cálculo baseado nos campos do HTML
-    const valorDiaria = parseFloat($("valorDiaria").value) || 0;
-    const taxaEntrega = parseFloat($("taxaEntrega").value) || 0;
-    const qtdEntregas = parseInt($("qtdEntregas").value) || 0;
+      novoGanho.valor = valorDiaria + taxaEntrega * qtdEntregas;
+      novoGanho.qtd = qtdEntregas; // Qtd Entregas
+      // Salva detalhes extras se quiser editar depois
+      novoGanho.detalhes = { valorDiaria, taxaEntrega };
+    } else if (categoria === "passageiros") {
+      novoGanho.data = $("data-passageiros").value;
+      novoGanho.qtd = parseInt($("qtd-passageiros").value) || 0; // Qtd Corridas
+      novoGanho.valor = parseFloat($("valor-passageiros").value) || 0; // Valor Total direto
+    } else if (categoria === "entregas") {
+      novoGanho.data = $("data-entregas").value;
+      novoGanho.qtd = parseInt($("qtd-entregas").value) || 0; // Qtd Entregas
+      novoGanho.valor = parseFloat($("valor-entregas").value) || 0; // Valor Total direto
+    }
 
-    novoGanho.valorDiaria = valorDiaria;
-    novoGanho.taxaEntrega = taxaEntrega;
-    novoGanho.qtd = qtdEntregas;
-    novoGanho.valor = valorDiaria + taxaEntrega * qtdEntregas;
-
-    if (!novoGanho.data || (!novoGanho.valor && novoGanho.valor !== 0)) {
-      return alert("Por favor, preencha a data e os valores corretamente.");
+    if (!novoGanho.data || novoGanho.valor <= 0) {
+      return alert("Preencha a data e os valores corretamente.");
     }
 
     try {
@@ -137,246 +148,121 @@ export const ganhos = {
         novoGanho.id
       );
       await setDoc(docRef, novoGanho);
-
-      alert("Ganho salvo com sucesso!");
-      if (event && event.target) event.target.reset();
-
-      // Fecha o modal após salvar
-      if ($("card-formulario-ganho"))
-        $("card-formulario-ganho").style.display = "none";
-
+      alert("Ganho adicionado!");
+      $("card-formulario-ganho").style.display = "none";
       this.atualizarUI();
       this.atualizarTelaInicio();
     } catch (error) {
-      console.error("Erro ao adicionar ganho no Firestore: ", error);
-      alert("Ocorreu um erro ao salvar seu ganho. Tente novamente.");
+      console.error("Erro:", error);
+      alert("Erro ao salvar.");
     }
   },
 
-  atualizarGanho: async function () {
-    this.localGanhosCache = null;
-    const usuarioLogado = firebaseAuth.currentUser;
-    if (!usuarioLogado) return alert("Usuário não encontrado.");
-    if (!this.ganhoEditandoId)
-      return alert("Erro: ID do ganho não encontrado.");
-
-    // IDs baseados no seu HTML
-    const valorDiaria = parseFloat($("valorDiaria").value) || 0;
-    const taxaEntrega = parseFloat($("taxaEntrega").value) || 0;
-    const qtdEntregas = parseInt($("qtdEntregas").value) || 0;
-
-    const ganhoAtualizado = {
-      id: this.ganhoEditandoId,
-      categoria: "loja_fixa", // Mantém compatibilidade
-      data: $("data").value,
-      valorDiaria,
-      taxaEntrega,
-      qtdEntregas,
-      qtd: qtdEntregas,
-      valor: valorDiaria + taxaEntrega * qtdEntregas,
-    };
-
-    try {
-      const docRef = doc(
-        db,
-        "usuarios",
-        usuarioLogado.uid,
-        "ganhos",
-        this.ganhoEditandoId
-      );
-      await setDoc(docRef, ganhoAtualizado); // Atualiza/Sobrescreve
-
-      alert("Ganho atualizado com sucesso!");
-      this.ganhoEditandoId = null;
-
-      // Reseta UI
-      $("formGanho").reset();
-      if ($("card-formulario-ganho"))
-        $("card-formulario-ganho").style.display = "none";
-
-      this.atualizarUI();
-      this.atualizarTelaInicio();
-    } catch (error) {
-      console.error("Erro ao atualizar ganho: ", error);
-      alert("Não foi possível atualizar o ganho. Tente novamente.");
-    }
-  },
-
-  excluirGanho: async function (ganhoId) {
-    this.localGanhosCache = null;
-    if (confirm("Tem certeza que deseja excluir este ganho?")) {
-      const usuarioLogado = firebaseAuth.currentUser;
-      if (!usuarioLogado) return alert("Usuário não encontrado.");
-
-      try {
-        const docRef = doc(
-          db,
-          "usuarios",
-          usuarioLogado.uid,
-          "ganhos",
-          ganhoId
-        );
-        await deleteDoc(docRef);
-
-        this.atualizarUI();
-        this.atualizarTelaInicio();
-      } catch (error) {
-        console.error("Erro ao excluir ganho: ", error);
-        alert("Não foi possível excluir o ganho. Tente novamente.");
-      }
-    }
-  },
-
-  editarGanho: async function (ganhoId) {
-    // 1. Busca o ganho nos dados cacheados ou busca nova
-    const usuarioLogado = firebaseAuth.currentUser;
-    if (!usuarioLogado) return;
-
-    let ganho = null;
-    if (this.localGanhosCache) {
-      ganho = this.localGanhosCache.find((g) => g.id === ganhoId);
-    }
-
-    // Se não achou no cache, não conseguimos editar sem buscar (simplificação)
-    if (!ganho) {
-      alert("Erro ao carregar dados para edição. Tente recarregar a página.");
-      return;
-    }
-
-    // 2. Preenche o formulário HTML
-    $("data").value = ganho.data;
-    $("valorDiaria").value = ganho.valorDiaria || 0;
-    $("taxaEntrega").value = ganho.taxaEntrega || 0;
-    $("qtdEntregas").value = ganho.qtd || 0;
-
-    // 3. Ajusta o estado para modo de edição
-    this.ganhoEditandoId = ganhoId;
-    $("titulo-form-ganho").textContent = "Editar Ganho";
-    $("btnSalvarGanho").textContent = "Atualizar Ganho";
-
-    // 4. Abre o modal
-    $("card-formulario-ganho").style.display = "block";
-  },
-
+  // Funções de Cache e Fetch (Mantidas iguais)
   fetchGanhos: async function () {
     const usuarioLogado = firebaseAuth.currentUser;
     if (!usuarioLogado) return [];
-
-    if (this.localGanhosCache) {
-      return this.localGanhosCache;
-    }
+    if (this.localGanhosCache) return this.localGanhosCache;
 
     const ganhosRef = collection(db, "usuarios", usuarioLogado.uid, "ganhos");
     const querySnapshot = await getDocs(ganhosRef);
     const ganhos = [];
-    querySnapshot.forEach((doc) => {
-      ganhos.push(doc.data());
-    });
+    querySnapshot.forEach((doc) => ganhos.push(doc.data()));
 
     this.localGanhosCache = ganhos;
     return ganhos;
   },
 
-  getGanhosFiltrados: async function () {
-    const ganhosUsuario = await this.fetchGanhos();
-    // Ordenação básica por data decrescente
-    return ganhosUsuario.sort((a, b) => new Date(b.data) - new Date(a.data));
+  excluirGanho: async function (ganhoId) {
+    if (confirm("Deseja excluir?")) {
+      const usuarioLogado = firebaseAuth.currentUser;
+      await deleteDoc(
+        doc(db, "usuarios", usuarioLogado.uid, "ganhos", ganhoId)
+      );
+      this.localGanhosCache = null;
+      this.atualizarUI();
+      this.atualizarTelaInicio();
+    }
   },
 
   atualizarUI: async function () {
     if (!firebaseAuth.currentUser || !$("listaGanhos")) return;
 
-    // CORREÇÃO AQUI: Removido o código quebrado e variáveis indefinidas que existiam antes
-    const ganhosFiltrados = await this.getGanhosFiltrados();
-
-    const categoriaNomes = {
-      loja_fixa: "Loja Fixa",
-      passageiros: "Passageiros",
-      entregas: "Entregas App",
-    };
+    const ganhos = await this.fetchGanhos();
+    // Ordenar por data (mais recente primeiro)
+    ganhos.sort((a, b) => new Date(b.data) - new Date(a.data));
 
     const lista = $("listaGanhos");
     lista.innerHTML = "";
 
-    if (ganhosFiltrados.length === 0) {
-      lista.innerHTML =
-        "<li class='ganho-item-vazio'>Nenhum ganho encontrado. Adicione um novo ganho acima!</li>";
-      return;
-    }
+    // Configurações visuais por categoria
+    const configCategoria = {
+      loja_fixa: {
+        nome: "Loja Fixa",
+        classe: "badge-loja",
+        labelQtd: "Entregas",
+      },
+      passageiros: {
+        nome: "App Passageiro",
+        classe: "badge-passageiro",
+        labelQtd: "Corridas",
+      },
+      entregas: {
+        nome: "App Entrega",
+        classe: "badge-entrega",
+        labelQtd: "Entregas",
+      },
+      // Fallback
+      undefined: { nome: "Geral", classe: "badge-loja", labelQtd: "Qtd" },
+    };
 
-    ganhosFiltrados.forEach((item) => {
-      // Criação segura da data para exibição
-      // Adiciona o fuso para garantir que não volte um dia
-      let dataGanho = new Date(item.data + "T12:00:00");
-
-      let diaSemana = dataGanho.toLocaleDateString("pt-BR", {
-        weekday: "long",
+    ganhos.forEach((item) => {
+      // Ajusta data
+      const dataObj = new Date(item.data + "T12:00:00");
+      const diaSemana = dataObj.toLocaleDateString("pt-BR", {
+        weekday: "short",
       });
-      diaSemana = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
+      const dataFormatada = dataObj.toLocaleDateString("pt-BR");
+
+      // Pega configs da categoria
+      const config =
+        configCategoria[item.categoria] || configCategoria.undefined;
 
       const li = document.createElement("li");
       li.className = "ganho-item";
-
-      // Definição do rótulo secundário (Qtd)
-      let infoSecundaria = "";
-      if (item.qtd !== undefined && item.qtd !== null) {
-        const label =
-          item.categoria === "passageiros" ? "Corridas" : "Entregas";
-        infoSecundaria = `<p class="info-secundaria">${label}: ${item.qtd}</p>`;
-      }
-
       li.innerHTML = `
           <div class="ganho-info">
-              <p class="ganho-categoria">${
-                categoriaNomes[item.categoria] || "Geral"
-              }</p>
-              <p class="ganho-data">${diaSemana}, ${new Date(
-        item.data + "T12:00:00"
-      ).toLocaleDateString("pt-BR")}</p>
+              <span class="badge-categoria ${config.classe}">${
+        config.nome
+      }</span>
+              <p class="ganho-data"><strong>${diaSemana}</strong>, ${dataFormatada}</p>
               <p class="ganho-valor">${formatarMoeda(item.valor)}</p>
-              ${infoSecundaria}
+              <p class="info-secundaria">${config.labelQtd}: ${
+        item.qtd || 0
+      }</p>
           </div>
           <div class="ganho-acoes">
-              <button class="btn-menu-ganho">...</button>
-              <div class="menu-ganho-opcoes" style="display: none;">
-                  <a href="#" class="btn-editar">Editar</a>
-                  <a href="#" class="btn-excluir">Excluir</a>
-              </div>
+              <button class="btn-excluir-direto" style="color:red; border:none; background:none; font-size:1.2rem;">&times;</button>
           </div>`;
 
-      // Eventos dos botões dentro do item da lista
-      const btnMenu = li.querySelector(".btn-menu-ganho");
-      if (btnMenu) {
-        btnMenu.addEventListener("click", (e) => {
-          e.stopPropagation();
-          // Fecha outros menus abertos
-          document
-            .querySelectorAll(".menu-ganho-opcoes")
-            .forEach((m) => (m.style.display = "none"));
-          // Abre este
-          const menu = e.currentTarget.nextElementSibling;
-          if (menu) menu.style.display = "block";
-        });
-      }
-
-      const btnEditar = li.querySelector(".btn-editar");
-      if (btnEditar) {
-        btnEditar.addEventListener("click", (e) => {
-          e.preventDefault();
-          this.editarGanho(item.id);
-        });
-      }
-
-      const btnExcluir = li.querySelector(".btn-excluir");
-      if (btnExcluir) {
-        btnExcluir.addEventListener("click", (e) => {
-          e.preventDefault();
-          this.excluirGanho(item.id);
-        });
-      }
-
+      li.querySelector(".btn-excluir-direto").addEventListener("click", () =>
+        this.excluirGanho(item.id)
+      );
       lista.appendChild(li);
     });
+
+    // Atualiza Resumo Rápido do Filtro (se houver lógica de filtro ativa)
+    this.atualizarResumoFiltro(ganhos);
+  },
+
+  atualizarResumoFiltro: function (ganhos) {
+    const total = ganhos.reduce((acc, g) => acc + g.valor, 0);
+    const qtd = ganhos.reduce((acc, g) => acc + (g.qtd || 0), 0);
+
+    if ($("resumo-filtro-total"))
+      $("resumo-filtro-total").textContent = formatarMoeda(total);
+    if ($("resumo-filtro-entregas"))
+      $("resumo-filtro-entregas").textContent = qtd;
   },
 
   atualizarTelaInicio: async function () {

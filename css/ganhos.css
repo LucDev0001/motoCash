@@ -194,3 +194,63 @@ ul#listaGanhos {
 .menu-ganho-opcoes a.btn-excluir {
   color: #e63946;
 }
+.acoes-ganhos-container {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.btn-acao-ganho {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 10px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: transform 0.2s;
+}
+.btn-acao-ganho:active {
+  transform: scale(0.95);
+}
+.btn-acao-ganho span.material-icons {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+/* Cores das Categorias */
+.btn-loja {
+  background-color: #3498db;
+} /* Azul */
+.btn-passageiro {
+  background-color: #f1c40f;
+  color: #333;
+} /* Amarelo Uber/99 */
+.btn-entrega {
+  background-color: #e74c3c;
+} /* Vermelho iFood */
+
+/* Badges na Lista */
+.badge-categoria {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.badge-loja {
+  background-color: #3498db;
+}
+.badge-passageiro {
+  background-color: #f1c40f;
+  color: #000;
+}
+.badge-entrega {
+  background-color: #e74c3c;
+}
