@@ -31,7 +31,7 @@ const pages = {
       await ganhos.atualizarTelaInicio(); // Agora é async
       relatorios.init({ ganhos }); // Passa o módulo de ganhos para relatórios
       const ganhosData = await ganhos.fetchGanhos(); // Busca os dados uma vez
-      relatorios.atualizarGraficos(ganhosData); // Passa os dados para os gráficos
+      await relatorios.atualizarGraficos(ganhosData); // Passa os dados para os gráficos
       weather.getAndDisplayDetailedWeather();
     },
   },

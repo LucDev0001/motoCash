@@ -1,6 +1,7 @@
 // js/reports.js
 // Responsável por criar os gráficos e as funcionalidades de exportar/compartilhar.
 
+import { perfil } from "./perfil.js";
 import { $ } from "./utils.js";
 import { storage } from "./storage.js";
 import { getDateRange } from "./date.utils.js";
@@ -19,14 +20,14 @@ export const relatorios = {
     this.setupFerramentas();
   },
 
-  atualizarGraficos: function (ganhosUsuario) {
-    const usuario = storage.getUsuarioLogado(); // Usado apenas para a meta por enquanto
-    if (!usuario) return;
+  atualizarGraficos: async function (ganhosUsuario) {
+    const perfilUsuario = await perfil.fetchUserProfile();
+    if (!perfilUsuario) return; // Se não encontrar o perfil, não continua
 
     // Se nenhum ganho for passado, não faz nada.
     if (!ganhosUsuario) return;
 
-    const metaSemanal = usuario.metaSemanal || 1000;
+    const metaSemanal = perfilUsuario.metaSemanal || 1000;
     const hoje = new Date().toISOString().slice(0, 10);
     const ganhosDia = ganhosUsuario
       .filter((g) => g.data === hoje)
