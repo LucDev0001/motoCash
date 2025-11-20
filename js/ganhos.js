@@ -232,16 +232,6 @@ export const ganhos = {
     if (!firebaseAuth.currentUser || !$("listaGanhos")) return;
 
     const ganhosFiltrados = await this.getGanhosFiltrados();
-
-    const lista = $("listaGanhos");
-    lista.innerHTML = "";
-    if (ganhosFiltrados.length === 0) {
-      lista.innerHTML =
-        "<li class='ganho-item-vazio'>Nenhum ganho encontrado.</li>";
-      return;
-    }
-
-    ganhosFiltrados.forEach((item) => {
       const categoriaNomes = {
         loja_fixa: "Loja Fixa",
         passageiros: "Passageiros",
@@ -249,6 +239,17 @@ export const ganhos = {
       };
       const dataGanho = new Date(item.data + "T03:00:00");
       let diaSemana = dataGanho.toLocaleDateString("pt-BR", {
+
+    const lista = $("listaGanhos");
+    lista.innerHTML = "";
+    if (ganhosFiltrados.length === 0) {
+      lista.innerHTML =
+        "<li class='ganho-item-vazio'>Nenhum ganho encontrado. Adicione um novo ganho acima!</li>";
+      return;
+    }
+
+    ganhosFiltrados.forEach((item) => {
+      let diaSemana = new Date(item.data + "T03:00:00").toLocaleDateString("pt-BR", {
         weekday: "long",
       });
       diaSemana = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
@@ -260,11 +261,9 @@ export const ganhos = {
               <p class="ganho-categoria">${
                 categoriaNomes[item.categoria] || "Geral"
               }</p>
-              <p class="ganho-data">${diaSemana}, ${dataGanho.toLocaleDateString(
-        "pt-BR"
-      )}</p>
+              <p class="ganho-data">${diaSemana}, ${new Date(item.data + "T03:00:00").toLocaleDateString("pt-BR")}</p>
               <p class="ganho-valor">${formatarMoeda(item.valor)}</p>
-              <p class="info-secundaria">Entregas: ${item.qtdEntregas}</p>
+              ${item.qtd ? `<p class="info-secundaria">${item.categoria === 'passageiros' ? 'Corridas' : 'Entregas'}: ${item.qtd}</p>` : ''}
           </div>
           <div class="ganho-acoes">
               <button class="btn-menu-ganho">...</button>
