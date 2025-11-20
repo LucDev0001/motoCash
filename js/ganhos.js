@@ -14,7 +14,6 @@ import {
 
 // Importa utilitários locais
 import { $ } from "./utils.js";
-import { storage } from "./storage.js";
 import { getDateRange } from "./date.utils.js";
 import { formatarMoeda } from "./utils.js";
 
@@ -25,10 +24,12 @@ export const ganhos = {
   localGanhosCache: null, // Cache para evitar múltiplas buscas no Firestore
 
   init: function (dependencies) {
-    relatoriosModule = dependencies.relatorios;
+    relatoriosModule = dependencies ? dependencies.relatorios : null;
     this.setupEventListeners();
     this.setupFiltros();
     this.atualizarUI(); // Carrega o histórico ao iniciar
+
+    // Fecha menus flutuantes ao clicar fora
     document.body.addEventListener("click", () =>
       document
         .querySelectorAll(".menu-ganho-opcoes")
@@ -37,39 +38,38 @@ export const ganhos = {
   },
 
   setupEventListeners: function () {
-    // Lógica para alternar entre os formulários de ganho
-    document.querySelectorAll(".categoria-btn-ganho").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document
-          .querySelectorAll(".categoria-btn-ganho")
-          .forEach((b) => b.classList.remove("ativo"));
-        btn.classList.add("ativo");
+    // 1. Lógica para Abrir e Fechar o Modal (Adicionado para compatibilidade com HTML)
+    const btnAbrir = $("btn-abrir-form-ganho");
+    const btnFechar = $("btn-fechar-form-ganho");
+    const cardForm = $("card-formulario-ganho");
 
-        document
-          .querySelectorAll(".form-ganho-container")
-          .forEach((form) => form.classList.remove("ativo"));
-        const formId = btn.dataset.form;
-        $(formId).classList.add("ativo");
-      });
-    });
-
-    // Adiciona o evento de submit para cada formulário
-    if ($("formGanhoLojaFixa")) {
-      $("formGanhoLojaFixa").addEventListener("submit", (e) => {
-        e.preventDefault();
-        this.adicionarGanho("loja_fixa", e);
+    if (btnAbrir && cardForm) {
+      btnAbrir.addEventListener("click", () => {
+        cardForm.style.display = "block";
+        // Reseta o formulário ao abrir para novo cadastro
+        if ($("formGanho")) $("formGanho").reset();
+        this.ganhoEditandoId = null;
+        $("titulo-form-ganho").textContent = "Adicionar Novo Ganho";
+        $("btnSalvarGanho").textContent = "Adicionar Ganho";
       });
     }
-    if ($("formGanhoPassageiros")) {
-      $("formGanhoPassageiros").addEventListener("submit", (e) => {
-        e.preventDefault();
-        this.adicionarGanho("passageiros", e);
+
+    if (btnFechar && cardForm) {
+      btnFechar.addEventListener("click", () => {
+        cardForm.style.display = "none";
       });
     }
-    if ($("formGanhoEntregas")) {
-      $("formGanhoEntregas").addEventListener("submit", (e) => {
+
+    // 2. Lógica do Formulário Único (Adaptado ao seu HTML)
+    if ($("formGanho")) {
+      $("formGanho").addEventListener("submit", (e) => {
         e.preventDefault();
-        this.adicionarGanho("entregas", e);
+        if (this.ganhoEditandoId) {
+          this.atualizarGanho();
+        } else {
+          // Como o formulário HTML é de diária/taxa, assumimos categoria 'loja_fixa'
+          this.adicionarGanho("loja_fixa", e);
+        }
       });
     }
   },
@@ -77,10 +77,14 @@ export const ganhos = {
   setupFiltros: function () {
     const update = () => this.atualizarUI();
     const filtroPeriodo = $("filtro-periodo");
+
     if (filtroPeriodo) {
       filtroPeriodo.addEventListener("change", () => {
-        $("filtro-datas-personalizadas").style.display =
-          filtroPeriodo.value === "personalizado" ? "flex" : "none";
+        const divPersonalizada = $("filtro-datas-personalizadas");
+        if (divPersonalizada) {
+          divPersonalizada.style.display =
+            filtroPeriodo.value === "personalizado" ? "flex" : "none";
+        }
         update();
       });
     }
@@ -93,38 +97,38 @@ export const ganhos = {
   },
 
   adicionarGanho: async function (categoria, event) {
-    this.localGanhosCache = null; // Invalida o cache ao adicionar um novo ganho
+    this.localGanhosCache = null; // Invalida o cache
     const usuarioLogado = firebaseAuth.currentUser;
+
     if (!usuarioLogado) {
       alert("Você precisa estar logado para adicionar um ganho.");
       return;
     }
 
-    let novoGanho = { id: String(Date.now()), categoria };
+    let novoGanho = {
+      id: String(Date.now()),
+      categoria: categoria,
+    };
 
-    if (categoria === "loja_fixa") {
-      novoGanho.data = $("data-loja").value;
-      const valorDiaria = parseFloat($("valorDiaria-loja").value) || 0;
-      const taxaEntrega = parseFloat($("taxaEntrega-loja").value) || 0;
-      const qtdEntregas = parseInt($("qtdEntregas-loja").value) || 0;
-      novoGanho.valor = valorDiaria + taxaEntrega * qtdEntregas;
-      novoGanho.qtd = qtdEntregas;
-    } else if (categoria === "passageiros") {
-      novoGanho.data = $("data-passageiros").value;
-      novoGanho.valor = parseFloat($("valor-passageiros").value) || 0;
-      novoGanho.qtd = parseInt($("qtd-passageiros").value) || 0;
-    } else if (categoria === "entregas") {
-      novoGanho.data = $("data-entregas").value;
-      novoGanho.valor = parseFloat($("valor-entregas").value) || 0;
-      novoGanho.qtd = parseInt($("qtd-entregas").value) || 0;
-    }
+    // Mapeando os IDs conforme o seu HTML (ganhos.html)
+    // O HTML usa IDs genéricos: data, valorDiaria, taxaEntrega, qtdEntregas
+    novoGanho.data = $("data").value;
 
-    if (!novoGanho.data || !novoGanho.valor) {
-      return alert("Por favor, preencha a data e o valor.");
+    // Lógica para cálculo baseado nos campos do HTML
+    const valorDiaria = parseFloat($("valorDiaria").value) || 0;
+    const taxaEntrega = parseFloat($("taxaEntrega").value) || 0;
+    const qtdEntregas = parseInt($("qtdEntregas").value) || 0;
+
+    novoGanho.valorDiaria = valorDiaria;
+    novoGanho.taxaEntrega = taxaEntrega;
+    novoGanho.qtd = qtdEntregas;
+    novoGanho.valor = valorDiaria + taxaEntrega * qtdEntregas;
+
+    if (!novoGanho.data || (!novoGanho.valor && novoGanho.valor !== 0)) {
+      return alert("Por favor, preencha a data e os valores corretamente.");
     }
 
     try {
-      // Cria uma referência para o novo documento de ganho dentro da sub-coleção do usuário
       const docRef = doc(
         db,
         "usuarios",
@@ -132,10 +136,15 @@ export const ganhos = {
         "ganhos",
         novoGanho.id
       );
-      // Salva o objeto 'novoGanho' no Firestore
       await setDoc(docRef, novoGanho);
+
       alert("Ganho salvo com sucesso!");
-      event.target.reset(); // Reseta o formulário que foi enviado
+      if (event && event.target) event.target.reset();
+
+      // Fecha o modal após salvar
+      if ($("card-formulario-ganho"))
+        $("card-formulario-ganho").style.display = "none";
+
       this.atualizarUI();
       this.atualizarTelaInicio();
     } catch (error) {
@@ -145,27 +154,29 @@ export const ganhos = {
   },
 
   atualizarGanho: async function () {
-    this.localGanhosCache = null; // Invalida o cache
+    this.localGanhosCache = null;
     const usuarioLogado = firebaseAuth.currentUser;
     if (!usuarioLogado) return alert("Usuário não encontrado.");
     if (!this.ganhoEditandoId)
       return alert("Erro: ID do ganho não encontrado.");
 
+    // IDs baseados no seu HTML
     const valorDiaria = parseFloat($("valorDiaria").value) || 0;
     const taxaEntrega = parseFloat($("taxaEntrega").value) || 0;
     const qtdEntregas = parseInt($("qtdEntregas").value) || 0;
 
     const ganhoAtualizado = {
       id: this.ganhoEditandoId,
+      categoria: "loja_fixa", // Mantém compatibilidade
       data: $("data").value,
       valorDiaria,
       taxaEntrega,
       qtdEntregas,
+      qtd: qtdEntregas,
       valor: valorDiaria + taxaEntrega * qtdEntregas,
     };
 
     try {
-      // A referência aponta para o documento que já existe
       const docRef = doc(
         db,
         "usuarios",
@@ -173,9 +184,18 @@ export const ganhos = {
         "ganhos",
         this.ganhoEditandoId
       );
-      // setDoc vai sobrescrever o documento com os novos dados
-      await setDoc(docRef, ganhoAtualizado);
-      this.finalizarAcaoDeGanho();
+      await setDoc(docRef, ganhoAtualizado); // Atualiza/Sobrescreve
+
+      alert("Ganho atualizado com sucesso!");
+      this.ganhoEditandoId = null;
+
+      // Reseta UI
+      $("formGanho").reset();
+      if ($("card-formulario-ganho"))
+        $("card-formulario-ganho").style.display = "none";
+
+      this.atualizarUI();
+      this.atualizarTelaInicio();
     } catch (error) {
       console.error("Erro ao atualizar ganho: ", error);
       alert("Não foi possível atualizar o ganho. Tente novamente.");
@@ -183,13 +203,12 @@ export const ganhos = {
   },
 
   excluirGanho: async function (ganhoId) {
-    this.localGanhosCache = null; // Invalida o cache
+    this.localGanhosCache = null;
     if (confirm("Tem certeza que deseja excluir este ganho?")) {
       const usuarioLogado = firebaseAuth.currentUser;
       if (!usuarioLogado) return alert("Usuário não encontrado.");
 
       try {
-        // Cria a referência para o documento a ser excluído
         const docRef = doc(
           db,
           "usuarios",
@@ -197,13 +216,10 @@ export const ganhos = {
           "ganhos",
           ganhoId
         );
-        // Deleta o documento no Firestore
         await deleteDoc(docRef);
 
-        // Atualiza a interface após a exclusão
         this.atualizarUI();
         this.atualizarTelaInicio();
-        // A atualização dos gráficos já é chamada dentro de atualizarTelaInicio indiretamente
       } catch (error) {
         console.error("Erro ao excluir ganho: ", error);
         alert("Não foi possível excluir o ganho. Tente novamente.");
@@ -212,16 +228,40 @@ export const ganhos = {
   },
 
   editarGanho: async function (ganhoId) {
-    // A lógica de edição se tornou mais complexa.
-    // Por enquanto, vamos focar no cadastro e visualização.
-    alert("A função de editar será implementada em breve!");
+    // 1. Busca o ganho nos dados cacheados ou busca nova
+    const usuarioLogado = firebaseAuth.currentUser;
+    if (!usuarioLogado) return;
+
+    let ganho = null;
+    if (this.localGanhosCache) {
+      ganho = this.localGanhosCache.find((g) => g.id === ganhoId);
+    }
+
+    // Se não achou no cache, não conseguimos editar sem buscar (simplificação)
+    if (!ganho) {
+      alert("Erro ao carregar dados para edição. Tente recarregar a página.");
+      return;
+    }
+
+    // 2. Preenche o formulário HTML
+    $("data").value = ganho.data;
+    $("valorDiaria").value = ganho.valorDiaria || 0;
+    $("taxaEntrega").value = ganho.taxaEntrega || 0;
+    $("qtdEntregas").value = ganho.qtd || 0;
+
+    // 3. Ajusta o estado para modo de edição
+    this.ganhoEditandoId = ganhoId;
+    $("titulo-form-ganho").textContent = "Editar Ganho";
+    $("btnSalvarGanho").textContent = "Atualizar Ganho";
+
+    // 4. Abre o modal
+    $("card-formulario-ganho").style.display = "block";
   },
 
   fetchGanhos: async function () {
     const usuarioLogado = firebaseAuth.currentUser;
     if (!usuarioLogado) return [];
 
-    // Se o cache existir, retorna os dados cacheados para evitar uma nova busca
     if (this.localGanhosCache) {
       return this.localGanhosCache;
     }
@@ -233,30 +273,31 @@ export const ganhos = {
       ganhos.push(doc.data());
     });
 
-    this.localGanhosCache = ganhos; // Armazena os dados no cache
+    this.localGanhosCache = ganhos;
     return ganhos;
   },
 
   getGanhosFiltrados: async function () {
-    // Simplificado por enquanto. A lógica de filtros pode ser reintroduzida depois.
     const ganhosUsuario = await this.fetchGanhos();
+    // Ordenação básica por data decrescente
     return ganhosUsuario.sort((a, b) => new Date(b.data) - new Date(a.data));
   },
 
   atualizarUI: async function () {
     if (!firebaseAuth.currentUser || !$("listaGanhos")) return;
 
+    // CORREÇÃO AQUI: Removido o código quebrado e variáveis indefinidas que existiam antes
     const ganhosFiltrados = await this.getGanhosFiltrados();
-      const categoriaNomes = {
-        loja_fixa: "Loja Fixa",
-        passageiros: "Passageiros",
-        entregas: "Entregas App",
-      };
-      const dataGanho = new Date(item.data + "T03:00:00");
-      let diaSemana = dataGanho.toLocaleDateString("pt-BR", {
+
+    const categoriaNomes = {
+      loja_fixa: "Loja Fixa",
+      passageiros: "Passageiros",
+      entregas: "Entregas App",
+    };
 
     const lista = $("listaGanhos");
     lista.innerHTML = "";
+
     if (ganhosFiltrados.length === 0) {
       lista.innerHTML =
         "<li class='ganho-item-vazio'>Nenhum ganho encontrado. Adicione um novo ganho acima!</li>";
@@ -264,21 +305,36 @@ export const ganhos = {
     }
 
     ganhosFiltrados.forEach((item) => {
-      let diaSemana = new Date(item.data + "T03:00:00").toLocaleDateString("pt-BR", {
+      // Criação segura da data para exibição
+      // Adiciona o fuso para garantir que não volte um dia
+      let dataGanho = new Date(item.data + "T12:00:00");
+
+      let diaSemana = dataGanho.toLocaleDateString("pt-BR", {
         weekday: "long",
       });
       diaSemana = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
 
       const li = document.createElement("li");
       li.className = "ganho-item";
+
+      // Definição do rótulo secundário (Qtd)
+      let infoSecundaria = "";
+      if (item.qtd !== undefined && item.qtd !== null) {
+        const label =
+          item.categoria === "passageiros" ? "Corridas" : "Entregas";
+        infoSecundaria = `<p class="info-secundaria">${label}: ${item.qtd}</p>`;
+      }
+
       li.innerHTML = `
           <div class="ganho-info">
               <p class="ganho-categoria">${
                 categoriaNomes[item.categoria] || "Geral"
               }</p>
-              <p class="ganho-data">${diaSemana}, ${dataGanho.toLocaleDateString("pt-BR")}</p>
+              <p class="ganho-data">${diaSemana}, ${new Date(
+        item.data + "T12:00:00"
+      ).toLocaleDateString("pt-BR")}</p>
               <p class="ganho-valor">${formatarMoeda(item.valor)}</p>
-              ${item.qtd ? `<p class="info-secundaria">${item.categoria === 'passageiros' ? 'Corridas' : 'Entregas'}: ${item.qtd}</p>` : ''}
+              ${infoSecundaria}
           </div>
           <div class="ganho-acoes">
               <button class="btn-menu-ganho">...</button>
@@ -288,21 +344,36 @@ export const ganhos = {
               </div>
           </div>`;
 
-      li.querySelector(".btn-menu-ganho").addEventListener("click", (e) => {
-        e.stopPropagation();
-        document
-          .querySelectorAll(".menu-ganho-opcoes")
-          .forEach((m) => (m.style.display = "none"));
-        e.currentTarget.nextElementSibling.style.display = "block";
-      });
-      li.querySelector(".btn-editar").addEventListener("click", (e) => {
-        e.preventDefault();
-        this.editarGanho(item.id);
-      });
-      li.querySelector(".btn-excluir").addEventListener("click", (e) => {
-        e.preventDefault();
-        this.excluirGanho(item.id);
-      });
+      // Eventos dos botões dentro do item da lista
+      const btnMenu = li.querySelector(".btn-menu-ganho");
+      if (btnMenu) {
+        btnMenu.addEventListener("click", (e) => {
+          e.stopPropagation();
+          // Fecha outros menus abertos
+          document
+            .querySelectorAll(".menu-ganho-opcoes")
+            .forEach((m) => (m.style.display = "none"));
+          // Abre este
+          const menu = e.currentTarget.nextElementSibling;
+          if (menu) menu.style.display = "block";
+        });
+      }
+
+      const btnEditar = li.querySelector(".btn-editar");
+      if (btnEditar) {
+        btnEditar.addEventListener("click", (e) => {
+          e.preventDefault();
+          this.editarGanho(item.id);
+        });
+      }
+
+      const btnExcluir = li.querySelector(".btn-excluir");
+      if (btnExcluir) {
+        btnExcluir.addEventListener("click", (e) => {
+          e.preventDefault();
+          this.excluirGanho(item.id);
+        });
+      }
 
       lista.appendChild(li);
     });
@@ -314,10 +385,13 @@ export const ganhos = {
     const ganhosUsuario = await this.fetchGanhos();
 
     const hoje = new Date().toISOString().slice(0, 10);
+
+    // Cálculo Hoje
     const ganhosHoje = ganhosUsuario
       .filter((g) => g.data === hoje)
       .reduce((s, g) => s + g.valor, 0);
 
+    // Cálculo Semana
     const semanaRange = getDateRange("esta-semana");
     const ganhosSemana = ganhosUsuario
       .filter(
@@ -327,6 +401,7 @@ export const ganhos = {
       )
       .reduce((s, g) => s + g.valor, 0);
 
+    // Cálculo Mês
     const mesRange = getDateRange("este-mes");
     const ganhosMes = ganhosUsuario
       .filter(
@@ -336,16 +411,18 @@ export const ganhos = {
       )
       .reduce((s, g) => s + g.valor, 0);
 
+    // Última entrega
     let ultimaEntrega = "-";
     if (ganhosUsuario.length > 0) {
       const ult = ganhosUsuario.sort(
         (a, b) => new Date(b.data) - new Date(a.data)
       )[0];
-      ultimaEntrega = `${new Date(ult.data + "T03:00:00").toLocaleDateString(
+      ultimaEntrega = `${new Date(ult.data + "T12:00:00").toLocaleDateString(
         "pt-BR"
       )} (${formatarMoeda(ult.valor)})`;
     }
 
+    // Média de entregas
     const entregasPorDia = ganhosUsuario.reduce((acc, g) => {
       acc[g.data] = (acc[g.data] || 0) + (g.qtd || 0);
       return acc;
@@ -357,6 +434,7 @@ export const ganhos = {
     );
     const mediaEntregas = diasComEntregas ? totalEntregas / diasComEntregas : 0;
 
+    // Melhor Dia
     let melhorDia = "-";
     if (ganhosUsuario.length > 0) {
       const ganhosPorDia = ganhosUsuario.reduce((acc, g) => {
@@ -366,35 +444,41 @@ export const ganhos = {
       const melhor = Object.entries(ganhosPorDia).sort(
         (a, b) => b[1] - a[1]
       )[0];
-      if (melhor)
-        melhorDia = `${new Date(melhor[0] + "T03:00:00").toLocaleDateString(
+      if (melhor) {
+        melhorDia = `${new Date(melhor[0] + "T12:00:00").toLocaleDateString(
           "pt-BR"
         )} (${formatarMoeda(melhor[1])})`;
+      }
     }
 
-    // Busca o perfil do usuário do Firestore para obter a meta
-    const perfilUsuario = await perfil.fetchUserProfile();
-    const metaSemanal = perfilUsuario ? perfilUsuario.metaSemanal : 1000;
-
-    const faltaMeta = Math.max(0, metaSemanal - ganhosSemana);
-    if ($("metaMensagem")) {
-      $("metaMensagem").innerHTML =
-        faltaMeta > 0
-          ? `Faltam ${formatarMoeda(
-              faltaMeta
-            )} para bater sua meta de ${formatarMoeda(metaSemanal)}!`
-          : `Parabéns! Você bateu sua meta de ${formatarMoeda(metaSemanal)}!`;
-      this.atualizarBarraProgresso(metaSemanal, ganhosSemana);
-    }
+    // Atualiza textos na DOM
     this.setElementText("resumoHoje", formatarMoeda(ganhosHoje));
     this.setElementText("resumoSemana", formatarMoeda(ganhosSemana));
     this.setElementText("resumoMes", formatarMoeda(ganhosMes));
     this.setElementText("mediaEntregas", mediaEntregas.toFixed(1));
     this.setElementText("melhorDia", melhorDia);
     this.setElementText("ultimaEntrega", ultimaEntrega);
+
+    // Meta Semanal
+    try {
+      const perfilUsuario = await perfil.fetchUserProfile();
+      const metaSemanal = perfilUsuario ? perfilUsuario.metaSemanal : 1000;
+
+      const faltaMeta = Math.max(0, metaSemanal - ganhosSemana);
+      if ($("metaMensagem")) {
+        $("metaMensagem").innerHTML =
+          faltaMeta > 0
+            ? `Faltam ${formatarMoeda(
+                faltaMeta
+              )} para bater sua meta de ${formatarMoeda(metaSemanal)}!`
+            : `Parabéns! Você bateu sua meta de ${formatarMoeda(metaSemanal)}!`;
+        this.atualizarBarraProgresso(metaSemanal, ganhosSemana);
+      }
+    } catch (e) {
+      console.log("Erro ao carregar perfil para meta:", e);
+    }
   },
 
-  // LÓGICA ORIGINAL RESTAURADA
   atualizarBarraProgresso: function (meta, ganhos) {
     const containerAntigo = $("progresso-meta-container");
     if (containerAntigo) {
@@ -412,10 +496,10 @@ export const ganhos = {
     )}% da meta alcançada</div>`;
 
     if (progresso >= 100) {
-      progressoContainer
-        .querySelector(".progresso-barra")
-        .classList.add("meta-completa");
+      const barra = progressoContainer.querySelector(".progresso-barra");
+      if (barra) barra.classList.add("meta-completa");
     }
+
     if ($("metaMensagem")) {
       $("metaMensagem").insertAdjacentElement("afterend", progressoContainer);
     }
