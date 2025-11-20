@@ -1,6 +1,48 @@
 /* css/marketplace.css */
 /* Estilos para a página do marketplace */
 
+.marketplace-filtros {
+  margin-bottom: 1.5rem;
+}
+
+.search-bar {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.search-bar input {
+  width: 100%;
+  padding-right: 2.5rem; /* Espaço para o ícone */
+}
+
+.search-bar .material-icons {
+  position: absolute;
+  right: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-dark);
+}
+
+.category-filters {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto; /* Permite rolar horizontalmente em telas pequenas */
+  padding-bottom: 0.5rem;
+}
+
+.category-btn {
+  white-space: nowrap;
+  background-color: var(--gray-light);
+  color: var(--black);
+  border: 1px solid var(--gray);
+}
+
+.category-btn.active {
+  background-color: var(--black);
+  color: var(--white);
+  border-color: var(--black);
+}
+
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));

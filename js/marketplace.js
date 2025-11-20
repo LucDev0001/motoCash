@@ -17,14 +17,33 @@ import { $ } from "./utils.js";
 import { formatarMoeda } from "./utils.js";
 
 export const marketplace = {
+  allProductsCache: [], // Cache para todos os produtos
   navegarPara: null,
 
   init: function (dependencies) {
     this.navegarPara = dependencies.navegarPara;
     this.fetchAndDisplayProducts();
+    this.setupFilters();
+
+    if ($("btn-user-add-product")) {
+      $("btn-user-add-product").onclick = () => this.navegarPara("add-product");
+    }
   },
 
-  fetchAndDisplayProducts: async function () {
+  setupFilters: function () {
+    const searchInput = $("search-input");
+    if (searchInput) {
+      searchInput.addEventListener("input", () =>
+        this.filterAndDisplayProducts()
+      );
+    }
+
+    document.querySelectorAll(".category-btn").forEach((btn) => {
+      btn.addEventListener("click", () => this.handleCategoryClick(btn));
+    });
+  },
+
+  fetchAndDisplayProducts: async function (force = false) {
     const productListEl = $("product-list");
     if (!productListEl) return;
 
@@ -32,25 +51,65 @@ export const marketplace = {
 
     try {
       const q = query(collection(db, "produtos"), orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
 
-      if (querySnapshot.empty) {
-        productListEl.innerHTML =
-          "<p>Nenhum produto encontrado no momento.</p>";
-        return;
+      // Usa o cache se disponível, a menos que a busca seja forçada
+      if (this.allProductsCache.length === 0 || force) {
+        const querySnapshot = await getDocs(q);
+        this.allProductsCache = querySnapshot.docs.map((doc) => doc.data());
       }
 
-      productListEl.innerHTML = ""; // Limpa o "Carregando..."
-
-      querySnapshot.forEach((doc) => {
-        const product = doc.data();
-        productListEl.innerHTML += this.createProductCardHTML(product);
-      });
+      this.filterAndDisplayProducts();
     } catch (error) {
       console.error("Erro ao buscar produtos:", error);
       productListEl.innerHTML =
         "<p>Ocorreu um erro ao carregar os produtos.</p>";
     }
+  },
+
+  filterAndDisplayProducts: function () {
+    const productListEl = $("product-list");
+    const searchTerm = $("search-input").value.toLowerCase();
+    const activeCategory = document.querySelector(".category-btn.active")
+      .dataset.category;
+
+    let filteredProducts = this.allProductsCache;
+
+    // Filtra por categoria
+    if (activeCategory !== "todos") {
+      filteredProducts = filteredProducts.filter(
+        (p) => p.categoria === activeCategory
+      );
+    }
+
+    // Filtra por busca
+    if (searchTerm) {
+      filteredProducts = filteredProducts.filter((p) =>
+        p.nome.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    if (filteredProducts.length === 0) {
+      productListEl.innerHTML =
+        "<p>Nenhum produto encontrado com esses filtros.</p>";
+      return;
+    }
+
+    productListEl.innerHTML = ""; // Limpa a lista
+    filteredProducts.forEach((product) => {
+      const card = document.createElement("div");
+      card.innerHTML = this.createProductCardHTML(product);
+      productListEl.appendChild(card.firstChild);
+    });
+
+    this.setupProductActionButtons();
+  },
+
+  handleCategoryClick: function (clickedBtn) {
+    document
+      .querySelectorAll(".category-btn")
+      .forEach((btn) => btn.classList.remove("active"));
+    clickedBtn.classList.add("active");
+    this.filterAndDisplayProducts();
   },
 
   createProductCardHTML: function (product) {
@@ -141,7 +200,7 @@ export const marketplace = {
     try {
       await setDoc(doc(db, "produtos", newProduct.id), newProduct);
       alert("Produto adicionado com sucesso!");
-      this.navegarPara("marketplace");
+      this.navegarPara("marketplace"); // Navega de volta
     } catch (error) {
       console.error("Erro ao adicionar produto:", error);
       alert("Ocorreu um erro ao salvar o produto.");
@@ -188,7 +247,7 @@ export const marketplace = {
     try {
       await deleteDoc(doc(db, "produtos", productId));
       alert("Produto excluído com sucesso!");
-      this.fetchAndDisplayProducts(); // Recarrega a lista de produtos
+      this.fetchAndDisplayProducts(true); // Força a recarga do cache
     } catch (error) {
       console.error("Erro ao excluir produto:", error);
       alert("Ocorreu um erro ao excluir o produto.");
