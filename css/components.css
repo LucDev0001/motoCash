@@ -222,3 +222,80 @@ footer a i:hover {
 .modal-botoes .btn-secundario:hover {
   background-color: #d1d1d1;
 }
+
+/* ==========================================================================
+   Estilos para Tela de Login e Cadastro (Mobile First)
+   ========================================================================== */
+
+.login-container {
+  width: 100%;
+  max-width: 420px; /* Limita a largura em telas maiores */
+  margin: 2rem auto; /* Centraliza horizontalmente e adiciona margem vertical */
+  padding: 1.5rem;
+}
+
+.login-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.login-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* Espaçamento entre os elementos do formulário */
+}
+
+.login-container label {
+  margin-bottom: 0; /* Remove a margem padrão para usar o gap do flexbox */
+}
+
+.login-container input {
+  margin-bottom: 0.5rem; /* Pequena margem abaixo de cada input */
+}
+
+.login-container button[type="submit"] {
+  margin-top: 1rem; /* Mais espaço antes do botão principal */
+}
+
+.mensagem-erro {
+  color: #d32f2f;
+  font-size: 0.9rem;
+  text-align: center;
+  min-height: 1.2rem; /* Garante espaço mesmo quando não há erro */
+  margin-top: -0.5rem;
+}
+
+.link-alternativo {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+}
+
+/* Estilos para Seleção de Avatar */
+.avatar-selecao {
+  margin-top: 1rem;
+}
+
+.opcoes-avatar {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap; /* Garante que os avatares quebrem a linha se não couberem */
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.avatar-opcao {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.avatar-opcao.avatar-selecionado {
+  border-color: var(--accent);
+  transform: scale(1.1);
+}
