@@ -1,4 +1,4 @@
-const CACHE_NAME = "motocash-v3.2.1"; // Versão do cache atualizada
+const CACHE_NAME = "motocash-v3.2.2"; // Versão do cache atualizada
 const URLS_TO_CACHE = [
   "/",
   "/index.html",
@@ -9,6 +9,7 @@ const URLS_TO_CACHE = [
   "/css/inicio.css",
   "/css/ganhos.css",
   "/css/perfil.css",
+  "/css/marketplace.css",
   "/css/responsive.css",
   // JavaScript
   "/js/main.js",
@@ -20,12 +21,14 @@ const URLS_TO_CACHE = [
   "/js/ganhos.js",
   "/js/reports.js",
   "/js/weather.js",
+  "/js/marketplace.js",
   "/js/admin.js",
   // Templates HTML
   "/templates/inicio.html",
   "/templates/login.html",
   "/templates/ganhos.html",
   "/templates/perfil.html",
+  "/templates/marketplace.html",
   "/templates/modal.html",
   "/templates/admin.html",
   // Outros

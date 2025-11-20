@@ -1,0 +1,77 @@
+/* css/marketplace.css */
+/* Estilos para a página do marketplace */
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.product-card {
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--gray);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.product-image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.product-info {
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.product-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.3rem 0;
+  color: var(--black);
+  line-height: 1.3;
+}
+
+.product-price {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #13b15a;
+  margin-bottom: 0.8rem;
+}
+
+.product-owner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--gray-dark);
+  margin-top: auto; /* Empurra para o final */
+  margin-bottom: 0.8rem;
+}
+
+.owner-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.btn-product-action {
+  width: 100%;
+  text-align: center;
+  padding: 0.6rem;
+  font-size: 0.9rem;
+}

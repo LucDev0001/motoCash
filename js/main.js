@@ -125,6 +125,7 @@ async function checarEExibirModalTelegram() {
 function setupPermanentUI() {
   $("btnNavInicio").onclick = () => navegarPara("inicio");
   $("btnNavGanhos").onclick = () => navegarPara("ganhos");
+  $("btnNavMarketplace").onclick = () => navegarPara("marketplace");
   $("btnNavPerfil").onclick = () => navegarPara("perfil");
 
   if ("serviceWorker" in navigator) {
