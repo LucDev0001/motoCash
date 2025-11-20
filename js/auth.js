@@ -1,8 +1,18 @@
 // js/auth.js
 // Lida com a lógica de login, cadastro e gerenciamento de sessão.
 
-import { $ } from './utils.js';
-import { storage } from './storage.js';
+// Importa as ferramentas do Firebase
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import {
+  doc,
+  setDoc,
+} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+import { auth as firebaseAuth, db } from "./firebase-config.js";
+import { $ } from "./utils.js";
+import { storage } from "./storage.js";
 
 export const auth = {
   navegarPara: null, // Propriedade para armazenar a função de navegação
@@ -23,7 +33,7 @@ export const auth = {
         $("cadastroBox").style.display = "block";
       });
     }
-      
+
     const linkLogin = $("linkLogin");
     if (linkLogin) {
       linkLogin.addEventListener("click", (e) => {
@@ -35,12 +45,14 @@ export const auth = {
 
     document.querySelectorAll(".avatar-opcao").forEach((img) => {
       img.addEventListener("click", () => {
-        document.querySelectorAll(".avatar-opcao").forEach((i) => i.classList.remove("avatar-selecionado"));
+        document
+          .querySelectorAll(".avatar-opcao")
+          .forEach((i) => i.classList.remove("avatar-selecionado"));
         img.classList.add("avatar-selecionado");
         $("avatarSelecionado").value = img.dataset.avatar;
       });
     });
-    
+
     const formLogin = $("formLogin");
     if (formLogin) {
       formLogin.addEventListener("submit", (e) => {
@@ -48,7 +60,7 @@ export const auth = {
         this.handleLogin();
       });
     }
-      
+
     const formCadastro = $("formCadastro");
     if (formCadastro) {
       formCadastro.addEventListener("submit", (e) => {
@@ -58,42 +70,60 @@ export const auth = {
     }
   },
 
-  handleLogin: function () {
-    const usuario = $("loginUsuario").value.trim();
+  handleLogin: async function () {
+    const email = $("loginUsuario").value.trim(); // Agora é um e-mail
     const senha = $("loginSenha").value;
-    const user = storage.getUsuarios().find((u) => u.usuario === usuario && u.senha === senha);
-    
-    if (user) {
-      storage.setUsuarioLogado(user);
-      this.showError("loginErro", "");
-      this.afterLogin();
-    } else {
-      this.showError("loginErro", "Usuário ou senha inválidos!");
+
+    try {
+      await signInWithEmailAndPassword(firebaseAuth, email, senha);
+      // O observador onAuthStateChanged no main.js cuidará da navegação.
+      this.showError("loginErro", ""); // Limpa erros anteriores
+    } catch (error) {
+      console.error("Erro de login:", error.code);
+      this.showError("loginErro", "E-mail ou senha inválidos!");
     }
   },
 
-  handleCadastro: function () {
-    const usuario = $("cadastroUsuario").value.trim();
+  handleCadastro: async function () {
+    const email = $("cadastroUsuario").value.trim(); // Agora é um e-mail
+    const senha = $("cadastroSenha").value;
     const avatar = $("avatarSelecionado").value;
-    
-    if (!usuario) return this.showError("cadastroErro", "Usuário inválido!");
-    if (storage.getUsuarios().find((u) => u.usuario === usuario)) return this.showError("cadastroErro", "Usuário já existe!");
+
+    if (!email) return this.showError("cadastroErro", "E-mail inválido!");
     if (!avatar) return this.showError("cadastroErro", "Selecione um avatar!");
 
-    const usuarios = storage.getUsuarios();
-    const novoUsuario = {
-      usuario,
-      avatar,
-      senha: $("cadastroSenha").value,
-      nome: $("cadastroNome").value.trim(),
-      telefone: $("cadastroTelefone").value.trim(),
-      moto: $("cadastroMoto").value,
-      metaSemanal: parseFloat($("cadastroMetaSemanal").value) || 1000,
-    };
-    usuarios.push(novoUsuario);
-    storage.setUsuarios(usuarios);
-    storage.setUsuarioLogado(novoUsuario);
-    this.afterLogin();
+    try {
+      // 1. Cria o usuário no Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(
+        firebaseAuth,
+        email,
+        senha
+      );
+      const user = userCredential.user;
+
+      // 2. Cria o documento de perfil no Firestore
+      const perfilData = {
+        uid: user.uid,
+        email: user.email,
+        avatar,
+        nome: $("cadastroNome").value.trim() || "Novo Usuário",
+        telefone: $("cadastroTelefone").value.trim(),
+        moto: $("cadastroMoto").value,
+        metaSemanal: parseFloat($("cadastroMetaSemanal").value) || 1000,
+      };
+
+      // Salva os dados do perfil no Firestore, usando o UID do usuário como ID do documento
+      await setDoc(doc(db, "usuarios", user.uid), perfilData);
+
+      // O observador onAuthStateChanged no main.js cuidará da navegação.
+    } catch (error) {
+      console.error("Erro de cadastro:", error.code);
+      if (error.code === "auth/email-already-in-use") {
+        this.showError("cadastroErro", "Este e-mail já está em uso!");
+      } else {
+        this.showError("cadastroErro", "Erro ao criar conta. Tente novamente.");
+      }
+    }
   },
 
   showError: (id, msg) => {
@@ -103,12 +133,11 @@ export const auth = {
 
   afterLogin: function () {
     const bottomBar = $("bottomBar");
-    if (bottomBar) bottomBar.style.display = 'flex';
-    
+    if (bottomBar) bottomBar.style.display = "flex";
+
     // Chama a função de navegação que foi armazenada no init
     if (this.navegarPara) {
-      this.navegarPara('inicio');
+      this.navegarPara("inicio");
     }
   },
 };
-

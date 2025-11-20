@@ -1,6 +1,7 @@
 // js/ganhos.js
 // Lida com toda a lógica de adicionar, editar, excluir e exibir ganhos.
 
+import { perfil } from "./perfil.js";
 // Importa as ferramentas do Firebase
 import { auth as firebaseAuth, db } from "./firebase-config.js";
 import {
@@ -390,12 +391,9 @@ export const ganhos = {
         )} (${formatarMoeda(melhor[1])})`;
     }
 
-    // TODO: A meta semanal ainda vem do localStorage.
-    // O ideal é buscar o perfil do usuário do Firestore também.
-    const perfilUsuario = storage.getUsuarioLogado();
-    const metaSemanal = perfilUsuario
-      ? perfilUsuario.metaSemanal || 1000
-      : 1000;
+    // Busca o perfil do usuário do Firestore para obter a meta
+    const perfilUsuario = await perfil.fetchUserProfile();
+    const metaSemanal = perfilUsuario ? perfilUsuario.metaSemanal : 1000;
 
     const faltaMeta = Math.max(0, metaSemanal - ganhosSemana);
     if ($("metaMensagem")) {

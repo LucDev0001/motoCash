@@ -1,9 +1,19 @@
 // js/perfil.js
 // Gerencia a exibição e atualização dos dados do usuário.
 
+// Importa as ferramentas do Firebase
+import { auth as firebaseAuth, db } from "./firebase-config.js";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
 import { $ } from "./utils.js";
 import { storage } from "./storage.js";
 import { formatarMoeda } from "./utils.js";
+
+let localProfileCache = null; // Cache para o perfil do usuário
 
 export const perfil = {
   navegarPara: null, // Propriedade para armazenar a função de navegação
@@ -28,13 +38,12 @@ export const perfil = {
 
     const btnSair = document.getElementById("btnSair");
     if (btnSair) {
-      btnSair.addEventListener("click", () => {
-        storage.limparSessao();
-        const bottomBar = document.getElementById("bottomBar");
-        if (bottomBar) bottomBar.style.display = "none";
-
-        if (this.navegarPara) {
-          this.navegarPara("login");
+      btnSair.addEventListener("click", async () => {
+        try {
+          await firebaseAuth.signOut();
+          // O observador onAuthStateChanged no main.js cuidará da navegação para a tela de login.
+        } catch (error) {
+          console.error("Erro ao fazer logout:", error);
         }
       });
     }
@@ -59,19 +68,34 @@ export const perfil = {
     }
   },
 
-  atualizarUI: function () {
-    const usuario = storage.getUsuarioLogado();
+  fetchUserProfile: async function () {
+    if (localProfileCache) return localProfileCache;
+
+    const user = firebaseAuth.currentUser;
+    if (!user) return null;
+
+    const docRef = doc(db, "usuarios", user.uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      localProfileCache = docSnap.data();
+      return localProfileCache;
+    } else {
+      console.log("Documento de perfil não encontrado!");
+      return null;
+    }
+  },
+
+  atualizarUI: async function () {
+    const usuario = await this.fetchUserProfile();
     if (!usuario) return;
 
     // Atualiza elementos que podem estar em várias telas (como a tela de início)
-    this.setElementText(
-      "msgOlaInicio",
-      `Olá, ${usuario.nome || usuario.usuario}`
-    );
+    this.setElementText("msgOlaInicio", `Olá, ${usuario.nome || "Usuário"}`);
 
     // Atualiza elementos específicos da tela de perfil
-    this.setElementText("perfilNome", usuario.nome || usuario.usuario);
-    this.setElementText("perfilUsuario", usuario.usuario);
+    this.setElementText("perfilNome", usuario.nome || "Usuário");
+    this.setElementText("perfilUsuario", usuario.email);
     this.setElementText("perfilTelefone", usuario.telefone || "");
     this.setElementText("perfilMoto", usuario.moto || "");
     this.setElementText(
@@ -102,32 +126,30 @@ export const perfil = {
     if (novaSenha) novaSenha.value = "";
   },
 
-  handleAlterarDados: function () {
-    const usuario = storage.getUsuarioLogado();
-    if (!usuario) return;
+  handleAlterarDados: async function () {
+    const user = firebaseAuth.currentUser;
+    if (!user) return alert("Você precisa estar logado para alterar os dados.");
 
-    const usuarios = storage.getUsuarios();
-    const idx = usuarios.findIndex((u) => u.usuario === usuario.usuario);
-    if (idx === -1) return;
+    const dadosParaAtualizar = {
+      nome: $("novoNome").value.trim(),
+      metaSemanal: parseFloat($("novaMetaSemanal").value) || 1000,
+      telefone: $("novoTelefone").value.trim(),
+      moto: $("novaMoto").value,
+    };
 
-    const novoNome = $("novoNome");
-    const novaSenha = $("novaSenha");
-    const novaMeta = $("novaMetaSemanal");
-    const novoTelefone = $("novoTelefone");
-    const novaMoto = $("novaMoto");
+    // TODO: Implementar lógica para alterar senha e avatar se necessário
 
-    if (novoNome && novoNome.value.trim())
-      usuarios[idx].nome = novoNome.value.trim();
-    if (novaSenha && novaSenha.value) usuarios[idx].senha = novaSenha.value;
-    if (novaMeta && novaMeta.value)
-      usuarios[idx].metaSemanal = parseFloat(novaMeta.value);
-    if (novoTelefone && novoTelefone.value.trim())
-      usuarios[idx].telefone = novoTelefone.value.trim();
-    if (novaMoto && novaMoto.value) usuarios[idx].moto = novaMoto.value;
+    try {
+      const docRef = doc(db, "usuarios", user.uid);
+      await updateDoc(docRef, dadosParaAtualizar);
 
-    storage.setUsuarios(usuarios);
-    storage.setUsuarioLogado(usuarios[idx]);
-    this.atualizarUI();
-    alert("Dados alterados com sucesso!");
+      localProfileCache = null; // Invalida o cache
+      await this.atualizarUI(); // Atualiza a UI com os novos dados
+      alert("Dados alterados com sucesso!");
+      $("cardEdicao").classList.remove("ativo"); // Fecha o card de edição
+    } catch (error) {
+      console.error("Erro ao atualizar dados:", error);
+      alert("Ocorreu um erro ao salvar suas alterações.");
+    }
   },
 };
