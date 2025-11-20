@@ -26,7 +26,12 @@ export const marketplace = {
     this.setupFilters();
 
     if ($("btn-user-add-product")) {
-      $("btn-user-add-product").onclick = () => this.navegarPara("add-product");
+      $("btn-user-add-product").onclick = async () => {
+        const querContinuar = await this.showImageGuideModal();
+        if (querContinuar) {
+          this.navegarPara("add-product");
+        }
+      };
     }
   },
 
@@ -346,6 +351,57 @@ export const marketplace = {
       if (e.target === modal) {
         closeModal();
       }
+    });
+  },
+
+  showImageGuideModal: function () {
+    return new Promise((resolve) => {
+      // Remove qualquer modal antigo para evitar duplicatas
+      const oldModal = document.getElementById("modal-guia-imagem");
+      if (oldModal) oldModal.remove();
+
+      const modalHTML = `
+        <div class="modal-overlay" id="modal-guia-imagem">
+          <div class="modal-conteudo">
+            <span class="modal-fechar">&times;</span>
+            <h2>Como Adicionar uma Imagem</h2>
+            <p>Para anunciar seu produto, você precisa de um link (URL) da imagem. É fácil de conseguir!</p>
+            <ol class="lista-guia">
+              <li>Acesse um site gratuito para hospedar imagens, como o <a href="https://imgur.com/upload" target="_blank">imgur.com</a>.</li>
+              <li>Faça o upload da foto do seu produto.</li>
+              <li>Após o upload, clique com o botão direito na imagem e selecione <strong>"Copiar endereço da imagem"</strong>.</li>
+              <li>Cole esse link no campo "URL da Imagem" em nosso formulário.</li>
+            </ol>
+            <div class="modal-botoes">
+              <button id="btn-guia-continuar" class="btn-primario">Entendi, continuar</button>
+              <button id="btn-guia-cancelar" class="btn-secundario">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+      const modal = $("modal-guia-imagem");
+      const btnContinuar = $("btn-guia-continuar");
+      const btnCancelar = $("btn-guia-cancelar");
+      const btnFechar = modal.querySelector(".modal-fechar");
+
+      const closeModal = (shouldContinue) => {
+        modal.classList.remove("ativo");
+        setTimeout(() => modal.remove(), 300);
+        resolve(shouldContinue);
+      };
+
+      // Adiciona a classe 'ativo' para a animação de entrada
+      setTimeout(() => modal.classList.add("ativo"), 10);
+
+      btnContinuar.onclick = () => closeModal(true);
+      btnCancelar.onclick = () => closeModal(false);
+      btnFechar.onclick = () => closeModal(false);
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal(false);
+      });
     });
   },
 };

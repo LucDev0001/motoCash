@@ -322,3 +322,15 @@ footer a i:hover {
 .termos-aceite a {
   text-decoration: underline;
 }
+
+/* Estilos para o modal guia */
+.lista-guia {
+  text-align: left;
+  padding-left: 20px;
+  margin: 1.5rem 0;
+}
+
+.lista-guia li {
+  margin-bottom: 0.8rem;
+  line-height: 1.5;
+}
