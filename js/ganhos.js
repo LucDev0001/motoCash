@@ -404,10 +404,10 @@ export const ganhos = {
     window.open(url, "_blank");
   },
 
-  atualizarTelaInicio: async function () {
+  atualizarTelaInicio: async function (ganhosUsuario) {
     const usuario = firebaseAuth.currentUser;
     if (!usuario) return;
-    const ganhosUsuario = await this.fetchGanhos();
+    if (!ganhosUsuario) ganhosUsuario = await this.fetchGanhos(); // Garante que funcione mesmo se chamado sem dados
 
     const hoje = new Date().toISOString().slice(0, 10);
 

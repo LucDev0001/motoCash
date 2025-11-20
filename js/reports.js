@@ -3,8 +3,7 @@
 
 import { perfil } from "./perfil.js";
 import { $ } from "./utils.js";
-import { storage } from "./storage.js";
-import { getDateRange } from "./date.utils.js";
+import { getDateRange } from "./utils.js"; // << CORRIGIDO
 import { formatarMoeda } from "./utils.js";
 import { navegacao } from "./ui.js"; // CORREÇÃO: Módulo de navegação importado
 

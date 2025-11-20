@@ -26,13 +26,11 @@ const pages = {
   inicio: {
     file: "templates/inicio.html",
     init: async () => {
-      // Inicializa os módulos necessários APENAS para a tela de início
-      perfil.atualizarUI(); // Para a mensagem de "Olá"
-      await ganhos.atualizarTelaInicio(); // Agora é async
-      relatorios.init({ ganhos }); // Passa o módulo de ganhos para relatórios
-      const ganhosData = await ganhos.fetchGanhos(); // Busca os dados uma vez
-      await relatorios.atualizarGraficos(ganhosData); // Passa os dados para os gráficos
-      // weather.getAndDisplayDetailedWeather(); // Desativado temporariamente para evitar problemas de faturamento do Firebase
+      perfil.atualizarUI();
+      relatorios.init({ ganhos });
+      const ganhosData = await ganhos.fetchGanhos();
+      await ganhos.atualizarTelaInicio(ganhosData);
+      await relatorios.atualizarGraficos(ganhosData);
     },
   },
   ganhos: {
