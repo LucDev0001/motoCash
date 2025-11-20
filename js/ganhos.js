@@ -9,6 +9,7 @@ import {
   setDoc,
   collection,
   getDocs,
+  deleteDoc,
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 // Importa utilitários locais
@@ -176,20 +177,42 @@ export const ganhos = {
     relatoriosModule.atualizarGraficos();
   },
 
-  excluirGanho: function (ganhoId) {
+  excluirGanho: async function (ganhoId) {
     this.localGanhosCache = null; // Invalida o cache
     if (confirm("Tem certeza que deseja excluir este ganho?")) {
-      storage.setGanhos(storage.getGanhos().filter((g) => g.id !== ganhoId));
-      this.atualizarUI();
-      this.atualizarTelaInicio();
-      relatoriosModule.atualizarGraficos();
+      const usuarioLogado = firebaseAuth.currentUser;
+      if (!usuarioLogado) return alert("Usuário não encontrado.");
+
+      try {
+        // Cria a referência para o documento a ser excluído
+        const docRef = doc(
+          db,
+          "usuarios",
+          usuarioLogado.uid,
+          "ganhos",
+          ganhoId
+        );
+        // Deleta o documento no Firestore
+        await deleteDoc(docRef);
+
+        // Atualiza a interface após a exclusão
+        this.atualizarUI();
+        this.atualizarTelaInicio();
+        // A atualização dos gráficos já é chamada dentro de atualizarTelaInicio indiretamente
+      } catch (error) {
+        console.error("Erro ao excluir ganho: ", error);
+        alert("Não foi possível excluir o ganho. Tente novamente.");
+      }
     }
   },
 
-  editarGanho: function (ganhoId) {
-    const ganho = storage.getGanhos().find((g) => g.id === ganhoId);
+  editarGanho: async function (ganhoId) {
+    // Busca os ganhos do cache/Firestore para encontrar o item a ser editado
+    const ganhos = await this.fetchGanhos();
+    const ganho = ganhos.find((g) => g.id === ganhoId);
     if (!ganho) return;
 
+    // Preenche o formulário com os dados do ganho a ser editado
     $("data").value = ganho.data;
     $("valorDiaria").value = ganho.valorDiaria;
     $("taxaEntrega").value = ganho.taxaEntrega;

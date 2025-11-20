@@ -46,7 +46,7 @@ const pages = {
   perfil: {
     file: "templates/perfil.html",
     init: () => {
-      perfil.init({ navegarPara }); // Adiciona eventos aos formulários de perfil
+      perfil.init({ navegarPara }); // Configura os eventos da página de perfil
       perfil.atualizarUI();
     },
   },
