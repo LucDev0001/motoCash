@@ -1,5 +1,5 @@
 // js/marketplace.js
-// Lógica para a página do marketplace - VERSÃO CORRIGIDA E SEGURA
+// Lógica para a página do marketplace - VERSÃO FINAL CORRIGIDA
 
 import { perfil } from "./perfil.js";
 import { db } from "./firebase-config.js";
@@ -7,7 +7,7 @@ import {
   collection,
   getDocs,
   query,
-  orderBy,
+  // orderBy, // Mantive comentado para evitar erros de índice por enquanto
   doc,
   setDoc,
   serverTimestamp,
@@ -56,11 +56,9 @@ export const marketplace = {
       return console.error("Erro: Elemento 'product-list' não achado no HTML.");
 
     productListEl.innerHTML =
-      '<p style="text-align:center; padding: 20px;">Carregando produtos do banco de dados...</p>';
+      '<p style="text-align:center; padding: 20px;">Carregando produtos...</p>';
 
     try {
-      // NOTA: Removi o 'orderBy' temporariamente para garantir que nada seja ocultado.
-      // Se funcionar, depois podemos colocar: query(collection(db, "produtos"), orderBy("createdAt", "desc"));
       const q = query(collection(db, "produtos"));
 
       if (this.allProductsCache.length === 0 || force) {
@@ -81,17 +79,11 @@ export const marketplace = {
           const data = doc.data();
           data.id = doc.id; // Garante que o ID venha junto
 
-          // Debug: Mostra no console se faltar o nome
-          if (!data.nome)
-            console.warn(
-              `AVISO: Produto ID ${doc.id} está sem o campo 'nome'.`
-            );
-
           // Tratamento de Data
           if (data.createdAt && typeof data.createdAt.toDate === "function") {
             data.createdAt = data.createdAt.toDate();
           } else {
-            data.createdAt = new Date(); // Data fictícia para não quebrar
+            data.createdAt = new Date();
           }
           return data;
         });
@@ -108,7 +100,6 @@ export const marketplace = {
     const productListEl = $("product-list");
     const searchInput = $("search-input");
 
-    // Pega os valores
     const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
     const activeCategoryEl = document.querySelector(".category-btn.active");
     const activeCategory = activeCategoryEl
@@ -118,20 +109,14 @@ export const marketplace = {
     console.log(">>> FILTRO: Iniciando...");
     console.log("--- Categoria Ativa:", activeCategory);
     console.log("--- Termo de Busca:", searchTerm);
-    console.log("--- Total no Cache:", this.allProductsCache.length);
 
     let filteredProducts = this.allProductsCache;
 
     // 1. Filtra por Categoria
     if (activeCategory !== "todos") {
-      filteredProducts = filteredProducts.filter((p) => {
-        const match = p.categoria === activeCategory;
-        if (!match)
-          console.log(
-            `Item '${p.nome}' ignorado. Categoria do item: '${p.categoria}' != Filtro: '${activeCategory}'`
-          );
-        return match;
-      });
+      filteredProducts = filteredProducts.filter(
+        (p) => p.categoria === activeCategory
+      );
     }
 
     // 2. Filtra por Busca
@@ -146,17 +131,17 @@ export const marketplace = {
 
     if (filteredProducts.length === 0) {
       productListEl.innerHTML =
-        "<p>Nenhum produto encontrado (Filtro ocultou tudo).</p>";
+        "<p>Nenhum produto encontrado com esses filtros.</p>";
       return;
     }
 
-    // Renderiza
+    // --- CORREÇÃO CRÍTICA AQUI ---
+    // Usamos insertAdjacentHTML para evitar o problema do appendChild(firstChild) pegando espaço vazio
     productListEl.innerHTML = ""; // Limpa a lista
     filteredProducts.forEach((product) => {
-      console.log("Renderizando produto:", product.nome); // Confirmação visual
-      const card = document.createElement("div");
-      card.innerHTML = this.createProductCardHTML(product);
-      productListEl.appendChild(card.firstChild);
+      console.log("Renderizando produto:", product.nome);
+      const htmlDoCard = this.createProductCardHTML(product);
+      productListEl.insertAdjacentHTML("beforeend", htmlDoCard);
     });
 
     this.setupProductActionButtons();
@@ -171,7 +156,6 @@ export const marketplace = {
   },
 
   createProductCardHTML: function (product) {
-    // VALORES PADRÃO PARA NÃO QUEBRAR O LAYOUT SE FALTAR DADOS NO BANCO
     const nomeSeguro = product.nome || "Produto sem Nome";
     const precoSeguro = product.preco
       ? formatarMoeda(product.preco)
@@ -180,7 +164,6 @@ export const marketplace = {
       product.imagemURL || "https://via.placeholder.com/150?text=Sem+Foto";
     const vendedorSeguro = product.ownerName || "Desconhecido";
 
-    const isAffiliate = product.tipo === "afiliado";
     const userProfile = perfil.localProfileCache;
     const isOwner = userProfile && userProfile.uid === product.ownerId;
 
@@ -210,64 +193,121 @@ export const marketplace = {
     `;
   },
 
-  // ... Mantenha o restante do código (initAddProductForm, handleAddProduct, etc) igual ...
-  // ... Para economizar espaço, vou resumir as funções auxiliares,
-  // mas você deve manter as funções initAddProductForm, handleAddProduct,
-  // setupProductActionButtons, handleDeleteProduct, openProductModal e showImageGuideModal aqui.
+  // --- FUNÇÕES RESTAURADAS COMPLETAS ---
 
   initAddProductForm: function (dependencies) {
-    // ... (Seu código original do initAddProductForm)
+    const formAffiliateLink = document.getElementById(
+      "form-group-affiliate-link"
+    );
+    const userProfile = perfil.localProfileCache;
+
+    // Se o usuário não for admin, esconde o campo de link de afiliado
+    if (userProfile && userProfile.role !== "admin") {
+      if (formAffiliateLink) formAffiliateLink.style.display = "none";
+    }
+
     this.navegarPara = dependencies.navegarPara;
-    $("btn-voltar-marketplace").onclick = () => this.navegarPara("marketplace");
-    $("form-add-product").addEventListener("submit", (e) => {
-      e.preventDefault();
-      this.handleAddProduct();
-    });
+    const btnVoltar = $("btn-voltar-marketplace");
+    if (btnVoltar) btnVoltar.onclick = () => this.navegarPara("marketplace");
+
+    const form = $("form-add-product");
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.handleAddProduct();
+      });
+    }
   },
 
   handleAddProduct: async function () {
-    // Use a mesma lógica que você já tinha, está correta.
-    // DICA: Certifique-se de que o objeto 'newProduct' tenha o campo 'nome' preenchido!
     const userProfile = await perfil.fetchUserProfile();
-    if (!userProfile) return alert("Logue para anunciar.");
+    if (!userProfile) {
+      return alert("Você precisa estar logado para adicionar um produto.");
+    }
 
-    const nome = $("product-name").value.trim(); // <--- ESSE CAMPO É CRUCIAL
+    const isAdmin = userProfile.role === "admin";
+    const nome = $("product-name").value.trim();
     const preco = parseFloat($("product-price").value);
     const imagemURL = $("product-image-url").value.trim();
     const categoria = $("product-category").value;
-    // ... resto da lógica de salvar
+    const descricao = $("product-description").value.trim();
+
+    let link;
+    let tipo;
+
+    if (isAdmin) {
+      link = $("product-affiliate-link").value.trim();
+      tipo = "afiliado";
+      if (!link) return alert("Admin, por favor, insira o link de afiliado.");
+    } else {
+      if (!userProfile.telefone) {
+        return alert(
+          "Você precisa adicionar um número de telefone em seu perfil para poder anunciar!"
+        );
+      }
+      const phone = userProfile.telefone.replace(/\D/g, "");
+      link = `https://wa.me/55${phone}`;
+      tipo = "contato_direto";
+    }
+
+    if (!nome || !preco || !imagemURL || !categoria) {
+      return alert("Por favor, preencha todos os campos obrigatórios.");
+    }
+
+    const btn = $("btn-salvar-produto");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Salvando...";
+    }
 
     const newProduct = {
       id: String(Date.now()),
-      nome: nome, // GARANTA QUE ISSO NÃO SEJA VAZIO
-      preco: preco,
-      categoria: categoria,
-      imagemURL: imagemURL,
+      nome,
+      descricao,
+      preco,
+      categoria,
+      imagemURL,
+      link,
       ownerId: userProfile.uid,
       ownerName: userProfile.nome,
+      ownerAvatar: userProfile.avatar || "",
+      tipo: tipo,
       createdAt: serverTimestamp(),
-      // ... outros campos
     };
 
-    await setDoc(doc(db, "produtos", newProduct.id), newProduct);
-    alert("Sucesso!");
-    this.navegarPara("marketplace");
+    try {
+      await setDoc(doc(db, "produtos", newProduct.id), newProduct);
+      alert("Produto adicionado com sucesso!");
+      this.navegarPara("marketplace");
+    } catch (error) {
+      console.error("Erro ao adicionar produto:", error);
+      alert("Ocorreu um erro ao salvar o produto.");
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Salvar Produto";
+      }
+    }
   },
 
   setupProductActionButtons: function () {
-    // ... (Seu código original)
     document.querySelectorAll(".btn-menu-product").forEach((button) => {
       button.addEventListener("click", (e) => {
         e.stopPropagation();
+        document
+          .querySelectorAll(".menu-product-opcoes")
+          .forEach((m) => (m.style.display = "none"));
         e.currentTarget.nextElementSibling.style.display = "block";
       });
     });
+
     document.querySelectorAll(".btn-delete-product").forEach((button) => {
       button.addEventListener("click", (e) => {
         e.preventDefault();
-        this.handleDeleteProduct(e.currentTarget.dataset.productId);
+        const productId = e.currentTarget.dataset.productId;
+        if (productId) this.handleDeleteProduct(productId);
       });
     });
+
     document.querySelectorAll(".product-card").forEach((card) => {
       card.addEventListener("click", (e) => {
         if (!e.target.closest(".product-owner-actions")) {
@@ -275,6 +315,7 @@ export const marketplace = {
         }
       });
     });
+
     document.body.addEventListener(
       "click",
       () =>
@@ -286,23 +327,119 @@ export const marketplace = {
   },
 
   handleDeleteProduct: async function (productId) {
-    if (!confirm("Excluir?")) return;
-    await deleteDoc(doc(db, "produtos", productId));
-    this.fetchAndDisplayProducts(true);
+    if (!confirm("Tem certeza que deseja excluir este produto?")) return;
+
+    try {
+      await deleteDoc(doc(db, "produtos", productId));
+      alert("Produto excluído com sucesso!");
+      this.fetchAndDisplayProducts(true);
+    } catch (error) {
+      console.error("Erro ao excluir produto:", error);
+      alert("Ocorreu um erro ao excluir o produto.");
+    }
   },
 
   openProductModal: function (productId) {
-    // ... (Seu código original, mas use as variáveis seguras)
     const product = this.allProductsCache.find((p) => p.id === productId);
     if (!product) return;
-    // ... renderiza o modal ...
-    // DICA: use product.nome || "Sem nome" aqui também
+
+    // Remove qualquer modal antigo
+    const oldModal = document.getElementById("product-detail-modal");
+    if (oldModal) oldModal.remove();
+
+    const isAffiliate = product.tipo === "afiliado";
+    const buttonText = isAffiliate
+      ? "Ver Oferta na Loja"
+      : "Chamar Vendedor no Zap";
+    const buttonIcon = isAffiliate ? "shopping_cart" : "whatsapp";
+    const imagemSegura = product.imagemURL || "https://via.placeholder.com/300";
+
+    const modalHTML = `
+      <div class="modal-overlay" id="product-detail-modal">
+        <div class="modal-conteudo product-modal">
+          <span class="modal-fechar" id="product-modal-fechar">&times;</span>
+          <img src="${imagemSegura}" alt="${
+      product.nome
+    }" class="product-modal-image">
+          <h3 class="product-modal-title">${product.nome}</h3>
+          <p class="product-modal-price">${formatarMoeda(product.preco)}</p>
+          <div class="product-modal-owner">
+            Vendido por: <strong>${product.ownerName}</strong>
+          </div>
+          <p class="product-modal-description">${
+            product.descricao || "Nenhuma descrição fornecida."
+          }</p>
+          <a href="${product.link}" target="_blank" class="btn-product-action">
+            <span class="material-icons">${buttonIcon}</span> ${buttonText}
+          </a>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+    const modal = $("product-detail-modal");
+    const closeModal = () => {
+      modal.classList.remove("ativo");
+      setTimeout(() => modal.remove(), 300);
+    };
+
+    setTimeout(() => modal.classList.add("ativo"), 10);
+
+    $("product-modal-fechar").onclick = closeModal;
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
   },
 
   showImageGuideModal: function () {
     return new Promise((resolve) => {
-      // ... (Seu código original do modal de guia)
-      resolve(true); // simplificado para o exemplo, mantenha seu original
+      const oldModal = document.getElementById("modal-guia-imagem");
+      if (oldModal) oldModal.remove();
+
+      const modalHTML = `
+        <div class="modal-overlay" id="modal-guia-imagem">
+          <div class="modal-conteudo">
+            <span class="modal-fechar">&times;</span>
+            <h2>Como Adicionar uma Imagem</h2>
+            <p>Para anunciar seu produto, você precisa de um link (URL) da imagem. É fácil de conseguir!</p>
+            <ol class="lista-guia">
+              <li>Acesse um site gratuito para hospedar imagens, como o <a href="https://imgur.com/upload" target="_blank">imgur.com</a>.</li>
+              <li>Faça o upload da foto do seu produto.</li>
+              <li>Após o upload, clique com o botão direito na imagem e selecione <strong>"Copiar endereço da imagem"</strong>.</li>
+              <li>Cole esse link no campo "URL da Imagem" em nosso formulário.</li>
+            </ol>
+            <div class="modal-botoes">
+              <button id="btn-guia-continuar" class="btn-primario">Entendi, continuar</button>
+              <button id="btn-guia-cancelar" class="btn-secundario">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML("beforeend", modalHTML);
+
+      const modal = $("modal-guia-imagem");
+      const btnContinuar = $("btn-guia-continuar");
+      const btnCancelar = $("btn-guia-cancelar");
+      const btnFechar = modal.querySelector(".modal-fechar");
+
+      const closeModal = (shouldContinue) => {
+        modal.classList.remove("ativo");
+        setTimeout(() => modal.remove(), 300);
+        resolve(shouldContinue);
+      };
+
+      setTimeout(() => modal.classList.add("ativo"), 10);
+
+      btnContinuar.onclick = () => closeModal(true);
+      btnCancelar.onclick = () => closeModal(false);
+      btnFechar.onclick = () => closeModal(false);
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal(false);
+      });
     });
   },
 };
