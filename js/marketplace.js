@@ -155,6 +155,16 @@ export const marketplace = {
   },
 
   initAddProductForm: function (dependencies) {
+    const formAffiliateLink = document.getElementById(
+      "form-group-affiliate-link"
+    );
+    const userProfile = perfil.localProfileCache; // Usa o cache do perfil que já deve estar carregado
+
+    // Se o usuário não for admin, esconde o campo de link de afiliado
+    if (userProfile && userProfile.role !== "admin") {
+      if (formAffiliateLink) formAffiliateLink.style.display = "none";
+    }
+
     this.navegarPara = dependencies.navegarPara;
     $("btn-voltar-marketplace").onclick = () => this.navegarPara("marketplace");
 
@@ -166,16 +176,35 @@ export const marketplace = {
 
   handleAddProduct: async function () {
     const userProfile = await perfil.fetchUserProfile();
-    if (!userProfile || userProfile.role !== "admin") {
-      return alert("Apenas administradores podem adicionar produtos.");
+    if (!userProfile) {
+      return alert("Você precisa estar logado para adicionar um produto.");
     }
 
+    const isAdmin = userProfile.role === "admin";
     const nome = $("product-name").value.trim();
     const preco = parseFloat($("product-price").value);
     const imagemURL = $("product-image-url").value.trim();
-    const link = $("product-affiliate-link").value.trim();
+    const categoria = $("product-category").value;
+    let link;
+    let tipo;
 
-    if (!nome || !preco || !imagemURL || !link) {
+    if (isAdmin) {
+      link = $("product-affiliate-link").value.trim();
+      tipo = "afiliado";
+      if (!link) return alert("Admin, por favor, insira o link de afiliado.");
+    } else {
+      if (!userProfile.telefone) {
+        return alert(
+          "Você precisa adicionar um número de telefone em seu perfil para poder anunciar! Vá em Perfil > Editar."
+        );
+      }
+      // Remove caracteres não numéricos e formata o link do WhatsApp
+      const phone = userProfile.telefone.replace(/\D/g, "");
+      link = `https://wa.me/55${phone}`; // Adiciona o código do Brasil por padrão
+      tipo = "contato_direto";
+    }
+
+    if (!nome || !preco || !imagemURL || !categoria) {
       return alert("Por favor, preencha todos os campos obrigatórios.");
     }
 
@@ -188,12 +217,13 @@ export const marketplace = {
       nome,
       descricao: $("product-description").value.trim(),
       preco,
+      categoria,
       imagemURL,
       link,
       ownerId: userProfile.uid,
       ownerName: userProfile.nome,
       ownerAvatar: userProfile.avatar,
-      tipo: "afiliado", // Como só o admin pode adicionar, o tipo é sempre afiliado
+      tipo: tipo,
       createdAt: serverTimestamp(),
     };
 
