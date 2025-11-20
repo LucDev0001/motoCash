@@ -10,8 +10,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
 import { $ } from "./utils.js";
-import { getDateRange } from "./date.utils.js";
 import { formatarMoeda } from "./utils.js";
+
+// Se você não tiver o date.utils.js funcionando, usaremos a lógica local abaixo
+// import { getDateRange } from "./date.utils.js";
 
 export const ganhos = {
   ganhoEditandoId: null,
@@ -22,7 +24,6 @@ export const ganhos = {
     this.setupFiltros();
     this.atualizarUI();
 
-    // Fecha menus flutuantes ao clicar fora
     document.body.addEventListener("click", () =>
       document
         .querySelectorAll(".menu-ganho-opcoes")
@@ -34,39 +35,42 @@ export const ganhos = {
     const cardForm = $("card-formulario-ganho");
     const btnFechar = $("btn-fechar-form-ganho");
 
-    // 1. Botões das Categorias (Loja, Passageiro, Entrega)
+    // 1. Abertura dos 3 Modais
     document.querySelectorAll(".btn-acao-ganho").forEach((btn) => {
       btn.addEventListener("click", () => {
-        const target = btn.dataset.target; // 'loja_fixa', 'passageiros', 'entregas'
-        this.abrirModal(target);
+        this.abrirModal(btn.dataset.target);
       });
     });
 
-    // 2. Botão Fechar
-    if (btnFechar && cardForm) {
-      btnFechar.addEventListener("click", () => {
-        cardForm.style.display = "none";
-      });
-    }
+    // 2. Fechar Modal
+    if (btnFechar)
+      btnFechar.addEventListener(
+        "click",
+        () => (cardForm.style.display = "none")
+      );
 
-    // 3. Submits dos 3 Formulários
-    if ($("formGanhoLojaFixa")) {
+    // 3. Submits dos Forms
+    if ($("formGanhoLojaFixa"))
       $("formGanhoLojaFixa").addEventListener("submit", (e) => {
         e.preventDefault();
         this.adicionarGanho("loja_fixa", e);
       });
-    }
-    if ($("formGanhoPassageiros")) {
+    if ($("formGanhoPassageiros"))
       $("formGanhoPassageiros").addEventListener("submit", (e) => {
         e.preventDefault();
         this.adicionarGanho("passageiros", e);
       });
-    }
-    if ($("formGanhoEntregas")) {
+    if ($("formGanhoEntregas"))
       $("formGanhoEntregas").addEventListener("submit", (e) => {
         e.preventDefault();
         this.adicionarGanho("entregas", e);
       });
+
+    // 4. Compartilhamento (Restaurado)
+    if ($("btnCompartilhar")) {
+      $("btnCompartilhar").addEventListener("click", () =>
+        this.compartilharResumo()
+      );
     }
   },
 
@@ -74,15 +78,11 @@ export const ganhos = {
     const cardForm = $("card-formulario-ganho");
     const titulo = $("titulo-form-ganho");
 
-    // Esconde todos os forms primeiro
     document
       .querySelectorAll(".form-ganho-conteudo")
       .forEach((f) => (f.style.display = "none"));
-
-    // Reseta formulários
     document.querySelectorAll("form").forEach((f) => f.reset());
 
-    // Mostra o correto
     if (tipo === "loja_fixa") {
       titulo.textContent = "Novo Ganho: Loja Fixa";
       $("formGanhoLojaFixa").style.display = "block";
@@ -93,91 +93,216 @@ export const ganhos = {
       titulo.textContent = "Novo Ganho: App Entrega";
       $("formGanhoEntregas").style.display = "block";
     }
-
     cardForm.style.display = "block";
   },
 
   setupFiltros: function () {
     const update = () => this.atualizarUI();
-    if ($("filtro-periodo"))
-      $("filtro-periodo").addEventListener("change", update);
+    const filtroPeriodo = $("filtro-periodo");
+
+    if (filtroPeriodo) {
+      filtroPeriodo.addEventListener("change", () => {
+        const divPers = $("filtro-datas-personalizadas");
+        if (divPers)
+          divPers.style.display =
+            filtroPeriodo.value === "personalizado" ? "flex" : "none";
+        update();
+      });
+    }
+    if ($("filtro-data-inicio"))
+      $("filtro-data-inicio").addEventListener("change", update);
+    if ($("filtro-data-fim"))
+      $("filtro-data-fim").addEventListener("change", update);
+    if ($("btn-limpar-filtros"))
+      $("btn-limpar-filtros").addEventListener("click", () => {
+        $("filtro-periodo").value = "todos";
+        update();
+      });
   },
 
   adicionarGanho: async function (categoria, event) {
     this.localGanhosCache = null;
     const usuarioLogado = firebaseAuth.currentUser;
-
     if (!usuarioLogado) return alert("Você precisa estar logado.");
 
-    let novoGanho = {
-      id: String(Date.now()),
-      categoria: categoria,
-    };
+    let novoGanho = { id: String(Date.now()), categoria: categoria };
 
-    // Captura de dados baseada na categoria
+    // Captura conforme categoria
     if (categoria === "loja_fixa") {
       novoGanho.data = $("data-loja").value;
-      const valorDiaria = parseFloat($("valorDiaria-loja").value) || 0;
-      const taxaEntrega = parseFloat($("taxaEntrega-loja").value) || 0;
-      const qtdEntregas = parseInt($("qtdEntregas-loja").value) || 0;
-
-      novoGanho.valor = valorDiaria + taxaEntrega * qtdEntregas;
-      novoGanho.qtd = qtdEntregas; // Qtd Entregas
-      // Salva detalhes extras se quiser editar depois
-      novoGanho.detalhes = { valorDiaria, taxaEntrega };
+      const vd = parseFloat($("valorDiaria-loja").value) || 0;
+      const te = parseFloat($("taxaEntrega-loja").value) || 0;
+      const qe = parseInt($("qtdEntregas-loja").value) || 0;
+      novoGanho.valor = vd + te * qe;
+      novoGanho.qtd = qe;
     } else if (categoria === "passageiros") {
       novoGanho.data = $("data-passageiros").value;
-      novoGanho.qtd = parseInt($("qtd-passageiros").value) || 0; // Qtd Corridas
-      novoGanho.valor = parseFloat($("valor-passageiros").value) || 0; // Valor Total direto
+      novoGanho.qtd = parseInt($("qtd-passageiros").value) || 0;
+      novoGanho.valor = parseFloat($("valor-passageiros").value) || 0;
     } else if (categoria === "entregas") {
       novoGanho.data = $("data-entregas").value;
-      novoGanho.qtd = parseInt($("qtd-entregas").value) || 0; // Qtd Entregas
-      novoGanho.valor = parseFloat($("valor-entregas").value) || 0; // Valor Total direto
+      novoGanho.qtd = parseInt($("qtd-entregas").value) || 0;
+      novoGanho.valor = parseFloat($("valor-entregas").value) || 0;
     }
 
-    if (!novoGanho.data || novoGanho.valor <= 0) {
-      return alert("Preencha a data e os valores corretamente.");
-    }
+    if (!novoGanho.data || novoGanho.valor <= 0)
+      return alert("Dados inválidos.");
 
     try {
-      const docRef = doc(
-        db,
-        "usuarios",
-        usuarioLogado.uid,
-        "ganhos",
-        novoGanho.id
+      await setDoc(
+        doc(db, "usuarios", usuarioLogado.uid, "ganhos", novoGanho.id),
+        novoGanho
       );
-      await setDoc(docRef, novoGanho);
-      alert("Ganho adicionado!");
+      alert("Ganho salvo!");
       $("card-formulario-ganho").style.display = "none";
       this.atualizarUI();
       this.atualizarTelaInicio();
-    } catch (error) {
-      console.error("Erro:", error);
+    } catch (e) {
+      console.error(e);
       alert("Erro ao salvar.");
     }
   },
 
-  // Funções de Cache e Fetch (Mantidas iguais)
   fetchGanhos: async function () {
     const usuarioLogado = firebaseAuth.currentUser;
     if (!usuarioLogado) return [];
     if (this.localGanhosCache) return this.localGanhosCache;
 
-    const ganhosRef = collection(db, "usuarios", usuarioLogado.uid, "ganhos");
-    const querySnapshot = await getDocs(ganhosRef);
+    const snap = await getDocs(
+      collection(db, "usuarios", usuarioLogado.uid, "ganhos")
+    );
     const ganhos = [];
-    querySnapshot.forEach((doc) => ganhos.push(doc.data()));
-
+    snap.forEach((d) => ganhos.push(d.data()));
     this.localGanhosCache = ganhos;
     return ganhos;
   },
 
-  excluirGanho: async function (ganhoId) {
-    if (confirm("Deseja excluir?")) {
-      const usuarioLogado = firebaseAuth.currentUser;
+  // Filtra os dados com base no select e nas datas
+  getGanhosFiltrados: async function () {
+    let lista = await this.fetchGanhos();
+    lista.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+    const periodo = $("filtro-periodo") ? $("filtro-periodo").value : "todos";
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    return lista.filter((item) => {
+      const dataItem = new Date(item.data + "T00:00:00");
+
+      if (periodo === "hoje") {
+        return dataItem.getTime() === hoje.getTime();
+      }
+      if (periodo === "esta-semana") {
+        const primeiroDia = new Date(hoje);
+        primeiroDia.setDate(hoje.getDate() - hoje.getDay()); // Domingo
+        return dataItem >= primeiroDia && dataItem <= hoje;
+      }
+      if (periodo === "este-mes") {
+        return (
+          dataItem.getMonth() === hoje.getMonth() &&
+          dataItem.getFullYear() === hoje.getFullYear()
+        );
+      }
+      if (periodo === "personalizado") {
+        const inicio = $("filtro-data-inicio").value
+          ? new Date($("filtro-data-inicio").value + "T00:00:00")
+          : null;
+        const fim = $("filtro-data-fim").value
+          ? new Date($("filtro-data-fim").value + "T00:00:00")
+          : null;
+        if (inicio && dataItem < inicio) return false;
+        if (fim && dataItem > fim) return false;
+        return true;
+      }
+      return true; // Todos
+    });
+  },
+
+  atualizarUI: async function () {
+    if (!firebaseAuth.currentUser || !$("listaGanhos")) return;
+
+    const ganhosFiltrados = await this.getGanhosFiltrados();
+    const lista = $("listaGanhos");
+    lista.innerHTML = "";
+
+    // CALCULAR TOTAIS DO PERÍODO
+    const totalValor = ganhosFiltrados.reduce(
+      (acc, item) => acc + item.valor,
+      0
+    );
+    const totalQtd = ganhosFiltrados.reduce(
+      (acc, item) => acc + (item.qtd || 0),
+      0
+    );
+
+    // Dias trabalhados (Set para contar dias únicos)
+    const diasUnicos = new Set(ganhosFiltrados.map((g) => g.data)).size;
+    const mediaDiaria = diasUnicos > 0 ? totalValor / diasUnicos : 0;
+
+    // Atualiza DOM do Resumo
+    if ($("resumo-filtro-total"))
+      $("resumo-filtro-total").textContent = formatarMoeda(totalValor);
+    if ($("resumo-filtro-entregas"))
+      $("resumo-filtro-entregas").textContent = totalQtd;
+    if ($("resumo-filtro-dias"))
+      $("resumo-filtro-dias").textContent = diasUnicos;
+    if ($("resumo-filtro-media"))
+      $("resumo-filtro-media").textContent = formatarMoeda(mediaDiaria);
+
+    // Configurações visuais
+    const configCat = {
+      loja_fixa: { nome: "Loja Fixa", classe: "badge-loja", label: "Entregas" },
+      passageiros: {
+        nome: "Passageiro",
+        classe: "badge-passageiro",
+        label: "Corridas",
+      },
+      entregas: {
+        nome: "Entrega App",
+        classe: "badge-entrega",
+        label: "Entregas",
+      },
+      undefined: { nome: "Geral", classe: "badge-loja", label: "Qtd" },
+    };
+
+    if (ganhosFiltrados.length === 0) {
+      lista.innerHTML =
+        "<li style='padding:20px; text-align:center; color:#777;'>Nenhum ganho encontrado neste período.</li>";
+      return;
+    }
+
+    ganhosFiltrados.forEach((item) => {
+      const d = new Date(item.data + "T12:00:00");
+      const diaSemana = d.toLocaleDateString("pt-BR", { weekday: "short" });
+      const conf = configCat[item.categoria] || configCat.undefined;
+
+      const li = document.createElement("li");
+      li.className = "ganho-item";
+      li.innerHTML = `
+          <div class="ganho-info">
+              <span class="badge-categoria ${conf.classe}">${conf.nome}</span>
+              <p class="ganho-data"><strong>${diaSemana}</strong>, ${d.toLocaleDateString(
+        "pt-BR"
+      )}</p>
+              <p class="ganho-valor">${formatarMoeda(item.valor)}</p>
+              <p class="info-secundaria">${conf.label}: ${item.qtd || 0}</p>
+          </div>
+          <div class="ganho-acoes">
+               <button class="btn-excluir-direto" style="color:red; border:none; background:none; font-size:1.2rem; cursor:pointer;">&times;</button>
+          </div>`;
+
+      li.querySelector(".btn-excluir-direto").addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.excluirGanho(item.id);
+      });
+      lista.appendChild(li);
+    });
+  },
+
+  excluirGanho: async function (id) {
+    if (confirm("Excluir este registro?")) {
       await deleteDoc(
-        doc(db, "usuarios", usuarioLogado.uid, "ganhos", ganhoId)
+        doc(db, "usuarios", firebaseAuth.currentUser.uid, "ganhos", id)
       );
       this.localGanhosCache = null;
       this.atualizarUI();
@@ -185,84 +310,23 @@ export const ganhos = {
     }
   },
 
-  atualizarUI: async function () {
-    if (!firebaseAuth.currentUser || !$("listaGanhos")) return;
+  compartilharResumo: function () {
+    const total = $("resumo-filtro-total").textContent;
+    const qtd = $("resumo-filtro-entregas").textContent;
+    const media = $("resumo-filtro-media").textContent;
+    const periodo =
+      $("filtro-periodo").options[$("filtro-periodo").selectedIndex].text;
 
-    const ganhos = await this.fetchGanhos();
-    // Ordenar por data (mais recente primeiro)
-    ganhos.sort((a, b) => new Date(b.data) - new Date(a.data));
+    let texto = `*Resumo de Ganhos (${periodo})*\n`;
 
-    const lista = $("listaGanhos");
-    lista.innerHTML = "";
+    if ($("compValorTotal").checked) texto += `💰 Total: ${total}\n`;
+    if ($("compQtdEntregas").checked) texto += `📦 Serviços/Entregas: ${qtd}\n`;
+    if ($("compMedia").checked) texto += `📊 Média Diária: ${media}\n`;
 
-    // Configurações visuais por categoria
-    const configCategoria = {
-      loja_fixa: {
-        nome: "Loja Fixa",
-        classe: "badge-loja",
-        labelQtd: "Entregas",
-      },
-      passageiros: {
-        nome: "App Passageiro",
-        classe: "badge-passageiro",
-        labelQtd: "Corridas",
-      },
-      entregas: {
-        nome: "App Entrega",
-        classe: "badge-entrega",
-        labelQtd: "Entregas",
-      },
-      // Fallback
-      undefined: { nome: "Geral", classe: "badge-loja", labelQtd: "Qtd" },
-    };
-
-    ganhos.forEach((item) => {
-      // Ajusta data
-      const dataObj = new Date(item.data + "T12:00:00");
-      const diaSemana = dataObj.toLocaleDateString("pt-BR", {
-        weekday: "short",
-      });
-      const dataFormatada = dataObj.toLocaleDateString("pt-BR");
-
-      // Pega configs da categoria
-      const config =
-        configCategoria[item.categoria] || configCategoria.undefined;
-
-      const li = document.createElement("li");
-      li.className = "ganho-item";
-      li.innerHTML = `
-          <div class="ganho-info">
-              <span class="badge-categoria ${config.classe}">${
-        config.nome
-      }</span>
-              <p class="ganho-data"><strong>${diaSemana}</strong>, ${dataFormatada}</p>
-              <p class="ganho-valor">${formatarMoeda(item.valor)}</p>
-              <p class="info-secundaria">${config.labelQtd}: ${
-        item.qtd || 0
-      }</p>
-          </div>
-          <div class="ganho-acoes">
-              <button class="btn-excluir-direto" style="color:red; border:none; background:none; font-size:1.2rem;">&times;</button>
-          </div>`;
-
-      li.querySelector(".btn-excluir-direto").addEventListener("click", () =>
-        this.excluirGanho(item.id)
-      );
-      lista.appendChild(li);
-    });
-
-    // Atualiza Resumo Rápido do Filtro (se houver lógica de filtro ativa)
-    this.atualizarResumoFiltro(ganhos);
-  },
-
-  atualizarResumoFiltro: function (ganhos) {
-    const total = ganhos.reduce((acc, g) => acc + g.valor, 0);
-    const qtd = ganhos.reduce((acc, g) => acc + (g.qtd || 0), 0);
-
-    if ($("resumo-filtro-total"))
-      $("resumo-filtro-total").textContent = formatarMoeda(total);
-    if ($("resumo-filtro-entregas"))
-      $("resumo-filtro-entregas").textContent = qtd;
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(
+      texto
+    )}`;
+    window.open(url, "_blank");
   },
 
   atualizarTelaInicio: async function () {

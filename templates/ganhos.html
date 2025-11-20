@@ -118,33 +118,69 @@
           <span>Entregas App</span>
         </button>
       </div>
+
       <div id="filtros-ganhos" class="filtros-container">
         <div class="filtro-item">
+          <label for="filtro-periodo">Filtrar por Período</label>
           <select id="filtro-periodo">
             <option value="todos">Todos</option>
             <option value="hoje">Hoje</option>
             <option value="esta-semana" selected>Esta Semana</option>
             <option value="este-mes">Este Mês</option>
+            <option value="personalizado">Personalizado</option>
           </select>
         </div>
         <div id="filtro-datas-personalizadas" style="display: none">
-          <input type="date" id="filtro-data-inicio" />
-          <input type="date" id="filtro-data-fim" />
+          <div class="filtro-item">
+            <label for="filtro-data-inicio">De:</label
+            ><input type="date" id="filtro-data-inicio" />
+          </div>
+          <div class="filtro-item">
+            <label for="filtro-data-fim">Até:</label
+            ><input type="date" id="filtro-data-fim" />
+          </div>
         </div>
+        <button id="btn-limpar-filtros" style="margin-top: 10px">
+          Limpar Filtros
+        </button>
       </div>
 
       <div id="card-resumo-filtro" class="resumo-filtro">
         <div class="resumo-item">
-          <span class="resumo-label">Total</span
+          <span class="resumo-label">Total do Período</span
           ><strong id="resumo-filtro-total">R$ 0,00</strong>
         </div>
         <div class="resumo-item">
-          <span class="resumo-label">Entregas/Runs</span
+          <span class="resumo-label">Nº de Serviços</span
           ><strong id="resumo-filtro-entregas">0</strong>
+        </div>
+        <div class="resumo-item">
+          <span class="resumo-label">Dias Trabalhados</span
+          ><strong id="resumo-filtro-dias">0</strong>
+        </div>
+        <div class="resumo-item">
+          <span class="resumo-label">Média Diária</span
+          ><strong id="resumo-filtro-media">R$ 0,00</strong>
         </div>
       </div>
 
       <ul id="listaGanhos" class="lista-ganhos-moderna"></ul>
+
+      <div class="compartilhar-whatsapp">
+        <h3>Compartilhar Resumo do Período</h3>
+        <label
+          ><input type="checkbox" id="compQtdEntregas" checked /> Quantidade de
+          serviços</label
+        >
+        <label
+          ><input type="checkbox" id="compValorTotal" checked /> Valor
+          total</label
+        >
+        <label
+          ><input type="checkbox" id="compMedia" checked /> Média diária</label
+        >
+        <button id="btnCompartilhar">Compartilhar no WhatsApp</button>
+      </div>
     </div>
   </div>
 </section>
