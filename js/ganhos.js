@@ -27,6 +27,7 @@ export const ganhos = {
   init: function (dependencies) {
     relatoriosModule = dependencies.relatorios;
     this.setupEventListeners();
+    this.setupFiltros();
     this.atualizarUI(); // Carrega o histórico ao iniciar
     document.body.addEventListener("click", () =>
       document
@@ -73,6 +74,24 @@ export const ganhos = {
     }
   },
 
+  setupFiltros: function () {
+    const update = () => this.atualizarUI();
+    const filtroPeriodo = $("filtro-periodo");
+    if (filtroPeriodo) {
+      filtroPeriodo.addEventListener("change", () => {
+        $("filtro-datas-personalizadas").style.display =
+          filtroPeriodo.value === "personalizado" ? "flex" : "none";
+        update();
+      });
+    }
+    if ($("filtro-data-inicio"))
+      $("filtro-data-inicio").addEventListener("change", update);
+    if ($("filtro-data-fim"))
+      $("filtro-data-fim").addEventListener("change", update);
+    if ($("filtro-ordenar"))
+      $("filtro-ordenar").addEventListener("change", update);
+  },
+
   adicionarGanho: async function (categoria) {
     this.localGanhosCache = null; // Invalida o cache ao adicionar um novo ganho
     const usuarioLogado = firebaseAuth.currentUser;
@@ -116,11 +135,7 @@ export const ganhos = {
       // Salva o objeto 'novoGanho' no Firestore
       await setDoc(docRef, novoGanho);
       alert("Ganho salvo com sucesso!");
-      document
-        .getElementById(
-          `formGanho${categoria.charAt(0).toUpperCase() + categoria.slice(1)}`
-        )
-        .reset();
+      event.target.reset(); // Reseta o formulário que foi enviado
       this.atualizarUI();
       this.atualizarTelaInicio();
     } catch (error) {

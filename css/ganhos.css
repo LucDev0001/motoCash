@@ -35,23 +35,65 @@
 }
 
 .form-ganho-container {
-  display: none; /* Escondido por padrão */
-}
-
-.form-ganho-container.ativo {
-  display: block; /* Mostra apenas o ativo */
+  display: none;
 }
 
 .form-ganho-container form {
-  background-color: var(--white);
-  padding: 1.5rem;
-  border-radius: 16px;
-  border: 1px solid var(--gray);
   margin-bottom: 1.5rem;
 }
 
 .form-ganho-container input {
   margin-bottom: 0; /* Remove margem extra */
+}
+
+/* Filtros */
+.filtros-container {
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: flex-end;
+}
+
+.filtro-item {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.filtro-item label {
+  font-size: 0.9em;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+#filtro-datas-personalizadas {
+  display: none; /* Começa escondido */
+  gap: 15px;
+  width: 100%;
+}
+
+/* Resumo do Filtro */
+.resumo-filtro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f7f9fc;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e0e0e0;
+}
+
+.resumo-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 /* Lista de Ganhos */
