@@ -20,31 +20,28 @@ const bottomBar = $("bottomBar");
 // Mapeia o nome da página para seu arquivo de template e função de inicialização
 const pages = {
   login: {
-    file: "templates/login.html",
-    init: () => auth.init({ navegarPara }), // Passa a função de navegação para o módulo
+    file: "templates/login.html", // A inicialização do auth pode ser feita uma vez também, se desejado.
+    init: () => auth.init({ navegarPara }),
   },
   inicio: {
     file: "templates/inicio.html",
     init: async () => {
-      perfil.atualizarUI();
-      relatorios.init({ ganhos });
-      const ganhosData = await ganhos.fetchGanhos();
-      await ganhos.atualizarTelaInicio(ganhosData);
-      await relatorios.atualizarGraficos(ganhosData);
+      // 1. Busca os ganhos PRIMEIRO. O 'true' força uma busca nova.
+      const ganhosData = await ganhos.fetchGanhos(true);
+      // 2. Passa os dados para a função que atualiza TODA a UI da tela de início.
+      perfil.atualizarUI(ganhosData);
     },
   },
   ganhos: {
     file: "templates/ganhos.html",
     init: () => {
-      ganhos.init({ relatorios }); // Passa o módulo de relatórios
+      ganhos.init();
       ganhos.atualizarUI();
-      relatorios.init({ ganhos }); // Garante que os botões de compartilhar funcionem
     },
   },
   perfil: {
     file: "templates/perfil.html",
     init: () => {
-      perfil.init({ navegarPara }); // Configura os eventos da página de perfil
       perfil.atualizarUI();
     },
   },
@@ -132,6 +129,10 @@ async function checarEExibirModalTelegram() {
 
 // Configura os elementos que existem sempre, como a barra de navegação
 function setupPermanentUI() {
+  // INICIALIZAÇÃO CENTRAL: Garante que os módulos principais estejam prontos.
+  perfil.init({ navegarPara });
+  relatorios.init({ ganhos });
+
   $("btnNavInicio").onclick = () => navegarPara("inicio");
   $("btnNavGanhos").onclick = () => navegarPara("ganhos");
   $("btnNavMarketplace").onclick = () => navegarPara("marketplace");

@@ -12,19 +12,32 @@ import {
 import { $ } from "./utils.js";
 import { formatarMoeda } from "./utils.js";
 
-// Se você não tiver o date.utils.js funcionando, usaremos a lógica local abaixo
-// import { getDateRange } from "./date.utils.js";
+let isPrimeiraCargaGanhos = true;
 
 export const ganhos = {
   ganhoEditandoId: null,
   localGanhosCache: null,
-  chartCategorias: null, // Nova propriedade para o gráfico de pizza
 
-  init: function (dependencies) {
+  init: function () {
     this.setupEventListeners();
     this.setupFiltros();
     this.atualizarUI();
 
+    // Lógica do botão "Ver por Categoria"
+    const btnDetalhes = $("btn-ver-detalhes-categoria");
+    const detalhesContainer = $("detalhes-por-categoria");
+
+    if (btnDetalhes && detalhesContainer) {
+      btnDetalhes.addEventListener("click", () => {
+        const isAtivo = btnDetalhes.classList.toggle("ativo");
+        detalhesContainer.style.display = isAtivo ? "grid" : "none";
+        btnDetalhes.querySelector("span").textContent = isAtivo
+          ? "expand_less"
+          : "expand_more";
+      });
+    }
+
+    // Fechar menus flutuantes ao clicar fora
     document.body.addEventListener("click", () =>
       document
         .querySelectorAll(".menu-ganho-opcoes")
@@ -36,7 +49,7 @@ export const ganhos = {
     const cardForm = $("card-formulario-ganho");
     const btnFechar = $("btn-fechar-form-ganho");
 
-    // 1. Abertura dos 3 Modais
+    // 1. Abrir Modais pelos botões coloridos
     document.querySelectorAll(".btn-acao-ganho").forEach((btn) => {
       btn.addEventListener("click", () => {
         this.abrirModal(btn.dataset.target);
@@ -44,13 +57,14 @@ export const ganhos = {
     });
 
     // 2. Fechar Modal
-    if (btnFechar)
+    if (btnFechar) {
       btnFechar.addEventListener(
         "click",
         () => (cardForm.style.display = "none")
       );
+    }
 
-    // 3. Submits dos Forms
+    // 3. Submits dos 3 Formulários
     if ($("formGanhoLojaFixa"))
       $("formGanhoLojaFixa").addEventListener("submit", (e) => {
         e.preventDefault();
@@ -67,7 +81,7 @@ export const ganhos = {
         this.adicionarGanho("entregas", e);
       });
 
-    // 4. Compartilhamento (Restaurado)
+    // 4. Compartilhamento
     if ($("btnCompartilhar")) {
       $("btnCompartilhar").addEventListener("click", () =>
         this.compartilharResumo()
@@ -79,11 +93,13 @@ export const ganhos = {
     const cardForm = $("card-formulario-ganho");
     const titulo = $("titulo-form-ganho");
 
+    // Esconde todos e reseta
     document
       .querySelectorAll(".form-ganho-conteudo")
       .forEach((f) => (f.style.display = "none"));
     document.querySelectorAll("form").forEach((f) => f.reset());
 
+    // Mostra o específico
     if (tipo === "loja_fixa") {
       titulo.textContent = "Novo Ganho: Loja Fixa";
       $("formGanhoLojaFixa").style.display = "block";
@@ -114,11 +130,12 @@ export const ganhos = {
       $("filtro-data-inicio").addEventListener("change", update);
     if ($("filtro-data-fim"))
       $("filtro-data-fim").addEventListener("change", update);
-    if ($("btn-limpar-filtros"))
+    if ($("btn-limpar-filtros")) {
       $("btn-limpar-filtros").addEventListener("click", () => {
         $("filtro-periodo").value = "todos";
         update();
       });
+    }
   },
 
   adicionarGanho: async function (categoria, event) {
@@ -128,7 +145,7 @@ export const ganhos = {
 
     let novoGanho = { id: String(Date.now()), categoria: categoria };
 
-    // Captura conforme categoria
+    // Captura dados conforme formulário
     if (categoria === "loja_fixa") {
       novoGanho.data = $("data-loja").value;
       const vd = parseFloat($("valorDiaria-loja").value) || 0;
@@ -136,6 +153,8 @@ export const ganhos = {
       const qe = parseInt($("qtdEntregas-loja").value) || 0;
       novoGanho.valor = vd + te * qe;
       novoGanho.qtd = qe;
+      novoGanho.valorDiaria = vd;
+      novoGanho.taxaEntrega = te;
     } else if (categoria === "passageiros") {
       novoGanho.data = $("data-passageiros").value;
       novoGanho.qtd = parseInt($("qtd-passageiros").value) || 0;
@@ -146,16 +165,22 @@ export const ganhos = {
       novoGanho.valor = parseFloat($("valor-entregas").value) || 0;
     }
 
-    if (!novoGanho.data || novoGanho.valor <= 0)
-      return alert("Dados inválidos.");
+    if (!novoGanho.data || (!novoGanho.valor && novoGanho.valor !== 0))
+      return alert("Dados inválidos. Verifique os valores.");
 
     try {
-      await setDoc(
-        doc(db, "usuarios", usuarioLogado.uid, "ganhos", novoGanho.id),
-        novoGanho
+      const docRef = doc(
+        db,
+        "usuarios",
+        usuarioLogado.uid,
+        "ganhos",
+        novoGanho.id
       );
+      await setDoc(docRef, novoGanho);
+
       alert("Ganho salvo!");
       $("card-formulario-ganho").style.display = "none";
+
       this.atualizarUI();
       this.atualizarTelaInicio();
     } catch (e) {
@@ -174,13 +199,14 @@ export const ganhos = {
     );
     const ganhos = [];
     snap.forEach((d) => ganhos.push(d.data()));
+
     this.localGanhosCache = ganhos;
     return ganhos;
   },
 
-  // Filtra os dados com base no select e nas datas
   getGanhosFiltrados: async function () {
     let lista = await this.fetchGanhos();
+    // Ordena por data (decrescente)
     lista.sort((a, b) => new Date(b.data) - new Date(a.data));
 
     const periodo = $("filtro-periodo") ? $("filtro-periodo").value : "todos";
@@ -195,7 +221,7 @@ export const ganhos = {
       }
       if (periodo === "esta-semana") {
         const primeiroDia = new Date(hoje);
-        primeiroDia.setDate(hoje.getDate() - hoje.getDay()); // Domingo
+        primeiroDia.setDate(hoje.getDate() - hoje.getDay());
         return dataItem >= primeiroDia && dataItem <= hoje;
       }
       if (periodo === "este-mes") {
@@ -211,11 +237,12 @@ export const ganhos = {
         const fim = $("filtro-data-fim").value
           ? new Date($("filtro-data-fim").value + "T00:00:00")
           : null;
+
         if (inicio && dataItem < inicio) return false;
         if (fim && dataItem > fim) return false;
         return true;
       }
-      return true; // Todos
+      return true;
     });
   },
 
@@ -223,11 +250,10 @@ export const ganhos = {
     if (!firebaseAuth.currentUser || !$("listaGanhos")) return;
 
     const ganhosFiltrados = await this.getGanhosFiltrados();
-    this.atualizarGraficoCategorias(ganhosFiltrados); // << CHAMADA PARA ATUALIZAR O GRÁFICO
     const lista = $("listaGanhos");
     lista.innerHTML = "";
 
-    // CALCULAR TOTAIS DO PERÍODO
+    // 1. Calcular Totais Gerais
     const totalValor = ganhosFiltrados.reduce(
       (acc, item) => acc + item.valor,
       0
@@ -236,22 +262,57 @@ export const ganhos = {
       (acc, item) => acc + (item.qtd || 0),
       0
     );
-
-    // Dias trabalhados (Set para contar dias únicos)
     const diasUnicos = new Set(ganhosFiltrados.map((g) => g.data)).size;
     const mediaDiaria = diasUnicos > 0 ? totalValor / diasUnicos : 0;
 
-    // Atualiza DOM do Resumo
+    // 2. Calcular Totais por Categoria
+    // CORREÇÃO: Usando 'reduce' para garantir a soma correta.
+    const totaisCat = ganhosFiltrados.reduce((acc, item) => {
+      const cat = item.categoria || 'indefinida';
+      if (!acc[cat]) {
+        acc[cat] = { valor: 0, qtd: 0 };
+      }
+      acc[cat].valor += item.valor;
+      acc[cat].qtd += (item.qtd || 0);
+      return acc;
+    }, {});
+
+    // 3. Atualizar DOM Resumo Geral
     if ($("resumo-filtro-total"))
       $("resumo-filtro-total").textContent = formatarMoeda(totalValor);
-    if ($("resumo-filtro-entregas"))
-      $("resumo-filtro-entregas").textContent = totalQtd;
+    if ($("resumo-filtro-servicos"))
+      $("resumo-filtro-servicos").textContent = totalQtd; // Corrigido ID
     if ($("resumo-filtro-dias"))
       $("resumo-filtro-dias").textContent = diasUnicos;
     if ($("resumo-filtro-media"))
       $("resumo-filtro-media").textContent = formatarMoeda(mediaDiaria);
 
-    // Configurações visuais
+    // 4. Atualizar DOM Detalhes Categoria
+    // Loja
+    ['loja_fixa', 'passageiros', 'entregas'].forEach(cat => {
+      const total = totaisCat[cat] || { valor: 0, qtd: 0 };
+      const labelQtd = cat === 'passageiros' ? 'corridas' : 'entregas';
+
+      if($(`total-${cat}`)) {
+        $(`total-${cat}`).textContent = formatarMoeda(total.valor);
+      }
+      if($(`qtd-${cat}`)) {
+        $(`qtd-${cat}`).textContent = `${total.qtd} ${labelQtd}`;
+      }
+    });
+
+    // Abre detalhes na primeira carga se houver dados
+    if (isPrimeiraCargaGanhos && ganhosFiltrados.length > 0) {
+      const details = $("detalhes-por-categoria");
+      const btn = $("btn-ver-detalhes-categoria");
+      if (details && btn) {
+        // Simula um clique para usar a mesma lógica do event listener
+        btn.click();
+      }
+      isPrimeiraCargaGanhos = false;
+    }
+
+    // 5. Renderizar Lista
     const configCat = {
       loja_fixa: { nome: "Loja Fixa", classe: "badge-loja", label: "Entregas" },
       passageiros: {
@@ -278,6 +339,19 @@ export const ganhos = {
       const diaSemana = d.toLocaleDateString("pt-BR", { weekday: "short" });
       const conf = configCat[item.categoria] || configCat.undefined;
 
+      // Detalhes extras visuais para Loja Fixa
+      let detalhesHTML = `<p class="info-secundaria">${conf.label}: ${
+        item.qtd || 0
+      }</p>`;
+      if (item.categoria === "loja_fixa" && item.valorDiaria) {
+        detalhesHTML = `
+          <div class="info-detalhes-loja">
+             <span>Diária: ${formatarMoeda(item.valorDiaria)} + Entregas: ${
+          item.qtd
+        }</span>
+          </div>`;
+      }
+
       const li = document.createElement("li");
       li.className = "ganho-item";
       li.innerHTML = `
@@ -287,7 +361,7 @@ export const ganhos = {
         "pt-BR"
       )}</p>
               <p class="ganho-valor">${formatarMoeda(item.valor)}</p>
-              <p class="info-secundaria">${conf.label}: ${item.qtd || 0}</p>
+              ${detalhesHTML}
           </div>
           <div class="ganho-acoes">
                <button class="btn-excluir-direto" style="color:red; border:none; background:none; font-size:1.2rem; cursor:pointer;">&times;</button>
@@ -301,74 +375,12 @@ export const ganhos = {
     });
   },
 
-  // NOVA FUNÇÃO PARA CRIAR/ATUALIZAR O GRÁFICO DE PIZZA
-  atualizarGraficoCategorias: function (ganhosFiltrados) {
-    const container = $("grafico-categorias-container");
-    const ctx = $("grafico-categorias-pizza");
-    if (!ctx || !container) return;
-
-    // 1. Processar os dados para somar os valores por categoria
-    const totaisPorCategoria = ganhosFiltrados.reduce((acc, ganho) => {
-      const categoria = ganho.categoria || "indefinida";
-      acc[categoria] = (acc[categoria] || 0) + ganho.valor;
-      return acc;
-    }, {});
-
-    const labels = Object.keys(totaisPorCategoria);
-    const data = Object.values(totaisPorCategoria);
-
-    // Se não houver dados, esconde o gráfico e para a execução
-    if (data.length === 0) {
-      container.style.display = "none";
-      return;
-    }
-
-    // Mostra o container do gráfico
-    container.style.display = "block";
-
-    // 2. Mapear nomes e cores para as categorias
-    const configCat = {
-      loja_fixa: { nome: "Loja Fixa", cor: "#3498db" },
-      passageiros: { nome: "Passageiros", cor: "#f1c40f" },
-      entregas: { nome: "Entregas App", cor: "#e74c3c" },
-      indefinida: { nome: "Outros", cor: "#95a5a6" },
-    };
-
-    const chartLabels = labels.map(
-      (label) => configCat[label]?.nome || "Desconhecido"
-    );
-    const chartColors = labels.map(
-      (label) => configCat[label]?.cor || "#bdc3c7"
-    );
-
-    // 3. Destruir o gráfico antigo se ele existir
-    if (this.chartCategorias) {
-      this.chartCategorias.destroy();
-    }
-
-    // 4. Criar o novo gráfico de pizza (Doughnut)
-    this.chartCategorias = new Chart(ctx, {
-      type: "doughnut", // ou 'pie' para um gráfico de pizza completo
-      data: {
-        labels: chartLabels,
-        datasets: [
-          {
-            data: data,
-            backgroundColor: chartColors,
-            borderColor: "#fff",
-            borderWidth: 2,
-          },
-        ],
-      },
-    });
-  },
-
   excluirGanho: async function (id) {
-    if (confirm("Excluir este registro?")) {
+    if (confirm("Excluir este registro permanentemente?")) {
       await deleteDoc(
         doc(db, "usuarios", firebaseAuth.currentUser.uid, "ganhos", id)
       );
-      this.localGanhosCache = null;
+      this.localGanhosCache = null; // Limpa cache para forçar reload
       this.atualizarUI();
       this.atualizarTelaInicio();
     }
@@ -376,148 +388,38 @@ export const ganhos = {
 
   compartilharResumo: function () {
     const total = $("resumo-filtro-total").textContent;
-    const qtd = $("resumo-filtro-entregas").textContent;
+    const qtd = $("resumo-filtro-servicos").textContent;
     const media = $("resumo-filtro-media").textContent;
     const periodo =
       $("filtro-periodo").options[$("filtro-periodo").selectedIndex].text;
+
     let texto = `*Resumo de Ganhos (${periodo})*:\n`;
-    let infoAdicionada = false;
+    let check = false;
 
     if ($("compValorTotal")?.checked) {
-      texto += `\n- Valor total: *${total}*`;
-      infoAdicionada = true;
+      texto += `💰 Total: *${total}*\n`;
+      check = true;
     }
     if ($("compQtdEntregas")?.checked) {
-      texto += `\n- Quantidade de serviços: *${qtd}*`;
-      infoAdicionada = true;
+      texto += `📦 Serviços: *${qtd}*\n`;
+      check = true;
     }
     if ($("compMedia")?.checked) {
-      texto += `\n- Média diária: *${media}*`;
-      infoAdicionada = true;
+      texto += `📊 Média Diária: *${media}*\n`;
+      check = true;
     }
 
-    if (!infoAdicionada)
-      return alert("Selecione pelo menos uma informação para compartilhar.");
-    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(
-      texto
-    )}`;
-    window.open(url, "_blank");
-  },
+    if (!check) return alert("Selecione pelo menos uma opção.");
 
-  atualizarTelaInicio: async function (ganhosUsuario) {
-    const usuario = firebaseAuth.currentUser;
-    if (!usuario) return;
-    if (!ganhosUsuario) ganhosUsuario = await this.fetchGanhos(); // Garante que funcione mesmo se chamado sem dados
-
-    const hoje = new Date().toISOString().slice(0, 10);
-
-    // Cálculo Hoje
-    const ganhosHoje = ganhosUsuario
-      .filter((g) => g.data === hoje)
-      .reduce((s, g) => s + g.valor, 0);
-
-    // Cálculo Semana
-    const semanaRange = getDateRange("esta-semana");
-    const ganhosSemana = ganhosUsuario
-      .filter(
-        (g) =>
-          new Date(g.data + "T00:00:00") >= semanaRange.start &&
-          new Date(g.data + "T00:00:00") <= semanaRange.end
-      )
-      .reduce((s, g) => s + g.valor, 0);
-
-    // Cálculo Mês
-    const mesRange = getDateRange("este-mes");
-    const ganhosMes = ganhosUsuario
-      .filter(
-        (g) =>
-          new Date(g.data + "T00:00:00") >= mesRange.start &&
-          new Date(g.data + "T00:00:00") <= mesRange.end
-      )
-      .reduce((s, g) => s + g.valor, 0);
-
-    // Última entrega
-    let ultimaEntrega = "-";
-    if (ganhosUsuario.length > 0) {
-      const ult = ganhosUsuario.sort(
-        (a, b) => new Date(b.data) - new Date(a.data)
-      )[0];
-      ultimaEntrega = `${new Date(ult.data + "T12:00:00").toLocaleDateString(
-        "pt-BR"
-      )} (${formatarMoeda(ult.valor)})`;
-    }
-
-    // Média de entregas
-    const entregasPorDia = ganhosUsuario.reduce((acc, g) => {
-      acc[g.data] = (acc[g.data] || 0) + (g.qtd || 0);
-      return acc;
-    }, {});
-    const diasComEntregas = Object.keys(entregasPorDia).length;
-    const totalEntregas = Object.values(entregasPorDia).reduce(
-      (s, v) => s + v,
-      0
+    window.open(
+      `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`,
+      "_blank"
     );
-    const mediaEntregas = diasComEntregas ? totalEntregas / diasComEntregas : 0;
-
-    // Melhor Dia
-    let melhorDia = "-";
-    if (ganhosUsuario.length > 0) {
-      const ganhosPorDia = ganhosUsuario.reduce((acc, g) => {
-        acc[g.data] = (acc[g.data] || 0) + g.valor;
-        return acc;
-      }, {});
-      const melhor = Object.entries(ganhosPorDia).sort(
-        (a, b) => b[1] - a[1]
-      )[0];
-      if (melhor) {
-        melhorDia = `${new Date(melhor[0] + "T12:00:00").toLocaleDateString(
-          "pt-BR"
-        )} (${formatarMoeda(melhor[1])})`;
-      }
-    }
-
-    // Atualiza textos na DOM
-    this.setElementText("resumoHoje", formatarMoeda(ganhosHoje));
-    this.setElementText("resumoSemana", formatarMoeda(ganhosSemana));
-    this.setElementText("resumoMes", formatarMoeda(ganhosMes));
-    this.setElementText("mediaEntregas", mediaEntregas.toFixed(1));
-    this.setElementText("melhorDia", melhorDia);
-    this.setElementText("ultimaEntrega", ultimaEntrega);
-
-    // Meta Semanal
-    try {
-      const perfilUsuario = await perfil.fetchUserProfile();
-      const metaSemanal = perfilUsuario ? perfilUsuario.metaSemanal : 1000;
-
-      const faltaMeta = Math.max(0, metaSemanal - ganhosSemana);
-      if ($("metaMensagem")) {
-        $("metaMensagem").innerHTML =
-          faltaMeta > 0
-            ? `Faltam ${formatarMoeda(
-                faltaMeta
-              )} para bater sua meta de ${formatarMoeda(metaSemanal)}!`
-            : `Parabéns! Você bateu sua meta de ${formatarMoeda(metaSemanal)}!`;
-        this.atualizarBarraProgresso(metaSemanal, ganhosSemana);
-      }
-    } catch (e) {
-      console.log("Erro ao carregar perfil para meta:", e);
-    }
   },
 
-  atualizarBarraProgresso: function (meta, ganhos) {
-    const progressoContainer = $("progresso-meta-container");
-    if (!progressoContainer) return;
-
-    const progresso = meta > 0 ? Math.min(100, (ganhos / meta) * 100) : 0;
-
-    progressoContainer.innerHTML = `<div class="progresso-meta"><div class="progresso-barra" style="width: ${progresso}%"></div></div><div class="progresso-texto">${progresso.toFixed(
-      0
-    )}% da meta alcançada</div>`;
-
-    // Adiciona uma classe especial quando a meta é atingida para mudar a cor da barra
-    if (progresso >= 100) {
-      const barra = progressoContainer.querySelector(".progresso-barra");
-      if (barra) barra.classList.add("meta-completa");
+  atualizarTelaInicio: async function () {
+    if (perfil && perfil.atualizarTelaInicio) {
+      await perfil.atualizarTelaInicio();
     }
   },
 

@@ -27,21 +27,17 @@
         <div id="resumoMes" class="resumo-valor">R$ 0,00</div>
       </div>
     </div>
-    <div class="graficos-circulares">
-      <div class="grafico-circular card">
-        <h3>Ganhos Diários</h3>
-        <canvas id="graficoDiario" width="120" height="120"></canvas>
-        <div id="valorGraficoDiario" class="valor-grafico">R$ 0,00</div>
+    <!-- SUBSTITUÍMOS OS GRÁFICOS ANTIGOS PELO NOVO CONTAINER -->
+    <div
+      class="card"
+      id="grafico-categorias-inicio-container"
+      style="display: none"
+    >
+      <div class="card-header">
+        <h3>Ganhos da Semana por Categoria</h3>
       </div>
-      <div class="grafico-circular card">
-        <h3>Ganhos Semanais</h3>
-        <canvas id="graficoSemanal" width="120" height="120"></canvas>
-        <div id="valorGraficoSemanal" class="valor-grafico">R$ 0,00</div>
-      </div>
-      <div class="grafico-circular card">
-        <h3>Ganhos Mensais</h3>
-        <canvas id="graficoMensal" width="120" height="120"></canvas>
-        <div id="valorGraficoMensal" class="valor-grafico">R$ 0,00</div>
+      <div style="padding: 1rem; position: relative; height: 280px">
+        <canvas id="grafico-categorias-inicio"></canvas>
       </div>
     </div>
     <div class="ferramentas-rapidas">

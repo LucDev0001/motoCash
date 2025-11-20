@@ -1,0 +1,62 @@
+/* css/toast.css */
+
+#toast-container {
+  position: fixed;
+  bottom: 85px; /* Acima da barra de navegação */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: none; /* Permite clicar através do container */
+}
+
+.toast-message {
+  color: white;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: all; /* Permite interagir com o toast se necessário */
+}
+
+.toast-message.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Estilos para diferentes tipos de toast */
+
+.toast-message.info {
+  background-color: #2196f3; /* Azul */
+}
+
+.toast-message.success {
+  background-color: #4caf50; /* Verde */
+}
+
+.toast-message.error {
+  background-color: #f44336; /* Vermelho */
+}
+
+.toast-message.warning {
+  background-color: #ff9800; /* Laranja */
+}
+
+/* Ajuste para telas menores onde a barra de navegação pode ser mais alta */
+@media (max-width: 768px) {
+  #toast-container {
+    bottom: 75px;
+    width: 90%;
+  }
+  .toast-message {
+    width: 100%;
+    text-align: center;
+  }
+}

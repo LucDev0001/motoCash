@@ -88,6 +88,53 @@
   border: 1px solid #e0e0e0;
 }
 
+.resumo-detalhes-container {
+  text-align: center;
+  margin-top: -1rem; /* Puxa para perto do card de resumo */
+  margin-bottom: 1.5rem;
+}
+
+#btn-ver-detalhes-categoria {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  /* Adicionado para centralizar e estilizar corretamente */
+  margin: 0 auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+#btn-ver-detalhes-categoria .material-icons {
+  transition: transform 0.3s ease;
+}
+
+#btn-ver-detalhes-categoria.ativo .material-icons {
+  transform: rotate(180deg);
+}
+
+#detalhes-por-categoria {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f0f2f5;
+  border-radius: 12px;
+}
+
+.detalhe-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: var(--white);
+  border-radius: 8px;
+  border: 1px solid var(--gray);
+}
+
 .resumo-item {
   display: flex;
   flex-direction: column;
@@ -146,6 +193,15 @@ ul#listaGanhos {
   font-size: 0.85rem;
   color: #888;
   margin-top: 0.3rem;
+}
+
+.info-detalhes-loja {
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
 .ganho-data {

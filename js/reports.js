@@ -3,9 +3,7 @@
 
 import { perfil } from "./perfil.js";
 import { $ } from "./utils.js";
-import { getDateRange } from "./utils.js"; // << CORRIGIDO
-import { formatarMoeda } from "./utils.js";
-import { navegacao } from "./ui.js"; // CORREÇÃO: Módulo de navegação importado
+import { getDateRange, formatarMoeda } from "./utils.js"; // << CORRIGIDO
 
 let ganhosModule;
 
@@ -16,7 +14,7 @@ export const relatorios = {
 
   init: function (dependencies) {
     ganhosModule = dependencies.ganhos;
-    this.setupFerramentas();
+    // A função setupFerramentas foi movida para perfil.js
   },
 
   atualizarGraficos: async function (ganhosUsuario) {
@@ -103,30 +101,6 @@ export const relatorios = {
         },
       },
     });
-  },
-
-  setupFerramentas: function () {
-    // CORREÇÃO: Botão Adicionar Ganho da tela inicial
-    if ($("atalhoAdicionarGanho")) {
-      $("atalhoAdicionarGanho").onclick = () => {
-        navegacao.mostrarTelaProtegida("tela-ganhos");
-      };
-    }
-
-    if ($("atalhoExportar"))
-      $("atalhoExportar").onclick = this.exportarRelatorioCSV.bind(this);
-
-    // CORREÇÃO: Botão Compartilhar WhatsApp da tela inicial
-    if ($("atalhoCompartilhar")) {
-      $("atalhoCompartilhar").onclick = this.compartilharWhatsApp.bind(this);
-    }
-
-    // CORREÇÃO: Botão Compartilhar da tela de Ganhos
-    if ($("btnCompartilhar")) {
-      $("btnCompartilhar").addEventListener("click", () =>
-        this.compartilharGanhosFiltrados()
-      );
-    }
   },
 
   exportarRelatorioCSV: async function () {
