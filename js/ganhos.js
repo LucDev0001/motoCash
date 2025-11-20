@@ -64,7 +64,6 @@ export const ganhos = {
   },
 
   setupFiltros: function () {
-    const update = () => this.atualizarUI();
     const update = () => this.atualizarUI(); // atualizarUI agora é async
     if ($("filtro-periodo")) {
       $("filtro-periodo").addEventListener("change", () => {
@@ -131,26 +130,42 @@ export const ganhos = {
     }
   },
 
-  atualizarGanho: function () {
+  atualizarGanho: async function () {
     this.localGanhosCache = null; // Invalida o cache
-    const ganhos = storage.getGanhos();
-    const index = ganhos.findIndex((g) => g.id === this.ganhoEditandoId);
-    if (index === -1) return alert("Erro: Ganho não encontrado.");
+    const usuarioLogado = firebaseAuth.currentUser;
+    if (!usuarioLogado) return alert("Usuário não encontrado.");
+    if (!this.ganhoEditandoId)
+      return alert("Erro: ID do ganho não encontrado.");
 
     const valorDiaria = parseFloat($("valorDiaria").value) || 0;
     const taxaEntrega = parseFloat($("taxaEntrega").value) || 0;
     const qtdEntregas = parseInt($("qtdEntregas").value) || 0;
 
-    ganhos[index] = {
-      ...ganhos[index],
+    const ganhoAtualizado = {
+      id: this.ganhoEditandoId,
       data: $("data").value,
       valorDiaria,
       taxaEntrega,
       qtdEntregas,
       valor: valorDiaria + taxaEntrega * qtdEntregas,
     };
-    storage.setGanhos(ganhos);
-    this.finalizarAcaoDeGanho();
+
+    try {
+      // A referência aponta para o documento que já existe
+      const docRef = doc(
+        db,
+        "usuarios",
+        usuarioLogado.uid,
+        "ganhos",
+        this.ganhoEditandoId
+      );
+      // setDoc vai sobrescrever o documento com os novos dados
+      await setDoc(docRef, ganhoAtualizado);
+      this.finalizarAcaoDeGanho();
+    } catch (error) {
+      console.error("Erro ao atualizar ganho: ", error);
+      alert("Não foi possível atualizar o ganho. Tente novamente.");
+    }
   },
 
   finalizarAcaoDeGanho: function () {
@@ -187,17 +202,10 @@ export const ganhos = {
     window.scrollTo(0, 0);
   },
 
-  getGanhosFiltrados: function () {
-    const usuario = storage.getUsuarioLogado();
-    if (!usuario) return [];
   fetchGanhos: async function () {
     const usuarioLogado = firebaseAuth.currentUser;
     if (!usuarioLogado) return [];
 
-    let ganhosUsuario = storage
-      .getGanhos()
-      .filter((g) => g.usuario === usuario.usuario);
-    const periodo = $("filtro-periodo").value;
     // Se o cache existir, retorna os dados cacheados para evitar uma nova busca
     if (this.localGanhosCache) {
       return this.localGanhosCache;
@@ -230,7 +238,6 @@ export const ganhos = {
       });
     }
 
-    const ordenacao = $("filtro-ordenar").value;
     const ordenacao = $("filtro-ordenar")?.value || "recentes";
     return ganhosUsuario.sort((a, b) => {
       switch (ordenacao) {
@@ -248,12 +255,9 @@ export const ganhos = {
     });
   },
 
-  atualizarUI: function () {
-    if (!storage.getUsuarioLogado() || !$("listaGanhos")) return;
   atualizarUI: async function () {
     if (!firebaseAuth.currentUser || !$("listaGanhos")) return;
 
-    const ganhosFiltrados = this.getGanhosFiltrados();
     const ganhosFiltrados = await this.getGanhosFiltrados();
     const totalPeriodo = ganhosFiltrados.reduce((s, g) => s + g.valor, 0);
     const totalEntregas = ganhosFiltrados.reduce(
