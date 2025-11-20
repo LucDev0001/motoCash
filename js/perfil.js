@@ -7,6 +7,10 @@ import { auth as firebaseAuth, db } from "./firebase-config.js";
 import {
   doc,
   getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
   updateDoc,
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
@@ -172,22 +176,35 @@ export const perfil = {
     const user = firebaseAuth.currentUser;
     if (!user) return;
 
-    // Usa o cache de produtos do módulo marketplace para eficiência
-    const allProducts = marketplace.allProductsCache;
-    const myProducts = allProducts.filter((p) => p.ownerId === user.uid);
+    container.innerHTML = "<p>Carregando seus anúncios...</p>";
 
-    if (myProducts.length === 0) {
-      container.innerHTML = "<p>Você ainda não anunciou nenhum produto.</p>";
-      return;
-    }
-
-    container.innerHTML = "";
-    myProducts.forEach((product) => {
-      container.insertAdjacentHTML(
-        "beforeend",
-        marketplace.createProductCardHTML(product)
+    try {
+      // Cria uma consulta para buscar apenas os produtos do usuário logado.
+      const q = query(
+        collection(db, "produtos"),
+        where("ownerId", "==", user.uid)
       );
-    });
-    marketplace.setupProductActionButtons(); // Reutiliza a função para adicionar os eventos de editar/excluir
+      const querySnapshot = await getDocs(q);
+
+      const myProducts = querySnapshot.docs.map((doc) => doc.data());
+
+      if (myProducts.length === 0) {
+        container.innerHTML = "<p>Você ainda não anunciou nenhum produto.</p>";
+        return;
+      }
+
+      container.innerHTML = "";
+      myProducts.forEach((product) => {
+        container.insertAdjacentHTML(
+          "beforeend",
+          marketplace.createProductCardHTML(product)
+        );
+      });
+      marketplace.setupProductActionButtons(); // Reutiliza a função para adicionar os eventos de editar/excluir
+    } catch (error) {
+      console.error("Erro ao buscar 'Meus Anúncios':", error);
+      container.innerHTML =
+        "<p style='color:red;'>Erro ao carregar seus anúncios.</p>";
+    }
   },
 };

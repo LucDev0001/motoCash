@@ -92,7 +92,8 @@ export const marketplace = {
       this.filterAndDisplayProducts();
     } catch (error) {
       console.error(">>> ERRO CRÍTICO AO BUSCAR PRODUTOS:", error);
-      productListEl.innerHTML = `<p style="color:red">Erro ao carregar: ${error.message}</p>`;
+      productListEl.innerHTML =
+        '<p style="color:red">Erro ao carregar os produtos. Verifique sua conexão e tente novamente.</p>';
     }
   },
 
@@ -100,7 +101,9 @@ export const marketplace = {
     const productListEl = $("product-list");
     const searchInput = $("search-input");
 
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
+    const searchTerm = searchInput
+      ? searchInput.value.toLowerCase().trim()
+      : "";
     const activeCategoryEl = document.querySelector(".category-btn.active");
     const activeCategory = activeCategoryEl
       ? activeCategoryEl.dataset.category
@@ -135,6 +138,9 @@ export const marketplace = {
       return;
     }
 
+    // Popula o slider com os 5 produtos mais recentes
+    this.populateSlider(this.allProductsCache.slice(0, 5));
+
     // --- CORREÇÃO CRÍTICA AQUI ---
     // Usamos insertAdjacentHTML para evitar o problema do appendChild(firstChild) pegando espaço vazio
     productListEl.innerHTML = ""; // Limpa a lista
@@ -145,6 +151,17 @@ export const marketplace = {
     });
 
     this.setupProductActionButtons();
+  },
+
+  populateSlider: function (products) {
+    const sliderContainer = $("slider-container");
+    const slider = $("product-slider");
+    if (!slider || !sliderContainer) return;
+
+    slider.innerHTML = products
+      .map((p) => this.createProductCardHTML(p))
+      .join("");
+    sliderContainer.style.display = "block";
   },
 
   handleCategoryClick: function (clickedBtn) {

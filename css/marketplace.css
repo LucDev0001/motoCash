@@ -1,21 +1,24 @@
 /* css/marketplace.css */
 /* Estilos para a página do marketplace */
 
-.marketplace-filtros {
-  margin-bottom: 1.5rem;
-}
-
-.search-bar {
+.search-bar-container {
   position: relative;
   margin-bottom: 1rem;
 }
 
-.search-bar input {
+.search-bar-container input {
   width: 100%;
   padding-right: 2.5rem; /* Espaço para o ícone */
+  border-radius: 20px; /* Bordas arredondadas */
+  background-color: var(--gray-light);
+  border: 1px solid var(--gray);
 }
 
-.search-bar .material-icons {
+.search-bar-container input:focus {
+  background-color: var(--white);
+}
+
+.search-bar-container .material-icons {
   position: absolute;
   right: 0.8rem;
   top: 50%;
@@ -28,6 +31,7 @@
   gap: 0.5rem;
   overflow-x: auto; /* Permite rolar horizontalmente em telas pequenas */
   padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .category-btn {
@@ -43,12 +47,34 @@
   border-color: var(--black);
 }
 
+/* Slider de Produtos Recentes */
+.slider-container {
+  margin-bottom: 2rem;
+}
+
+.slider-container h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.product-slider {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+
 /* NOVO LAYOUT DE LISTA (ESTILO MERCADO LIVRE) */
 .product-grid {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   margin-top: 1rem;
+}
+
+/* Ajuste para os cards dentro do slider */
+.product-slider .product-card {
+  flex: 0 0 280px; /* Largura fixa para os itens do slider */
 }
 
 .product-card {
@@ -170,6 +196,11 @@
   padding-top: 2.5rem; /* Espaço para o botão de fechar */
 }
 
+.product-modal .btn-product-action {
+  width: 100%;
+  margin-top: 1rem;
+}
+
 .product-modal-image {
   width: 100%;
   max-height: 300px;
@@ -197,6 +228,20 @@
   color: var(--gray-dark);
   margin-bottom: 1.5rem;
   text-align: left;
+}
+
+/* Media Query para Responsividade do Modal */
+@media (max-width: 480px) {
+  .product-modal {
+    padding: 0.8rem;
+    padding-top: 2.5rem;
+  }
+  .product-modal-title {
+    font-size: 1.3rem;
+  }
+  .product-modal-price {
+    font-size: 1.5rem;
+  }
 }
 
 .product-modal-description {
