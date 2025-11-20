@@ -316,13 +316,24 @@ export const ganhos = {
     const media = $("resumo-filtro-media").textContent;
     const periodo =
       $("filtro-periodo").options[$("filtro-periodo").selectedIndex].text;
+    let texto = `*Resumo de Ganhos (${periodo})*:\n`;
+    let infoAdicionada = false;
 
-    let texto = `*Resumo de Ganhos (${periodo})*\n`;
+    if ($("compValorTotal")?.checked) {
+      texto += `\n- Valor total: *${total}*`;
+      infoAdicionada = true;
+    }
+    if ($("compQtdEntregas")?.checked) {
+      texto += `\n- Quantidade de serviços: *${qtd}*`;
+      infoAdicionada = true;
+    }
+    if ($("compMedia")?.checked) {
+      texto += `\n- Média diária: *${media}*`;
+      infoAdicionada = true;
+    }
 
-    if ($("compValorTotal").checked) texto += `💰 Total: ${total}\n`;
-    if ($("compQtdEntregas").checked) texto += `📦 Serviços/Entregas: ${qtd}\n`;
-    if ($("compMedia").checked) texto += `📊 Média Diária: ${media}\n`;
-
+    if (!infoAdicionada)
+      return alert("Selecione pelo menos uma informação para compartilhar.");
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(
       texto
     )}`;

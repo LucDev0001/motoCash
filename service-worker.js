@@ -1,4 +1,4 @@
-const CACHE_NAME = "motocash-v4-final-2.5";
+const CACHE_NAME = "motocash-v4-final-2.6";
 const URLS_TO_CACHE = [
   // HTML
   "./",

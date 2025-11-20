@@ -130,14 +130,14 @@ export const relatorios = {
     }
   },
 
-  exportarRelatorioCSV: function () {
-    const ganhosFiltrados = ganhosModule.getGanhosFiltrados();
+  exportarRelatorioCSV: async function () {
+    const ganhosFiltrados = await ganhosModule.getGanhosFiltrados();
     if (ganhosFiltrados.length === 0)
       return alert("Nenhum ganho para exportar.");
 
-    let csv = "Data,Valor,Diária,Taxa Entrega,Qtde Entregas\n";
+    let csv = "Data,Categoria,Valor,Quantidade\n";
     ganhosFiltrados.forEach((g) => {
-      csv += `${g.data},${g.valor},${g.valorDiaria},${g.taxaEntrega},${g.qtdEntregas}\n`;
+      csv += `${g.data},${g.categoria},${g.valor},${g.qtd || 0}\n`;
     });
 
     const a = document.createElement("a");
@@ -147,26 +147,21 @@ export const relatorios = {
     URL.revokeObjectURL(a.href);
   },
 
-  compartilharWhatsApp: function () {
-    const usuarioLogado = storage.getUsuarioLogado();
-    if (!usuarioLogado) return;
-
-    const ganhosUsuario = storage
-      .getGanhos()
-      .filter((g) => g.usuario === usuarioLogado.usuario);
+  compartilharWhatsApp: async function () {
+    // Usa o módulo de ganhos para buscar os dados, garantindo que está atualizado
+    const ganhosUsuario = await ganhosModule.fetchGanhos();
     if (ganhosUsuario.length === 0)
       return alert("Nenhum ganho para compartilhar.");
 
     const mesRange = getDateRange("este-mes");
 
-    // CORREÇÃO: Filtra os ganhos apenas para o mês atual
     const ganhosDoMes = ganhosUsuario.filter((g) => {
       const d = new Date(g.data + "T00:00:00");
       return d >= mesRange.start && d <= mesRange.end;
     });
 
     const totalGanhosMes = ganhosDoMes.reduce((s, g) => s + g.valor, 0);
-    const totalEntregasMes = ganhosDoMes.reduce((s, g) => s + g.qtdEntregas, 0);
+    const totalEntregasMes = ganhosDoMes.reduce((s, g) => s + (g.qtd || 0), 0);
 
     let msg =
       `Meu resumo do mês no MotoCash:\n\n` +
@@ -176,8 +171,8 @@ export const relatorios = {
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   },
 
-  compartilharGanhosFiltrados: function () {
-    const ganhosFiltrados = ganhosModule.getGanhosFiltrados();
+  compartilharGanhosFiltrados: async function () {
+    const ganhosFiltrados = await ganhosModule.getGanhosFiltrados();
     if (ganhosFiltrados.length === 0) {
       return alert(
         "Nenhum ganho encontrado no período selecionado para compartilhar."
@@ -186,11 +181,10 @@ export const relatorios = {
 
     const totais = ganhosFiltrados.reduce(
       (acc, g) => ({
-        entregas: acc.entregas + g.qtdEntregas,
-        diarias: acc.diarias + g.valorDiaria,
+        servicos: acc.servicos + (g.qtd || 0),
         total: acc.total + g.valor,
       }),
-      { entregas: 0, diarias: 0, total: 0 }
+      { servicos: 0, total: 0 }
     );
 
     const select = $("filtro-periodo");
@@ -211,15 +205,11 @@ export const relatorios = {
     let infoAdicionada = false;
 
     if ($("compQtdEntregas")?.checked) {
-      msg += `\n- Quantidade de Entregas: *${totais.entregas}*`;
-      infoAdicionada = true;
-    }
-    if ($("compValorDiaria")?.checked) {
-      msg += `\n- Soma das Diárias: *${formatarMoeda(totais.diarias)}*`;
+      msg += `\n- Quantidade de serviços: *${totais.servicos}*`;
       infoAdicionada = true;
     }
     if ($("compValorTotal")?.checked) {
-      msg += `\n- *Total Geral: ${formatarMoeda(totais.total)}*`;
+      msg += `\n- Valor total: *${formatarMoeda(totais.total)}*`;
       infoAdicionada = true;
     }
 
