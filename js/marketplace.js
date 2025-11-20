@@ -348,9 +348,20 @@ export const marketplace = {
     if (oldModal) oldModal.remove();
 
     const isAffiliate = product.tipo === "afiliado";
-    const buttonText = isAffiliate
-      ? "Ver Oferta na Loja"
-      : "Chamar Vendedor no Zap";
+    let buttonText, finalLink;
+
+    if (isAffiliate) {
+      buttonText = "Comprar";
+      finalLink = product.link;
+    } else {
+      buttonText = "Chamar Vendedor no Zap";
+      const mensagem = `Olá, tenho interesse no seu produto "${
+        product.nome
+      }" (${formatarMoeda(product.preco)}), que vi no MotoCash!`;
+      // O link do produto já é o link do WhatsApp, agora adicionamos o texto.
+      finalLink = `${product.link}?text=${encodeURIComponent(mensagem)}`;
+    }
+
     const buttonIcon = isAffiliate ? "shopping_cart" : "whatsapp";
     const imagemSegura = product.imagemURL || "https://via.placeholder.com/300";
 
@@ -369,7 +380,7 @@ export const marketplace = {
           <p class="product-modal-description">${
             product.descricao || "Nenhuma descrição fornecida."
           }</p>
-          <a href="${product.link}" target="_blank" class="btn-product-action">
+          <a href="${finalLink}" target="_blank" class="btn-product-action">
             <span class="material-icons">${buttonIcon}</span> ${buttonText}
           </a>
         </div>

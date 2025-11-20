@@ -1,6 +1,7 @@
 // js/perfil.js
 // Gerencia a exibição e atualização dos dados do usuário.
 
+import { marketplace } from "./marketplace.js";
 // Importa as ferramentas do Firebase
 import { auth as firebaseAuth, db } from "./firebase-config.js";
 import {
@@ -93,6 +94,8 @@ export const perfil = {
     // Atualiza elementos que podem estar em várias telas (como a tela de início)
     this.setElementText("msgOlaInicio", `Olá, ${usuario.nome || "Usuário"}`);
 
+    this.displayMyProducts(); // Chama a nova função
+
     // Mostra a seção de admin se o usuário tiver a role
     if (usuario.role === "admin") {
       const adminSection = $("admin-section");
@@ -160,5 +163,31 @@ export const perfil = {
       console.error("Erro ao atualizar dados:", error);
       alert("Ocorreu um erro ao salvar suas alterações.");
     }
+  },
+
+  displayMyProducts: async function () {
+    const container = $("meus-anuncios-lista");
+    if (!container) return;
+
+    const user = firebaseAuth.currentUser;
+    if (!user) return;
+
+    // Usa o cache de produtos do módulo marketplace para eficiência
+    const allProducts = marketplace.allProductsCache;
+    const myProducts = allProducts.filter((p) => p.ownerId === user.uid);
+
+    if (myProducts.length === 0) {
+      container.innerHTML = "<p>Você ainda não anunciou nenhum produto.</p>";
+      return;
+    }
+
+    container.innerHTML = "";
+    myProducts.forEach((product) => {
+      container.insertAdjacentHTML(
+        "beforeend",
+        marketplace.createProductCardHTML(product)
+      );
+    });
+    marketplace.setupProductActionButtons(); // Reutiliza a função para adicionar os eventos de editar/excluir
   },
 };
