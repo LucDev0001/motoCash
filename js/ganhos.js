@@ -505,14 +505,8 @@ export const ganhos = {
   },
 
   atualizarBarraProgresso: function (meta, ganhos) {
-    const containerAntigo = $("progresso-meta-container");
-    if (containerAntigo) {
-      containerAntigo.remove();
-    }
-
-    const progressoContainer = document.createElement("div");
-    progressoContainer.id = "progresso-meta-container";
-    progressoContainer.style.marginTop = "10px";
+    const progressoContainer = $("progresso-meta-container");
+    if (!progressoContainer) return;
 
     const progresso = meta > 0 ? Math.min(100, (ganhos / meta) * 100) : 0;
 
@@ -520,13 +514,10 @@ export const ganhos = {
       0
     )}% da meta alcançada</div>`;
 
+    // Adiciona uma classe especial quando a meta é atingida para mudar a cor da barra
     if (progresso >= 100) {
       const barra = progressoContainer.querySelector(".progresso-barra");
       if (barra) barra.classList.add("meta-completa");
-    }
-
-    if ($("metaMensagem")) {
-      $("metaMensagem").insertAdjacentElement("afterend", progressoContainer);
     }
   },
 
