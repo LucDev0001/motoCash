@@ -34,7 +34,7 @@ const pages = {
       relatorios.init({ ganhos }); // Passa o módulo de ganhos para relatórios
       const ganhosData = await ganhos.fetchGanhos(); // Busca os dados uma vez
       await relatorios.atualizarGraficos(ganhosData); // Passa os dados para os gráficos
-      weather.getAndDisplayDetailedWeather();
+      // weather.getAndDisplayDetailedWeather(); // Desativado temporariamente para evitar problemas de faturamento do Firebase
     },
   },
   ganhos: {
