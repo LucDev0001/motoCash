@@ -106,41 +106,54 @@ export const marketplace = {
 
   filterAndDisplayProducts: function () {
     const productListEl = $("product-list");
-    // Proteção: Se o input não existir, usa string vazia
     const searchInput = $("search-input");
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
 
+    // Pega os valores
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
     const activeCategoryEl = document.querySelector(".category-btn.active");
     const activeCategory = activeCategoryEl
       ? activeCategoryEl.dataset.category
       : "todos";
 
+    console.log(">>> FILTRO: Iniciando...");
+    console.log("--- Categoria Ativa:", activeCategory);
+    console.log("--- Termo de Busca:", searchTerm);
+    console.log("--- Total no Cache:", this.allProductsCache.length);
+
     let filteredProducts = this.allProductsCache;
 
     // 1. Filtra por Categoria
     if (activeCategory !== "todos") {
-      filteredProducts = filteredProducts.filter(
-        (p) => p.categoria === activeCategory
-      );
-    }
-
-    // 2. Filtra por Busca (COM PROTEÇÃO CONTRA NOME VAZIO)
-    if (searchTerm) {
       filteredProducts = filteredProducts.filter((p) => {
-        // Se o produto não tiver nome, ignora ele na busca ou trata como string vazia
-        const nomeProduto = p.nome ? p.nome.toLowerCase() : "";
-        return nomeProduto.includes(searchTerm);
+        const match = p.categoria === activeCategory;
+        if (!match)
+          console.log(
+            `Item '${p.nome}' ignorado. Categoria do item: '${p.categoria}' != Filtro: '${activeCategory}'`
+          );
+        return match;
       });
     }
 
+    // 2. Filtra por Busca
+    if (searchTerm) {
+      filteredProducts = filteredProducts.filter((p) => {
+        const nome = p.nome ? p.nome.toLowerCase() : "";
+        return nome.includes(searchTerm);
+      });
+    }
+
+    console.log("--- Produtos Restantes após filtro:", filteredProducts.length);
+
     if (filteredProducts.length === 0) {
       productListEl.innerHTML =
-        "<p>Nenhum produto encontrado com esses filtros.</p>";
+        "<p>Nenhum produto encontrado (Filtro ocultou tudo).</p>";
       return;
     }
 
-    productListEl.innerHTML = "";
+    // Renderiza
+    productListEl.innerHTML = ""; // Limpa a lista
     filteredProducts.forEach((product) => {
+      console.log("Renderizando produto:", product.nome); // Confirmação visual
       const card = document.createElement("div");
       card.innerHTML = this.createProductCardHTML(product);
       productListEl.appendChild(card.firstChild);
