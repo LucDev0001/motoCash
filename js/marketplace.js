@@ -11,6 +11,7 @@ import {
   doc,
   setDoc,
   serverTimestamp,
+  deleteDoc,
 } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 import { $ } from "./utils.js";
 import { formatarMoeda } from "./utils.js";
@@ -56,9 +57,24 @@ export const marketplace = {
     const isAffiliate = product.tipo === "afiliado";
     const buttonText = isAffiliate ? "Ver Oferta" : "Chamar no Zap";
     const buttonIcon = isAffiliate ? "shopping_cart" : "whatsapp";
+    const userProfile = perfil.localProfileCache;
+    const isOwner = userProfile && userProfile.uid === product.ownerId;
 
     return `
       <div class="product-card">
+        ${
+          isOwner
+            ? `
+          <div class="product-owner-actions">
+            <button class="btn-menu-product" data-product-id="${product.id}">...</button>
+            <div class="menu-product-opcoes" style="display: none;">
+              <a href="#" class="btn-edit-product" data-product-id="${product.id}">Editar</a>
+              <a href="#" class="btn-delete-product" data-product-id="${product.id}">Excluir</a>
+            </div>
+          </div>
+        `
+            : ""
+        }
         <img src="${product.imagemURL}" alt="${
       product.nome
     }" class="product-image">
@@ -131,6 +147,51 @@ export const marketplace = {
       alert("Ocorreu um erro ao salvar o produto.");
       btn.disabled = false;
       btn.textContent = "Salvar Produto";
+    }
+  },
+
+  setupProductActionButtons: function () {
+    document.querySelectorAll(".btn-menu-product").forEach((button) => {
+      button.addEventListener("click", (e) => {
+        e.stopPropagation();
+        document
+          .querySelectorAll(".menu-product-opcoes")
+          .forEach((m) => (m.style.display = "none"));
+        e.currentTarget.nextElementSibling.style.display = "block";
+      });
+    });
+
+    document.querySelectorAll(".btn-delete-product").forEach((button) => {
+      button.addEventListener("click", (e) => {
+        e.preventDefault();
+        const productId = e.currentTarget.dataset.productId;
+        this.handleDeleteProduct(productId);
+      });
+    });
+
+    // A lógica de edição pode ser adicionada aqui no futuro
+    // document.querySelectorAll('.btn-edit-product').forEach...
+
+    document.body.addEventListener(
+      "click",
+      () =>
+        document
+          .querySelectorAll(".menu-product-opcoes")
+          .forEach((m) => (m.style.display = "none")),
+      { once: true }
+    );
+  },
+
+  handleDeleteProduct: async function (productId) {
+    if (!confirm("Tem certeza que deseja excluir este produto?")) return;
+
+    try {
+      await deleteDoc(doc(db, "produtos", productId));
+      alert("Produto excluído com sucesso!");
+      this.fetchAndDisplayProducts(); // Recarrega a lista de produtos
+    } catch (error) {
+      console.error("Erro ao excluir produto:", error);
+      alert("Ocorreu um erro ao excluir o produto.");
     }
   },
 };
