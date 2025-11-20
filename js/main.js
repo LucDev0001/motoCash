@@ -139,7 +139,7 @@ function setupPermanentUI() {
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker
-        .register("/service-worker.js")
+        .register("service-worker.js") // Caminho relativo
         .then((reg) => console.log("Service worker registrado."))
         .catch((err) =>
           console.error("Erro ao registrar service worker:", err)

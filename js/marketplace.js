@@ -79,7 +79,8 @@ export const marketplace = {
     `;
   },
 
-  initAddProductForm: function () {
+  initAddProductForm: function (dependencies) {
+    this.navegarPara = dependencies.navegarPara;
     $("btn-voltar-marketplace").onclick = () => this.navegarPara("marketplace");
 
     $("form-add-product").addEventListener("submit", (e) => {

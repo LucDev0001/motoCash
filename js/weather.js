@@ -11,9 +11,11 @@ export const weather = {
   },
   getAndDisplayDetailedWeather: async function () {
     const statusDiv = $("weather-status");
-    const hourlyContainer = $("hourly-forecast-container")?.querySelector(".previsao-lista");
+    const hourlyContainer = $("hourly-forecast-container")?.querySelector(
+      ".previsao-lista"
+    );
     if (!statusDiv || !hourlyContainer) return;
-    
+
     statusDiv.textContent = "Buscando sua localização...";
     if (!navigator.geolocation) {
       return (statusDiv.textContent = "Geolocalização não é suportada.");
@@ -23,7 +25,7 @@ export const weather = {
       (position) => {
         const { latitude: lat, longitude: lon } = position.coords;
         const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=pt_br`;
-        
+
         statusDiv.textContent = "Carregando previsão...";
         fetch(apiUrl)
           .then((res) => res.json())
@@ -32,8 +34,15 @@ export const weather = {
             hourlyContainer.innerHTML = "";
             data.list.slice(0, 8).forEach((item) => {
               const date = new Date(item.dt * 1000);
-              const time = date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-              hourlyContainer.innerHTML += this.createForecastItem(time, item.main.temp, item.weather[0].icon);
+              const time = date.toLocaleTimeString("pt-BR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              hourlyContainer.innerHTML += this.createForecastItem(
+                time,
+                item.main.temp,
+                item.weather[0].icon
+              );
             });
           })
           .catch((err) => {
@@ -47,6 +56,8 @@ export const weather = {
     );
   },
   createForecastItem: function (label, temp, iconCode) {
-    return `<div class="previsao-item"><p>${label}</p><img src="http://openweathermap.org/img/wn/${iconCode}.png" alt="Tempo"><p>${Math.round(temp)}°C</p></div>`;
+    return `<div class="previsao-item"><p>${label}</p><img src="https://openweathermap.org/img/wn/${iconCode}.png" alt="Tempo"><p>${Math.round(
+      temp
+    )}°C</p></div>`;
   },
 };
