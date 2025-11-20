@@ -21,7 +21,10 @@ export const marketplace = {
   navegarPara: null,
 
   init: function (dependencies) {
+    console.log("Marketplace: Iniciando...");
     this.navegarPara = dependencies.navegarPara;
+
+    // Tenta buscar produtos imediatamente
     this.fetchAndDisplayProducts();
     this.setupFilters();
 
@@ -50,43 +53,71 @@ export const marketplace = {
 
   fetchAndDisplayProducts: async function (force = false) {
     const productListEl = $("product-list");
-    if (!productListEl) return;
+    if (!productListEl) {
+      console.error("Elemento 'product-list' não encontrado no HTML.");
+      return;
+    }
 
     productListEl.innerHTML = "<p>Carregando produtos...</p>";
 
     try {
-      const q = query(collection(db, "produtos"), orderBy("createdAt", "desc"));
+      // CORREÇÃO 1: Removi temporariamente o orderBy para evitar erros se o campo 'createdAt' não existir.
+      // Quando todos os seus produtos tiverem data, você pode descomentar a linha abaixo:
+      // const q = query(collection(db, "produtos"), orderBy("createdAt", "desc"));
+
+      const q = query(collection(db, "produtos"));
 
       // Usa o cache se disponível, a menos que a busca seja forçada
       if (this.allProductsCache.length === 0 || force) {
         console.log("Buscando produtos do Firestore...");
         const querySnapshot = await getDocs(q);
-        console.log(`Firestore retornou ${querySnapshot.size} produtos.`);
+        console.log(`Firestore retornou ${querySnapshot.size} produtos.`); // DIAGNÓSTICO
+
+        if (querySnapshot.empty) {
+          productListEl.innerHTML =
+            "<p>Nenhum produto encontrado no Banco de Dados.</p>";
+          return;
+        }
 
         // Converte os dados e o Timestamp do Firebase para um objeto Date do JS
         this.allProductsCache = querySnapshot.docs.map((doc) => {
           const data = doc.data();
+          // Adiciona o ID do documento aos dados para referência futura
+          data.id = doc.id;
+
           // Verifica se o campo createdAt existe e é um Timestamp antes de converter
-          // Se não existir, define uma data antiga para que a ordenação não quebre
           if (data.createdAt && typeof data.createdAt.toDate === "function") {
             data.createdAt = data.createdAt.toDate();
+          } else {
+            // Fallback se não tiver data (para não quebrar a ordenação no futuro)
+            data.createdAt = new Date();
           }
           return data;
         });
       }
 
-      console.log("Cache de produtos atualizado:", this.allProductsCache);
+      console.log("Produtos processados:", this.allProductsCache); // DIAGNÓSTICO
       this.filterAndDisplayProducts();
     } catch (error) {
-      console.error("Erro ao buscar produtos:", error);
-      productListEl.innerHTML =
-        "<p>Ocorreu um erro ao carregar os produtos.</p>";
+      console.error("Erro CRÍTICO ao buscar produtos:", error);
+      // Verifica se é erro de permissão
+      if (error.code === "permission-denied") {
+        productListEl.innerHTML =
+          "<p>Erro de permissão. Verifique as regras do Firebase.</p>";
+      } else {
+        productListEl.innerHTML =
+          "<p>Ocorreu um erro ao carregar os produtos.</p>";
+      }
     }
   },
 
   filterAndDisplayProducts: function () {
     const productListEl = $("product-list");
-    const searchTerm = $("search-input").value.toLowerCase();
+    const searchInput = $("search-input");
+
+    // Previne erro se o input não existir
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
+
     const activeCategoryEl = document.querySelector(".category-btn.active");
     const activeCategory = activeCategoryEl
       ? activeCategoryEl.dataset.category
@@ -103,12 +134,19 @@ export const marketplace = {
 
     // Filtra por busca
     if (searchTerm) {
-      filteredProducts = filteredProducts.filter((p) =>
-        p.nome.toLowerCase().includes(searchTerm)
+      filteredProducts = filteredProducts.filter(
+        (p) => p.nome && p.nome.toLowerCase().includes(searchTerm)
       );
     }
 
+    // Log para debug se a lista estiver vazia
     if (filteredProducts.length === 0) {
+      console.log(
+        "Filtro retornou 0 produtos. Categoria:",
+        activeCategory,
+        "Busca:",
+        searchTerm
+      );
       productListEl.innerHTML =
         "<p>Nenhum produto encontrado com esses filtros.</p>";
       return;
@@ -135,7 +173,10 @@ export const marketplace = {
   createProductCardHTML: function (product) {
     const isAffiliate = product.tipo === "afiliado";
     const buttonText = isAffiliate ? "Ver Oferta" : "Chamar no Zap";
-    const buttonIcon = isAffiliate ? "shopping_cart" : "whatsapp";
+    // Fallback se não tiver imagem
+    const imagemSegura =
+      product.imagemURL || "https://via.placeholder.com/150?text=Sem+Imagem";
+
     const userProfile = perfil.localProfileCache;
     const isOwner = userProfile && userProfile.uid === product.ownerId;
 
@@ -155,15 +196,15 @@ export const marketplace = {
             : ""
         }
         <div class="product-image-container">
-          <img src="${product.imagemURL}" alt="${
-      product.nome
+          <img src="${imagemSegura}" alt="${
+      product.nome || "Produto"
     }" class="product-image">
         </div>
         <div class="product-info">
-          <h4 class="product-name">${product.nome}</h4>
-          <p class="product-price">${formatarMoeda(product.preco)}</p>
+          <h4 class="product-name">${product.nome || "Sem Nome"}</h4>
+          <p class="product-price">${formatarMoeda(product.preco || 0)}</p>
           <p class="product-owner">Vendido por: <strong>${
-            product.ownerName
+            product.ownerName || "Anônimo"
           }</strong></p>
         </div>
       </div>
@@ -174,20 +215,24 @@ export const marketplace = {
     const formAffiliateLink = document.getElementById(
       "form-group-affiliate-link"
     );
-    const userProfile = perfil.localProfileCache; // Usa o cache do perfil que já deve estar carregado
+    const userProfile = perfil.localProfileCache;
 
-    // Se o usuário não for admin, esconde o campo de link de afiliado
     if (userProfile && userProfile.role !== "admin") {
       if (formAffiliateLink) formAffiliateLink.style.display = "none";
     }
 
     this.navegarPara = dependencies.navegarPara;
-    $("btn-voltar-marketplace").onclick = () => this.navegarPara("marketplace");
 
-    $("form-add-product").addEventListener("submit", (e) => {
-      e.preventDefault();
-      this.handleAddProduct();
-    });
+    const btnVoltar = $("btn-voltar-marketplace");
+    if (btnVoltar) btnVoltar.onclick = () => this.navegarPara("marketplace");
+
+    const form = $("form-add-product");
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.handleAddProduct();
+      });
+    }
   },
 
   handleAddProduct: async function () {
@@ -197,15 +242,23 @@ export const marketplace = {
     }
 
     const isAdmin = userProfile.role === "admin";
-    const nome = $("product-name").value.trim();
-    const preco = parseFloat($("product-price").value);
-    const imagemURL = $("product-image-url").value.trim();
-    const categoria = $("product-category").value;
+    const nomeInput = $("product-name");
+    const precoInput = $("product-price");
+    const imgInput = $("product-image-url");
+    const catInput = $("product-category");
+    const descInput = $("product-description");
+    const linkAfiliadoInput = $("product-affiliate-link");
+
+    const nome = nomeInput ? nomeInput.value.trim() : "";
+    const preco = precoInput ? parseFloat(precoInput.value) : 0;
+    const imagemURL = imgInput ? imgInput.value.trim() : "";
+    const categoria = catInput ? catInput.value : "";
+
     let link;
     let tipo;
 
     if (isAdmin) {
-      link = $("product-affiliate-link").value.trim();
+      link = linkAfiliadoInput ? linkAfiliadoInput.value.trim() : "";
       tipo = "afiliado";
       if (!link) return alert("Admin, por favor, insira o link de afiliado.");
     } else {
@@ -214,9 +267,8 @@ export const marketplace = {
           "Você precisa adicionar um número de telefone em seu perfil para poder anunciar! Vá em Perfil > Editar."
         );
       }
-      // Remove caracteres não numéricos e formata o link do WhatsApp
       const phone = userProfile.telefone.replace(/\D/g, "");
-      link = `https://wa.me/55${phone}`; // Adiciona o código do Brasil por padrão
+      link = `https://wa.me/55${phone}`;
       tipo = "contato_direto";
     }
 
@@ -225,20 +277,24 @@ export const marketplace = {
     }
 
     const btn = $("btn-salvar-produto");
-    btn.disabled = true;
-    btn.textContent = "Salvando...";
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Salvando...";
+    }
 
     const newProduct = {
+      // Não defina o ID manualmente se quiser que o Firebase gere.
+      // Mas se quiser usar Date.now() como ID (não recomendado para produção, mas ok para teste):
       id: String(Date.now()),
       nome,
-      descricao: $("product-description").value.trim(),
+      descricao: descInput ? descInput.value.trim() : "",
       preco,
       categoria,
-      imagemURL, // URL vinda do campo de texto
+      imagemURL,
       link,
       ownerId: userProfile.uid,
       ownerName: userProfile.nome,
-      ownerAvatar: userProfile.avatar,
+      ownerAvatar: userProfile.avatar || "",
       tipo: tipo,
       createdAt: serverTimestamp(),
     };
@@ -246,12 +302,14 @@ export const marketplace = {
     try {
       await setDoc(doc(db, "produtos", newProduct.id), newProduct);
       alert("Produto adicionado com sucesso!");
-      this.navegarPara("marketplace"); // Navega de volta
+      this.navegarPara("marketplace");
     } catch (error) {
       console.error("Erro ao adicionar produto:", error);
-      alert("Ocorreu um erro ao salvar o produto.");
-      btn.disabled = false;
-      btn.textContent = "Salvar Produto";
+      alert("Ocorreu um erro ao salvar o produto: " + error.message);
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Salvar Produto";
+      }
     }
   },
 
@@ -269,23 +327,19 @@ export const marketplace = {
     document.querySelectorAll(".btn-delete-product").forEach((button) => {
       button.addEventListener("click", (e) => {
         e.preventDefault();
+        // Pega o ID corretamente
         const productId = e.currentTarget.dataset.productId;
-        this.handleDeleteProduct(productId);
+        if (productId) this.handleDeleteProduct(productId);
       });
     });
 
-    // Adiciona o evento para abrir o modal de detalhes
     document.querySelectorAll(".product-card").forEach((card) => {
       card.addEventListener("click", (e) => {
         if (!e.target.closest(".product-owner-actions")) {
-          // Não abre o modal se clicar no menu '...'
           this.openProductModal(card.dataset.productId);
         }
       });
     });
-
-    // A lógica de edição pode ser adicionada aqui no futuro
-    // document.querySelectorAll('.btn-edit-product').forEach...
 
     document.body.addEventListener(
       "click",
@@ -303,7 +357,7 @@ export const marketplace = {
     try {
       await deleteDoc(doc(db, "produtos", productId));
       alert("Produto excluído com sucesso!");
-      this.fetchAndDisplayProducts(true); // Força a recarga do cache
+      this.fetchAndDisplayProducts(true);
     } catch (error) {
       console.error("Erro ao excluir produto:", error);
       alert("Ocorreu um erro ao excluir o produto.");
@@ -314,7 +368,6 @@ export const marketplace = {
     const product = this.allProductsCache.find((p) => p.id === productId);
     if (!product) return;
 
-    // Remove qualquer modal antigo
     const oldModal = document.getElementById("product-detail-modal");
     if (oldModal) oldModal.remove();
 
@@ -323,12 +376,13 @@ export const marketplace = {
       ? "Ver Oferta na Loja"
       : "Chamar Vendedor no Zap";
     const buttonIcon = isAffiliate ? "shopping_cart" : "whatsapp";
+    const imagemSegura = product.imagemURL || "https://via.placeholder.com/300";
 
     const modalHTML = `
       <div class="modal-overlay" id="product-detail-modal">
         <div class="modal-conteudo product-modal">
           <span class="modal-fechar" id="product-modal-fechar">&times;</span>
-          <img src="${product.imagemURL}" alt="${
+          <img src="${imagemSegura}" alt="${
       product.nome
     }" class="product-modal-image">
           <h3 class="product-modal-title">${product.nome}</h3>
@@ -354,7 +408,6 @@ export const marketplace = {
       setTimeout(() => modal.remove(), 300);
     };
 
-    // Adiciona a classe 'ativo' para a animação de entrada
     setTimeout(() => modal.classList.add("ativo"), 10);
 
     $("product-modal-fechar").onclick = closeModal;
@@ -367,7 +420,6 @@ export const marketplace = {
 
   showImageGuideModal: function () {
     return new Promise((resolve) => {
-      // Remove qualquer modal antigo para evitar duplicatas
       const oldModal = document.getElementById("modal-guia-imagem");
       if (oldModal) oldModal.remove();
 
@@ -404,7 +456,6 @@ export const marketplace = {
         resolve(shouldContinue);
       };
 
-      // Adiciona a classe 'ativo' para a animação de entrada
       setTimeout(() => modal.classList.add("ativo"), 10);
 
       btnContinuar.onclick = () => closeModal(true);
