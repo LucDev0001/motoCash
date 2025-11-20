@@ -1,5 +1,5 @@
 <section id="tela-ganhos" class="pagina">
-  <div class="container">
+  <div class="container-full">
     <div class="card" id="card-formulario-ganho" style="display: none">
       <div class="card-header">
         <h2 id="titulo-form-ganho">Adicionar Ganho</h2>
@@ -113,29 +113,31 @@
       </form>
     </div>
 
-    <div class="card" id="card-historico">
-      <div class="card-header">
-        <h2>Histórico de Ganhos</h2>
-      </div>
-
-      <div class="acoes-ganhos-container">
-        <button class="btn-acao-ganho btn-loja" data-target="loja_fixa">
+    <!-- Botões de Ação Flutuantes -->
+    <div class="fab-container">
+      <button class="fab-main" id="fab-main-button">
+        <span class="material-icons">add</span>
+      </button>
+      <div class="fab-options">
+        <button class="fab-option btn-acao-ganho" data-target="loja_fixa" title="Adicionar Ganho Loja Fixa">
           <span class="material-icons">store</span>
-          <span>Loja Fixa</span>
         </button>
-        <button class="btn-acao-ganho btn-passageiro" data-target="passageiros">
+        <button class="fab-option btn-acao-ganho" data-target="passageiros" title="Adicionar Ganho Passageiros">
           <span class="material-icons">directions_car</span>
-          <span>Passageiros</span>
         </button>
-        <button class="btn-acao-ganho btn-entrega" data-target="entregas">
+        <button class="fab-option btn-acao-ganho" data-target="entregas" title="Adicionar Ganho Entregas App">
           <span class="material-icons">two_wheeler</span>
-          <span>Entregas App</span>
         </button>
       </div>
+    </div>
 
+    <div class="card" id="card-historico">
+      <h2 class="titulo-pagina">Histórico de Ganhos</h2>
+
+      <!-- Filtros Avançados -->
       <div id="filtros-ganhos" class="filtros-container">
         <div class="filtro-item">
-          <label for="filtro-periodo">Filtrar por Período</label>
+          <label for="filtro-periodo">Período</label>
           <select id="filtro-periodo">
             <option value="todos">Todos</option>
             <option value="hoje">Hoje</option>
@@ -157,12 +159,28 @@
             <input type="date" id="filtro-data-fim" />
           </div>
         </div>
-        <button id="btn-limpar-filtros" style="margin-top: 10px; padding: 8px">
-          Limpar Filtros
-        </button>
+        <div class="filtro-item">
+          <label>Categorias</label>
+          <div id="filtro-categorias" class="filtro-categorias-chips">
+            <button class="chip-categoria active" data-categoria="todos">Todos</button>
+            <button class="chip-categoria" data-categoria="loja_fixa">Loja Fixa</button>
+            <button class="chip-categoria" data-categoria="passageiros">Passageiros</button>
+            <button class="chip-categoria" data-categoria="entregas">Entregas App</button>
+          </div>
+        </div>
+        <div class="filtro-acoes">
+          <button id="btn-aplicar-filtros" class="btn-primario">
+            <span class="material-icons">filter_list</span> Aplicar
+          </button>
+          <button id="btn-limpar-filtros" class="btn-texto">
+            Limpar
+          </button>
+        </div>
       </div>
 
-      <div id="card-resumo-filtro" class="resumo-filtro">
+      <!-- Card de Resumo do Filtro -->
+      <div id="card-resumo-filtro" class="resumo-filtro" style="display: none;">
+        <h4>Resumo do Período Filtrado</h4>
         <div class="resumo-item">
           <span class="resumo-label">Total do Período</span>
           <strong id="resumo-filtro-total">R$ 0,00</strong>
@@ -181,49 +199,34 @@
         </div>
       </div>
 
-      <div class="resumo-detalhes-container">
-        <button id="btn-ver-detalhes-categoria" class="btn-texto">
-          Ver por Categoria <span class="material-icons">expand_more</span>
-        </button>
-        <div
-          id="detalhes-por-categoria"
-          style="display: none; margin-top: 10px"
-        >
-          <div class="detalhe-item">
-            <span class="badge-categoria badge-loja">Loja Fixa</span>
-            <strong id="total-loja_fixa">R$ 0,00</strong>
-            <span id="qtd-loja_fixa">0 entregas</span>
-          </div>
-          <div class="detalhe-item">
-            <span class="badge-categoria badge-passageiro">Passageiros</span>
-            <strong id="total-passageiros">R$ 0,00</strong>
-            <span id="qtd-passageiros">0 corridas</span>
-          </div>
-          <div class="detalhe-item">
-            <span class="badge-categoria badge-entrega">Entregas App</span>
-            <strong id="total-entregas">R$ 0,00</strong>
-            <span id="qtd-entregas">0 entregas</span>
-          </div>
+      <!-- Navegação por Abas para visualização -->
+      <div class="tabs-container">
+        <div class="tabs">
+          <button class="tab-link active" data-tab="tab-todos">Todos</button>
+          <button class="tab-link" data-tab="tab-loja">Loja Fixa</button>
+          <button class="tab-link" data-tab="tab-passageiros">Passageiros</button>
+          <button class="tab-link" data-tab="tab-entregas">Entregas App</button>
         </div>
       </div>
 
+      <!-- Conteúdo das Abas -->
+      <div id="tab-todos" class="tab-content active">
+        <!-- A lista geral será renderizada aqui -->
+      </div>
+      <div id="tab-loja" class="tab-content">
+        <!-- Ganhos de Loja Fixa -->
+      </div>
+      <div id="tab-passageiros" class="tab-content">
+        <!-- Ganhos de Passageiros -->
+      </div>
+      <div id="tab-entregas" class="tab-content">
+        <!-- Ganhos de Entregas App -->
+      </div>
+      
       <ul id="listaGanhos" class="lista-ganhos-moderna"></ul>
 
-      <div class="compartilhar-whatsapp">
-        <h3>Compartilhar Resumo</h3>
-        <label
-          ><input type="checkbox" id="compQtdEntregas" checked /> Quantidade de
-          serviços</label
-        >
-        <label
-          ><input type="checkbox" id="compValorTotal" checked /> Valor
-          total</label
-        >
-        <label
-          ><input type="checkbox" id="compMedia" checked /> Média diária</label
-        >
-        <button id="btnCompartilhar">Compartilhar no WhatsApp</button>
-      </div>
+      <!-- A funcionalidade de compartilhar pode ser mantida ou aprimorada aqui -->
+      <button id="btnCompartilhar" class="btn-secundario" style="width: 100%; margin-top: 20px;"><span class="material-icons">share</span> Compartilhar Resumo</button>
     </div>
   </div>
 </section>
