@@ -83,6 +83,7 @@ footer {
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  /* O rodapé agora é apenas um bloco no final do fluxo */
 }
 
 .btn-apoio {

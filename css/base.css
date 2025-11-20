@@ -28,13 +28,13 @@ body {
   background: var(--white);
   color: var(--black);
   overflow-wrap: break-word;
-  /* Aumente o valor para dar espaço ao footer e à barra de navegação */
-  padding-bottom: 150px; /* Valor sugerido. Ajuste se necessário. */
 }
 
 /* Garante que o conteúdo principal ocupe o espaço disponível */
 main {
   flex-grow: 1;
+  /* Adiciona uma margem na parte inferior igual à altura da barra de navegação */
+  margin-bottom: 70px;
 }
 
 /* ==========================================================================
