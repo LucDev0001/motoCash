@@ -2,7 +2,7 @@
 // Lógica para a página do marketplace - VERSÃO FINAL CORRIGIDA
 
 import { perfil } from "./perfil.js";
-import { db } from "./firebase-config.js";
+import { db, auth as firebaseAuth } from "./firebase-config.js";
 import {
   collection,
   getDocs,
@@ -181,8 +181,9 @@ export const marketplace = {
       product.imagemURL || "https://via.placeholder.com/150?text=Sem+Foto";
     const vendedorSeguro = product.ownerName || "Desconhecido";
 
-    const userProfile = perfil.localProfileCache;
-    const isOwner = userProfile && userProfile.uid === product.ownerId;
+    // CORREÇÃO: Usa a fonte de verdade (Firebase Auth) para verificar o dono.
+    const currentUser = firebaseAuth.currentUser;
+    const isOwner = currentUser && currentUser.uid === product.ownerId;
 
     return `
       <div class="product-card" data-product-id="${product.id}">
@@ -192,6 +193,7 @@ export const marketplace = {
           <div class="product-owner-actions">
             <button class="btn-menu-product" data-product-id="${product.id}">...</button>
             <div class="menu-product-opcoes" style="display: none;">
+              <!-- A opção de editar pode ser implementada no futuro -->
               <a href="#" class="btn-delete-product" data-product-id="${product.id}">Excluir</a>
             </div>
           </div>`
