@@ -1,114 +1,61 @@
 /* css/ganhos.css */
 /* Estilos para a tela de histórico de ganhos, formulário e filtros. */
 
-.btn-add {
-  background-color: var(--black);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 0.6rem 1rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
+.ganhos-categorias-selecao {
   display: flex;
+  justify-content: space-around;
+  background-color: var(--gray-light);
+  border-radius: 12px;
+  padding: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.categoria-btn-ganho {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
-  width: auto;
-  margin: 0;
-}
-
-.btn-add:hover {
-  background-color: var(--accent-light);
-  transform: translateY(-2px);
-}
-
-.btn-add .material-icons {
-  font-size: 1.2rem;
-}
-
-.btn-fechar {
+  gap: 0.3rem;
   background: none;
   border: none;
-  font-size: 2rem;
-  font-weight: bold;
-  color: #777;
-  cursor: pointer;
-}
-
-/* Filtros */
-.filtros-container {
-  padding: 15px;
-  background-color: #f9f9f9;
+  padding: 0.5rem;
   border-radius: 8px;
-  margin-bottom: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  align-items: flex-end;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--gray-dark);
+  box-shadow: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.filtro-item {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
+.categoria-btn-ganho.ativo {
+  background-color: var(--white);
+  color: var(--black);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.filtro-item label {
-  font-size: 0.9em;
-  color: #555;
-  margin-bottom: 5px;
-}
-
-#filtro-datas-personalizadas {
-  display: flex;
-  gap: 15px;
-  width: 100%;
-}
-
-#btn-limpar-filtros {
-  padding: 8px 12px;
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  align-self: flex-end;
-  width: auto;
-}
-
-#btn-limpar-filtros:hover {
-  background-color: #5a6268;
-}
-
-/* Resumo do Filtro */
-.resumo-filtro {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  padding: 1rem;
-  background-color: #f7f9fc;
-  border-radius: 8px;
+.form-ganho-container {
+  display: none;
+  background-color: var(--white);
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid var(--gray);
   margin-bottom: 1.5rem;
-  border: 1px solid #e0e0e0;
 }
 
-.resumo-item {
+.form-ganho-container.ativo {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
 }
 
-.resumo-label {
-  font-size: 0.8rem;
-  color: #555;
-  margin-bottom: 4px;
+.form-ganho-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.resumo-item strong {
-  font-size: 1.1rem;
-  color: #333;
+.form-ganho-container input {
+  margin-bottom: 0; /* Remove margem extra */
 }
 
 /* Lista de Ganhos */
@@ -121,7 +68,7 @@ ul#listaGanhos {
 .ganho-item {
   background-color: #fff;
   border-radius: 12px;
-  padding: 1.2rem;
+  padding: 1rem;
   margin-bottom: 1rem;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   display: flex;
@@ -140,10 +87,17 @@ ul#listaGanhos {
   flex-grow: 1;
 }
 
+.ganho-categoria {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gray-dark);
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+}
+
 .ganho-data {
   font-size: 0.9rem;
   color: #777;
-  margin-bottom: 0.2rem;
 }
 
 .ganho-valor {
@@ -195,25 +149,4 @@ ul#listaGanhos {
 
 .menu-ganho-opcoes a.btn-excluir {
   color: #e63946;
-}
-
-/* Compartilhar WhatsApp */
-.compartilhar-whatsapp {
-  margin-top: 1.5rem;
-  background: var(--gray-light);
-  border-radius: 14px;
-  padding: 1rem;
-  box-shadow: 0 1px 4px #0001;
-  border: 1px solid var(--gray);
-}
-
-.compartilhar-whatsapp label {
-  font-size: 1rem;
-  color: var(--accent-light);
-  margin-right: 1.2rem;
-}
-
-.compartilhar-whatsapp button {
-  background: var(--black);
-  margin-top: 0.7rem;
 }
