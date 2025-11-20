@@ -96,6 +96,15 @@
   text-align: center;
 }
 
+/* Gráfico de Pizza de Categorias */
+#grafico-categorias-container .card-header {
+  padding-bottom: 0.5rem; /* Menos espaço no header do card do gráfico */
+}
+
+#grafico-categorias-pizza {
+  max-height: 300px; /* Evita que o gráfico fique muito grande */
+}
+
 /* Lista de Ganhos */
 ul#listaGanhos {
   list-style: none;

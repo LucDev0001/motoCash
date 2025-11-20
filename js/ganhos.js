@@ -18,6 +18,7 @@ import { formatarMoeda } from "./utils.js";
 export const ganhos = {
   ganhoEditandoId: null,
   localGanhosCache: null,
+  chartCategorias: null, // Nova propriedade para o gráfico de pizza
 
   init: function (dependencies) {
     this.setupEventListeners();
@@ -222,6 +223,7 @@ export const ganhos = {
     if (!firebaseAuth.currentUser || !$("listaGanhos")) return;
 
     const ganhosFiltrados = await this.getGanhosFiltrados();
+    this.atualizarGraficoCategorias(ganhosFiltrados); // << CHAMADA PARA ATUALIZAR O GRÁFICO
     const lista = $("listaGanhos");
     lista.innerHTML = "";
 
@@ -296,6 +298,68 @@ export const ganhos = {
         this.excluirGanho(item.id);
       });
       lista.appendChild(li);
+    });
+  },
+
+  // NOVA FUNÇÃO PARA CRIAR/ATUALIZAR O GRÁFICO DE PIZZA
+  atualizarGraficoCategorias: function (ganhosFiltrados) {
+    const container = $("grafico-categorias-container");
+    const ctx = $("grafico-categorias-pizza");
+    if (!ctx || !container) return;
+
+    // 1. Processar os dados para somar os valores por categoria
+    const totaisPorCategoria = ganhosFiltrados.reduce((acc, ganho) => {
+      const categoria = ganho.categoria || "indefinida";
+      acc[categoria] = (acc[categoria] || 0) + ganho.valor;
+      return acc;
+    }, {});
+
+    const labels = Object.keys(totaisPorCategoria);
+    const data = Object.values(totaisPorCategoria);
+
+    // Se não houver dados, esconde o gráfico e para a execução
+    if (data.length === 0) {
+      container.style.display = "none";
+      return;
+    }
+
+    // Mostra o container do gráfico
+    container.style.display = "block";
+
+    // 2. Mapear nomes e cores para as categorias
+    const configCat = {
+      loja_fixa: { nome: "Loja Fixa", cor: "#3498db" },
+      passageiros: { nome: "Passageiros", cor: "#f1c40f" },
+      entregas: { nome: "Entregas App", cor: "#e74c3c" },
+      indefinida: { nome: "Outros", cor: "#95a5a6" },
+    };
+
+    const chartLabels = labels.map(
+      (label) => configCat[label]?.nome || "Desconhecido"
+    );
+    const chartColors = labels.map(
+      (label) => configCat[label]?.cor || "#bdc3c7"
+    );
+
+    // 3. Destruir o gráfico antigo se ele existir
+    if (this.chartCategorias) {
+      this.chartCategorias.destroy();
+    }
+
+    // 4. Criar o novo gráfico de pizza (Doughnut)
+    this.chartCategorias = new Chart(ctx, {
+      type: "doughnut", // ou 'pie' para um gráfico de pizza completo
+      data: {
+        labels: chartLabels,
+        datasets: [
+          {
+            data: data,
+            backgroundColor: chartColors,
+            borderColor: "#fff",
+            borderWidth: 2,
+          },
+        ],
+      },
     });
   },
 
