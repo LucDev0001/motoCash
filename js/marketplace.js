@@ -87,8 +87,10 @@ export const marketplace = {
   filterAndDisplayProducts: function () {
     const productListEl = $("product-list");
     const searchTerm = $("search-input").value.toLowerCase();
-    const activeCategory = document.querySelector(".category-btn.active")
-      .dataset.category;
+    const activeCategoryEl = document.querySelector(".category-btn.active");
+    const activeCategory = activeCategoryEl
+      ? activeCategoryEl.dataset.category
+      : "todos";
 
     let filteredProducts = this.allProductsCache;
 
