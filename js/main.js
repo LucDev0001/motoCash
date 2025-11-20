@@ -6,6 +6,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 import { auth } from "./auth.js";
 import { ganhos } from "./ganhos.js";
 import { perfil } from "./perfil.js";
+import { admin } from "./admin.js";
 import { relatorios } from "./reports.js";
 import { weather } from "./weather.js";
 import { storage } from "./storage.js";
@@ -57,6 +58,19 @@ const pages = {
   politica: {
     file: "templates/politica-de-privacidade.html",
     init: () => {}, // Nenhuma inicialização necessária
+  },
+  admin: {
+    file: "templates/admin.html",
+    init: async () => {
+      const userProfile = await perfil.fetchUserProfile();
+      // Proteção: Só inicializa a página se o usuário for admin
+      if (userProfile && userProfile.role === "admin") {
+        admin.init();
+      } else {
+        alert("Acesso negado.");
+        navegarPara("inicio"); // Redireciona para a tela inicial
+      }
+    },
   },
 };
 

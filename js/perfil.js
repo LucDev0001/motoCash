@@ -93,6 +93,15 @@ export const perfil = {
     // Atualiza elementos que podem estar em várias telas (como a tela de início)
     this.setElementText("msgOlaInicio", `Olá, ${usuario.nome || "Usuário"}`);
 
+    // Mostra a seção de admin se o usuário tiver a role
+    if (usuario.role === "admin") {
+      const adminSection = $("admin-section");
+      if (adminSection) {
+        adminSection.style.display = "block";
+        $("btnPainelAdmin").onclick = () => this.navegarPara("admin");
+      }
+    }
+
     // Atualiza elementos específicos da tela de perfil
     this.setElementText("perfilNome", usuario.nome || "Usuário");
     this.setElementText("perfilUsuario", usuario.email);
