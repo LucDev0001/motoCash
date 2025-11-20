@@ -1,50 +1,106 @@
 <section id="tela-login" class="pagina">
-  <div class="login-container card">
-    <h2 id="tituloLogin">Login</h2>
+  <!-- Container do Formulário de Login -->
+  <div id="formLoginContainer" class="login-container card">
+    <h2>Login</h2>
     <form id="formLogin">
-      <input type="text" id="loginUsuario" placeholder="Usuário" required />
+      <label for="loginUsuario">E-mail</label>
+      <input
+        type="email"
+        id="loginUsuario"
+        placeholder="seu@email.com"
+        required
+      />
+      <label for="loginSenha">Senha</label>
       <input type="password" id="loginSenha" placeholder="Senha" required />
+      <p id="loginErro" class="mensagem-erro"></p>
       <button type="submit">Entrar</button>
     </form>
-    <p>Não tem conta? <a href="#" id="linkCadastro">Cadastre-se</a></p>
-    <div id="loginErro" class="erro"></div>
+    <p class="link-alternativo">
+      Não tem conta? <a href="#" id="linkCadastro">Cadastre-se</a>
+    </p>
   </div>
 
-  <div class="login-container card" id="cadastroBox" style="display: none">
+  <!-- Container do Formulário de Cadastro -->
+  <div id="cadastroBox" class="login-container card" style="display: none">
     <h2>Cadastro</h2>
     <form id="formCadastro">
-      <div class="avatar-selecao">
-        <label>Escolha um avatar:</label>
-        <div class="opcoes-avatar">
-          <img src="avatares/ava1.jpg" class="avatar-opcao" data-avatar="avatares/ava1.jpg" />
-          <img src="avatares/ava2.jpg" class="avatar-opcao" data-avatar="avatares/ava2.jpg" />
-          <img src="avatares/ava3.jpg" class="avatar-opcao" data-avatar="avatares/ava3.jpg" />
-        </div>
-        <input type="hidden" id="avatarSelecionado" required />
-      </div>
-      <input type="text" id="cadastroUsuario" placeholder="Usuário" required />
-      <input type="password" id="cadastroSenha" placeholder="Senha" required />
-      <input type="text" id="cadastroNome" placeholder="Nome completo" required />
-      <input type="tel" id="cadastroTelefone" placeholder="Telefone" pattern="[0-9]{10,13}" required />
-      <select id="cadastroMoto" required>
-        <option value="">Selecione o modelo da moto</option>
+      <!-- Campo de E-mail (CORRIGIDO) -->
+      <label for="cadastroUsuario">E-mail</label>
+      <input
+        type="email"
+        id="cadastroUsuario"
+        placeholder="seu@email.com"
+        required
+      />
+
+      <label for="cadastroSenha">Senha</label>
+      <input
+        type="password"
+        id="cadastroSenha"
+        placeholder="Crie uma senha (mín. 6 caracteres)"
+        required
+      />
+
+      <label for="cadastroNome">Nome completo</label>
+      <input
+        type="text"
+        id="cadastroNome"
+        placeholder="Seu nome completo"
+        required
+      />
+
+      <label for="cadastroTelefone">Telefone (Opcional)</label>
+      <input type="tel" id="cadastroTelefone" placeholder="(11) 99999-9999" />
+
+      <label for="cadastroMoto">Sua Moto (Opcional)</label>
+      <select id="cadastroMoto">
+        <option value="">Selecione se quiser</option>
         <option value="Honda CG 160">Honda CG 160</option>
         <option value="Honda Biz 125">Honda Biz 125</option>
         <option value="Honda Pop 110i">Honda Pop 110i</option>
-        <option value="Honda NXR Bros 160">Honda NXR Bros 160</option>
-        <option value="Honda CB 300F">Honda CB 300F</option>
-        <option value="Honda CB 250F">Honda CB 250F</option>
         <option value="Yamaha YBR 150 Factor">Yamaha YBR 150 Factor</option>
-        <option value="Yamaha XTZ 250 Lander">Yamaha XTZ 250 Lander</option>
-        <option value="Yamaha Fazer 250">Yamaha Fazer 250</option>
-        <option value="Yamaha Crosser 150">Yamaha Crosser 150</option>
-        <option value="Honda PCX 160">Honda PCX 160</option>
-        <option value="Honda XRE 300 Sahara">Honda XRE 300 Sahara</option>
+        <option value="Outra">Outra</option>
       </select>
-      <input type="number" id="cadastroMetaSemanal" placeholder="Meta semanal (R$)" step="0.01" min="0" required value="1000" />
+
+      <label for="cadastroMetaSemanal">Meta semanal (R$)</label>
+      <input
+        type="number"
+        id="cadastroMetaSemanal"
+        placeholder="1000"
+        step="0.01"
+        min="0"
+        value="1000"
+      />
+
+      <div class="avatar-selecao">
+        <label>Escolha um avatar:</label>
+        <div class="opcoes-avatar">
+          <img
+            src="images/avatares/avatar1.png"
+            class="avatar-opcao"
+            data-avatar="images/avatares/avatar1.png"
+            alt="Avatar 1"
+          />
+          <img
+            src="images/avatares/avatar2.png"
+            class="avatar-opcao"
+            data-avatar="images/avatares/avatar2.png"
+            alt="Avatar 2"
+          />
+          <img
+            src="images/avatares/avatar3.png"
+            class="avatar-opcao"
+            data-avatar="images/avatares/avatar3.png"
+            alt="Avatar 3"
+          />
+        </div>
+        <input type="hidden" id="avatarSelecionado" required />
+      </div>
+      <p id="cadastroErro" class="mensagem-erro"></p>
       <button type="submit">Cadastrar</button>
     </form>
-    <p>Já tem conta? <a href="#" id="linkLogin">Faça login</a></p>
-    <div id="cadastroErro" class="erro"></div>
+    <p class="link-alternativo">
+      Já tem conta? <a href="#" id="linkLogin">Faça login</a>
+    </p>
   </div>
 </section>
