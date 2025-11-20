@@ -30,6 +30,10 @@ const URLS_TO_CACHE = [
   "/manifest.json",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
+  // Avatares
+  "/avatares/ava1.jpg",
+  "/avatares/ava2.jpg",
+  "/avatares/ava3.jpg",
 ];
 
 // Instala o Service Worker e adiciona arquivos ao cache
