@@ -59,11 +59,15 @@ export const marketplace = {
 
       // Usa o cache se disponível, a menos que a busca seja forçada
       if (this.allProductsCache.length === 0 || force) {
+        console.log("Buscando produtos do Firestore...");
         const querySnapshot = await getDocs(q);
+        console.log(`Firestore retornou ${querySnapshot.size} produtos.`);
+
         // Converte os dados e o Timestamp do Firebase para um objeto Date do JS
         this.allProductsCache = querySnapshot.docs.map((doc) => {
           const data = doc.data();
           // Verifica se o campo createdAt existe e é um Timestamp antes de converter
+          // Se não existir, define uma data antiga para que a ordenação não quebre
           if (data.createdAt && typeof data.createdAt.toDate === "function") {
             data.createdAt = data.createdAt.toDate();
           }
@@ -71,6 +75,7 @@ export const marketplace = {
         });
       }
 
+      console.log("Cache de produtos atualizado:", this.allProductsCache);
       this.filterAndDisplayProducts();
     } catch (error) {
       console.error("Erro ao buscar produtos:", error);
