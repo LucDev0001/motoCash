@@ -8,10 +8,11 @@
 
 .search-bar-container input {
   width: 100%;
-  padding-right: 2.5rem; /* Espaço para o ícone */
+  padding: 0.8rem 2.5rem 0.8rem 1rem; /* Espaço para o ícone */
   border-radius: 20px; /* Bordas arredondadas */
   background-color: var(--gray-light);
   border: 1px solid var(--gray);
+  font-size: 1rem;
 }
 
 .search-bar-container input:focus {
@@ -65,16 +66,18 @@
 }
 
 /* NOVO LAYOUT DE LISTA (ESTILO MERCADO LIVRE) */
+/* --- VOLTANDO PARA O LAYOUT DE GRADE --- */
 .product-grid {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 1rem;
   margin-top: 1rem;
 }
 
 /* Ajuste para os cards dentro do slider */
 .product-slider .product-card {
-  flex: 0 0 280px; /* Largura fixa para os itens do slider */
+  flex: 0 0 160px; /* Largura fixa para os itens do slider */
+  width: 160px;
 }
 
 .product-card {
@@ -83,7 +86,7 @@
   box-shadow: none; /* Sombra removida para um look mais limpo */
   overflow: hidden;
   display: flex;
-  gap: 1rem; /* Espaço entre imagem e info */
+  flex-direction: column; /* Volta para o layout de coluna */
   position: relative; /* Necessário para o menu de ações */
   border: 1px solid var(--gray);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -94,12 +97,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.product-image-container {
-  flex-shrink: 0; /* Impede que a imagem encolha */
-  width: 120px;
-  height: 120px;
-}
-
 .product-image {
   width: 100%;
   height: 100%;
@@ -108,7 +105,6 @@
 
 .product-info {
   padding: 0.8rem;
-  padding-left: 0; /* Remove padding extra */
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -116,7 +112,7 @@
 
 .product-name {
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 600;
   margin: 0 0 0.3rem 0;
   color: var(--black);
   line-height: 1.3;
@@ -125,19 +121,14 @@
 .product-price {
   font-size: 1.1rem;
   font-weight: bold;
-  color: var(--black);
-  margin-bottom: auto; /* Empurra o preço para cima e o vendedor para baixo */
+  color: #13b15a; /* Verde para destacar o preço */
+  margin-bottom: 0.8rem;
 }
 
 .product-owner {
   font-size: 0.8rem;
   color: var(--gray-dark);
   margin-top: 0.5rem;
-}
-
-.product-owner strong {
-  font-weight: 600;
-  color: #555;
 }
 
 /* Menu de Ações do Dono do Produto */
@@ -199,6 +190,14 @@
 .product-modal .btn-product-action {
   width: 100%;
   margin-top: 1rem;
+}
+
+/* Estilo para o botão do WhatsApp */
+.product-modal .btn-product-action .material-icons {
+  color: #25d366; /* Cor do WhatsApp */
+  font-weight: bold;
+  background-color: white;
+  border-radius: 50%;
 }
 
 .product-modal-image {

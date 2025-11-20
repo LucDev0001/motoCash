@@ -395,7 +395,9 @@ export const marketplace = {
             Vendido por: <strong>${product.ownerName}</strong>
           </div>
           <p class="product-modal-description">${
-            product.descricao || "Nenhuma descrição fornecida."
+            (product.descricao && product.descricao.length) > 200
+              ? product.descricao.substring(0, 200) + "..."
+              : product.descricao || "Nenhuma descrição fornecida."
           }</p>
           <a href="${finalLink}" target="_blank" class="btn-product-action">
             <span class="material-icons">${buttonIcon}</span> ${buttonText}
