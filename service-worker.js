@@ -11,6 +11,7 @@ const URLS_TO_CACHE = [
   "/css/perfil.css",
   "/css/marketplace.css",
   "/css/responsive.css",
+  "/css/add-product.css",
   // JavaScript
   "/js/main.js",
   "/js/utils.js",
@@ -29,6 +30,7 @@ const URLS_TO_CACHE = [
   "/templates/ganhos.html",
   "/templates/perfil.html",
   "/templates/marketplace.html",
+  "/templates/add-product.html",
   "/templates/modal.html",
   "/templates/admin.html",
   // Outros

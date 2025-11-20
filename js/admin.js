@@ -9,8 +9,13 @@ import {
 import { $ } from "./utils.js";
 
 export const admin = {
-  init: function () {
+  navegarPara: null,
+
+  init: function (dependencies) {
+    this.navegarPara = dependencies.navegarPara;
     this.fetchAndDisplayUsers();
+
+    $("btn-add-product").onclick = () => this.navegarPara("add-product");
   },
 
   fetchAndDisplayUsers: async function () {

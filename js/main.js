@@ -6,6 +6,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/fi
 import { auth } from "./auth.js";
 import { ganhos } from "./ganhos.js";
 import { perfil } from "./perfil.js";
+import { marketplace } from "./marketplace.js";
 import { admin } from "./admin.js";
 import { relatorios } from "./reports.js";
 import { weather } from "./weather.js";
@@ -59,13 +60,21 @@ const pages = {
     file: "templates/politica-de-privacidade.html",
     init: () => {}, // Nenhuma inicialização necessária
   },
+  marketplace: {
+    file: "templates/marketplace.html",
+    init: () => marketplace.init({ navegarPara }),
+  },
+  "add-product": {
+    file: "templates/add-product.html",
+    init: () => marketplace.initAddProductForm(),
+  },
   admin: {
     file: "templates/admin.html",
     init: async () => {
       const userProfile = await perfil.fetchUserProfile();
       // Proteção: Só inicializa a página se o usuário for admin
       if (userProfile && userProfile.role === "admin") {
-        admin.init();
+        admin.init({ navegarPara });
       } else {
         alert("Acesso negado.");
         navegarPara("inicio"); // Redireciona para a tela inicial
@@ -125,7 +134,6 @@ async function checarEExibirModalTelegram() {
 function setupPermanentUI() {
   $("btnNavInicio").onclick = () => navegarPara("inicio");
   $("btnNavGanhos").onclick = () => navegarPara("ganhos");
-  $("btnNavMarketplace").onclick = () => navegarPara("marketplace");
   $("btnNavPerfil").onclick = () => navegarPara("perfil");
 
   if ("serviceWorker" in navigator) {
