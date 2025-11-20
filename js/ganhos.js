@@ -57,19 +57,19 @@ export const ganhos = {
     if ($("formGanhoLojaFixa")) {
       $("formGanhoLojaFixa").addEventListener("submit", (e) => {
         e.preventDefault();
-        this.adicionarGanho("loja_fixa");
+        this.adicionarGanho("loja_fixa", e);
       });
     }
     if ($("formGanhoPassageiros")) {
       $("formGanhoPassageiros").addEventListener("submit", (e) => {
         e.preventDefault();
-        this.adicionarGanho("passageiros");
+        this.adicionarGanho("passageiros", e);
       });
     }
     if ($("formGanhoEntregas")) {
       $("formGanhoEntregas").addEventListener("submit", (e) => {
         e.preventDefault();
-        this.adicionarGanho("entregas");
+        this.adicionarGanho("entregas", e);
       });
     }
   },
@@ -92,7 +92,7 @@ export const ganhos = {
       $("filtro-ordenar").addEventListener("change", update);
   },
 
-  adicionarGanho: async function (categoria) {
+  adicionarGanho: async function (categoria, event) {
     this.localGanhosCache = null; // Invalida o cache ao adicionar um novo ganho
     const usuarioLogado = firebaseAuth.currentUser;
     if (!usuarioLogado) {
@@ -276,7 +276,7 @@ export const ganhos = {
               <p class="ganho-categoria">${
                 categoriaNomes[item.categoria] || "Geral"
               }</p>
-              <p class="ganho-data">${diaSemana}, ${new Date(item.data + "T03:00:00").toLocaleDateString("pt-BR")}</p>
+              <p class="ganho-data">${diaSemana}, ${dataGanho.toLocaleDateString("pt-BR")}</p>
               <p class="ganho-valor">${formatarMoeda(item.valor)}</p>
               ${item.qtd ? `<p class="info-secundaria">${item.categoria === 'passageiros' ? 'Corridas' : 'Entregas'}: ${item.qtd}</p>` : ''}
           </div>
