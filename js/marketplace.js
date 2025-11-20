@@ -154,21 +154,17 @@ export const marketplace = {
         `
             : ""
         }
-        <img src="${product.imagemURL}" alt="${
+        <div class="product-image-container">
+          <img src="${product.imagemURL}" alt="${
       product.nome
     }" class="product-image">
+        </div>
         <div class="product-info">
           <h4 class="product-name">${product.nome}</h4>
           <p class="product-price">${formatarMoeda(product.preco)}</p>
-          <div class="product-owner">
-            <img src="${product.ownerAvatar}" alt="${
-      product.ownerName
-    }" class="owner-avatar">
-            <span>${product.ownerName}</span>
-          </div>
-          <button class="btn-product-action-dummy">
-            <span class="material-icons">${buttonIcon}</span> ${buttonText}
-          </button>
+          <p class="product-owner">Vendido por: <strong>${
+            product.ownerName
+          }</strong></p>
         </div>
       </div>
     `;
