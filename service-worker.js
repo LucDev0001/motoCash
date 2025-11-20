@@ -18,7 +18,6 @@ const URLS_TO_CACHE = [
   // JavaScript
   "./js/main.js",
   "./js/utils.js",
-  "./js/date.utils.js",
   "./js/auth.js",
   "./js/perfil.js",
   "./js/ganhos.js",
