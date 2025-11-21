@@ -26,8 +26,79 @@ if (installBtn) {
   });
 }
 
+// --- PWA UPDATE LOGIC (SERVICE WORKER) ---
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js").catch(console.error);
+  navigator.serviceWorker.register("./sw.js").then((reg) => {
+    console.log('Service Worker registado.');
+
+    // Se já houver uma atualização à espera
+    if (reg.waiting) {
+      showUpdateToast();
+      return;
+    }
+
+    // Monitoriza novas atualizações
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          // Nova versão pronta!
+          showUpdateToast();
+        }
+      });
+    });
+  }).catch(console.error);
+
+  // Recarrega a página quando o novo SW assumir o controlo
+  let refreshing;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    window.location.reload();
+    refreshing = true;
+  });
+}
+
+// Função local para mostrar o Toast de Atualização Específico
+function showUpdateToast() {
+    const container = document.getElementById('toast-container');
+    
+    if (!container) {
+        // Fallback se não houver container
+        if(confirm("Nova versão disponível. Atualizar agora?")) {
+            window.location.reload();
+        }
+        return;
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `flex flex-col gap-2 px-4 py-3 rounded-lg text-white shadow-xl border border-yellow-600 bg-gray-800 pointer-events-auto toast-enter z-[200]`;
+    toast.innerHTML = `
+        <div class="flex items-center gap-2">
+            <i data-lucide="refresh-cw" class="w-5 h-5 text-yellow-500"></i>
+            <span class="text-sm font-bold">Nova atualização disponível!</span>
+        </div>
+        <p class="text-xs text-gray-400">Melhorias foram aplicadas.</p>
+        <button id="btn-update-now" class="bg-yellow-500 text-black text-xs font-bold py-2 px-4 rounded hover:bg-yellow-400 transition w-full mt-1">
+            ATUALIZAR AGORA
+        </button>
+    `;
+
+    container.appendChild(toast);
+    
+    // Tenta renderizar ícones se a biblioteca estiver disponível
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
+    document.getElementById('btn-update-now').addEventListener('click', () => {
+        if (navigator.serviceWorker.waiting) {
+            // Envia mensagem para o SW pular a espera (skipWaiting)
+            navigator.serviceWorker.waiting.postMessage({ type: 'SKIP_WAITING' });
+        } else {
+            window.location.reload();
+        }
+    });
 }
 
 // --- THEME LOGIC ---
@@ -54,8 +125,11 @@ window.toggleTheme = () => {
 
   const themeToggle = document.getElementById("theme-toggle");
   const themeToggleDot = document.getElementById("theme-toggle-dot");
-  themeToggle.classList.toggle("bg-green-600", isDark);
-  themeToggleDot.classList.toggle("translate-x-6", isDark);
+  
+  if (themeToggle && themeToggleDot) {
+      themeToggle.classList.toggle("bg-green-600", isDark);
+      themeToggleDot.classList.toggle("translate-x-6", isDark);
+  }
 };
 
 // --- ONLINE/OFFLINE STATUS ---
@@ -107,12 +181,19 @@ window.submitAd = APIActions.submitAd;
 window.backupData = APIActions.backupData;
 window.handleFileSelect = (event) => {
   const file = event.target.files[0];
-  APIActions.restoreData(file);
-  event.target.value = null; // Limpa o input para permitir selecionar o mesmo arquivo novamente
+  if (file) {
+      APIActions.restoreData(file);
+      event.target.value = null; // Limpa o input para permitir selecionar o mesmo arquivo novamente
+  }
 };
 
 // Initialize the app
 initTheme();
 initOnlineStatusIndicator();
 initAuth();
-setTimeout(() => lucide.createIcons(), 500);
+setTimeout(() => {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}, 500);
+
