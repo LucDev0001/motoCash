@@ -1,6 +1,6 @@
 {
-  "name": "MotoManager Pro",
-  "short_name": "MotoManager",
+  "name": "MotoCash",
+  "short_name": "MotoCash",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#111827",
