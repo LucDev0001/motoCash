@@ -1,4 +1,4 @@
-const CACHE_NAME = "motomanager-v2";
+const CACHE_NAME = "motomanager-v14";
 const urlsToCache = [
   "./",
   "./index.html",
