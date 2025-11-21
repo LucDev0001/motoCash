@@ -1,19 +1,27 @@
-# 🏍️ MotoCash
+# 🏍️ MotoManager Pro
 
-MotoCash é um aplicativo web simples e intuitivo para entregadores e motoboys controlarem seus ganhos diários, semanais e mensais. O projeto é feito em HTML, CSS e JavaScript puro, e pode ser instalado como um PWA (Progressive Web App) para uso offline, como se fosse um app nativo.
+O MotoManager Pro é um aplicativo web completo e intuitivo para entregadores e motoboys controlarem suas finanças de forma detalhada. O projeto é feito com HTML, CSS e JavaScript puro, utilizando Firebase como backend, e pode ser instalado como um PWA (Progressive Web App) para uso offline, como se fosse um app nativo.
 
 ---
 
 ## 🚀 Funcionalidades
 
-- ✅ Login e cadastro com avatar personalizado
-- ✅ Controle de ganhos por dia, semana e mês
-- ✅ Cálculo automático com taxa de entrega
-- ✅ Exportação de relatório
-- ✅ Compartilhamento via WhatsApp
-- ✅ Edição de perfil e metas
-- ✅ PWA: pode ser instalado no celular ou PC
-- ✅ Suporte offline (via Service Worker)
+- ✅ **Controle Financeiro Completo:** Registre ganhos (por app ou loja fixa) e despesas (combustível, manutenção, etc.).
+- ✅ **Dashboard Inteligente:** Visualize saldo (ganhos - despesas), totais e resumos detalhados por categoria.
+- ✅ **Gráfico de Evolução:** Acompanhe a evolução do seu saldo ao longo do tempo com um gráfico de linhas dinâmico.
+- ✅ **Metas Financeiras:** Defina uma meta de ganho mensal e acompanhe seu progresso com uma barra de progresso.
+- ✅ **Notificações de Conquista:** Seja parabenizado ao atingir sua meta mensal.
+- ✅ **Login Seguro e Completo:**
+  - Cadastro e login com E-mail/Senha ou como Visitante.
+  - Verificação de e-mail para novos usuários.
+  - Recuperação de senha via "Esqueceu a senha?".
+- ✅ **Personalização:**
+  - Alterne entre **Tema Claro e Escuro**.
+  - Edite seu nome de perfil.
+- ✅ **Backup e Restauração:** Faça backup de todos os seus dados para um arquivo local e restaure quando precisar.
+- ✅ **Compartilhamento:** Exporte relatórios de ganhos, despesas ou um resumo geral via WhatsApp.
+- ✅ **PWA (Progressive Web App):** Instale no celular ou PC para uma experiência nativa.
+- ✅ **Suporte Offline Completo:** Adicione e edite lançamentos mesmo sem internet, com sincronização automática.
 
 ---
 
@@ -21,22 +29,22 @@ MotoCash é um aplicativo web simples e intuitivo para entregadores e motoboys c
 
 Este site é uma Progressive Web App. Para instalar:
 
-1. Acesse o site publicado (ex: via GitHub Pages).
-2. No navegador (Chrome, Edge, etc), clique em "Instalar MotoCash" ou use a opção de "Adicionar à tela inicial".
-3. Pronto! Agora você pode usar offline como um app nativo.
+1.  Acesse o site publicado (ex: via GitHub Pages).
+2.  No navegador (Chrome, Edge, etc), clique em "Instalar MotoManager" ou use a opção de "Adicionar à tela inicial".
+3.  Pronto! Agora você pode usar offline como um app nativo.
 
 ---
 
 ## 📁 Estrutura do Projeto
 
 ├── index.html
-├── app.css
-├── app.js
+├── main.js
+├── api.js
+├── ui.js
+├── auth.js
+├── config.js
+├── sw.js
 ├── manifest.json
-├── service-worker.js
-├── avatares/
-├── images/
-│ └── motoCash.ico
 └── ...
 
 ---
@@ -53,16 +61,7 @@ cd motocash
 # Use uma extensão como "Live Server" no VSCode ou um servidor local
 ```
 
-💜 Apoie o Projeto
-Se este projeto te ajudou ou economizou seu tempo, considere apoiar com qualquer valor:
-
-👉 Apoiar via Pix (Nubank)
-
-📄 Licença
-Este projeto está sob a licença MIT.
-Sinta-se livre para usar, modificar e compartilhar.
-
-✨ Autor
-Feito com 💻 e ☕ por [LucDev0001]
-
 ---
+
+✨ **Autor**
+Feito com 💻 e ☕ por [LucDev0001]
