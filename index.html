@@ -101,7 +101,7 @@
       <!-- MODAL DE NOTIFICAÇÃO/CONFIRMAÇÃO -->
       <div
         id="notification-modal"
-        class="hidden absolute inset-0 z-[90] bg-black/80 flex items-center justify-center transition-opacity p-4"
+        class="hidden absolute inset-0 z-[99] bg-black/80 flex items-center justify-center transition-opacity p-4"
       >
         <div
           class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl text-center"
@@ -148,14 +148,38 @@
             <input type="hidden" id="edit-type" />
             <input type="hidden" id="edit-category" />
             <!-- Usado apenas para ganhos -->
-            <div>
-              <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
-                >Data</label
-              ><input
-                type="date"
-                id="edit-date"
-                class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"
-              />
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label
+                  class="text-xs font-bold text-gray-500 dark:text-gray-400"
+                  >Data</label
+                ><input
+                  type="date"
+                  id="edit-date"
+                  class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"
+                />
+                <!-- 
+                  NOTA PARA CORREÇÃO DA DATA:
+                  Para evitar que a data mude para o dia anterior após as 21h (problema de fuso horário),
+                  no arquivo JavaScript (main.js), ao ler o valor deste campo, use o seguinte padrão:
+                  const dateValue = document.getElementById('edit-date').value; // "YYYY-MM-DD"
+                  const correctedDate = new Date(dateValue + 'T12:00:00'); // Adiciona meio-dia para evitar problemas de UTC
+                  Use 'correctedDate' para salvar no Firestore.
+                -->
+              </div>
+              <div id="edit-shift-container">
+                <label
+                  class="text-xs font-bold text-gray-500 dark:text-gray-400"
+                  >Turno</label
+                >
+                <select
+                  id="edit-shift"
+                  class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"
+                >
+                  <option value="dia">Dia</option>
+                  <option value="noite">Noite</option>
+                </select>
+              </div>
             </div>
             <!-- Campos para Ganhos -->
             <div id="edit-fields-app">
