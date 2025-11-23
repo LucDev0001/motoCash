@@ -127,6 +127,21 @@ function renderDashboard(c) {
   unsubscribeListeners.push(unsub);
 }
 
+/**
+ * Formata uma data para exibir o dia da semana abreviado e a data (DD/MM).
+ * Ex: new Date() -> "Qua, 17/07"
+ * @param {Date} dateObject - O objeto de data a ser formatado.
+ * @returns {string} A data formatada.
+ */
+function formatShortDateWithWeekday(dateObject) {
+  if (!(dateObject instanceof Date) || isNaN(dateObject)) {
+    return "Data inválida";
+  }
+  const options = { weekday: "short", day: "2-digit", month: "2-digit" };
+  let formatted = new Intl.DateTimeFormat("pt-BR", options).format(dateObject);
+  return formatted.replace(".", "").replace(/^\w/, (c) => c.toUpperCase());
+}
+
 export function updateDashboardUI(stats, allItems, lineChartData, monthlyGoal) {
   // Esconde o spinner de carregamento assim que os dados chegam
   document.getElementById("loading-overlay")?.classList.add("hidden");
@@ -233,9 +248,9 @@ export function updateDashboardUI(stats, allItems, lineChartData, monthlyGoal) {
                 <div class="flex-1">
                     <p class="font-bold text-sm text-gray-800 dark:text-gray-200">${title}</p>
                     <div class="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
-                      <span>${new Date(
-                        i.date + "T00:00:00"
-                      ).toLocaleDateString()}</span>
+                      <span>${formatShortDateWithWeekday(
+                        new Date(i.date + "T00:00:00")
+                      )}</span>
                       ${shiftIcon ? `<span>${shiftIcon}</span>` : ""}
                     </div>
                     ${
