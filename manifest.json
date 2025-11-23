@@ -1,6 +1,6 @@
 {
-  "name": "MotoCash",
-  "short_name": "MotoCash ",
+  "name": "MotoManager Pro",
+  "short_name": "MotoManager",
   "id": "/motocash/",
   "start_url": "./index.html",
   "display": "standalone",
@@ -22,27 +22,44 @@
   ],
   "screenshots": [
     {
-      "src": "painel.png",
+      "src": "screenshots/painel.png",
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Painel Principal"
     },
     {
-      "src": "ganhos.png",
+      "src": "screenshots/ganhos.png",
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Ganhos"
     },
     {
-      "src": "ganhos2.png",
+      "src": "screenshots/ganhos2.png",
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Ganhos Mensais"
     }
   ],
+  "shortcuts": [
+    {
+      "name": "Adicionar Transação",
+      "short_name": "Adicionar",
+      "description": "Adicionar um novo ganho ou despesa",
+      "url": "/index.html?action=finance",
+      "icons": [{ "src": "icons/add.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ver Perfil",
+      "short_name": "Perfil",
+      "description": "Acessar a tela de perfil e configurações",
+      "url": "/index.html?action=profile",
+      "icons": [{ "src": "icons/profile.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["finance", "productivity", "business"],
   "scope": "./",
   "lang": "pt-BR"
 }
