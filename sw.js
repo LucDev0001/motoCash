@@ -1,4 +1,4 @@
-const CACHE_NAME = "motocash-v19";
+const CACHE_NAME = "motocash-v20";
 const urlsToCache = [
   "./",
   "./index.html",
