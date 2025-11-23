@@ -402,6 +402,8 @@ export function saveEdit(e) {
 
     // Adiciona o turno aos dados a serem salvos
     dataToUpdate.shift = document.getElementById("edit-shift").value;
+    dataToUpdate.observation =
+      document.getElementById("edit-observation").value;
 
     if (category === "loja_fixa") {
       const d = safeFloat("edit-daily");
@@ -421,7 +423,7 @@ export function saveEdit(e) {
     successMessage = "Despesa atualizada com sucesso!";
     dataToUpdate.category = document.getElementById("edit-exp-category").value;
     dataToUpdate.totalValue = safeFloat("edit-exp-total");
-    dataToUpdate.description = document.getElementById("edit-exp-desc").value;
+    dataToUpdate.observation = document.getElementById("edit-exp-desc").value;
   }
 
   db.collection("artifacts")
@@ -447,6 +449,7 @@ export function submitFinance(e) {
 
   const cat = document.getElementById("fin-category").value;
   const shift = document.getElementById("fin-shift").value;
+  const observation = document.getElementById("fin-observation").value;
   const dateValue = document.getElementById("fin-date-earning").value;
   // Corrige o problema de fuso horário, tratando a data como local ao meio-dia.
   const correctedDate = new Date(dateValue + "T12:00:00");
@@ -487,6 +490,7 @@ export function submitFinance(e) {
       category: cat,
       date,
       shift,
+      observation,
       totalValue: tot,
       count: cnt,
       details: det,
@@ -511,7 +515,7 @@ export function submitExpense(e) {
   const date = document.getElementById("fin-date-expense").value;
   const category = document.getElementById("exp-category").value;
   const totalValue = parseFloat(document.getElementById("exp-total").value);
-  const description = document.getElementById("exp-desc").value;
+  const observation = document.getElementById("exp-desc").value;
 
   if (isNaN(totalValue) || totalValue <= 0) {
     showNotification(
@@ -532,7 +536,7 @@ export function submitExpense(e) {
       date,
       category,
       totalValue,
-      description,
+      observation,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     })
     .then(() => {

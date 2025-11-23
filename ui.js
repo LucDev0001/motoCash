@@ -239,8 +239,8 @@ export function updateDashboardUI(stats, allItems, lineChartData, monthlyGoal) {
                       ${shiftIcon ? `<span>${shiftIcon}</span>` : ""}
                     </div>
                     ${
-                      i.description
-                        ? `<p class="text-xs text-gray-500 dark:text-gray-400">${i.description}</p>`
+                      i.observation
+                        ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${i.observation}</p>`
                         : ""
                     }
                     <div class="text-xs text-gray-500 mt-1 flex items-center gap-3">
@@ -491,6 +491,56 @@ export function openEditModal(id, type) {
   document.getElementById("edit-modal").classList.remove("hidden");
 }
 
+export function openEditModal(id, type) {
+  const item = allLoadedItems.find((i) => i.id === id);
+  if (!item) return;
+
+  const modalTitle = document.querySelector("#edit-modal h3");
+  document.getElementById("edit-id").value = id;
+  document.getElementById("edit-type").value = type;
+  document.getElementById("edit-date").value = item.date;
+
+  const fieldsApp = document.getElementById("edit-fields-app");
+  const fieldsLoja = document.getElementById("edit-fields-loja");
+  const fieldsExpense = document.getElementById("edit-fields-expense");
+
+  // Dynamically handle required fields
+  document.getElementById("edit-exp-total").required = type === "expense";
+
+  // Reset all fields visibility
+  fieldsApp.classList.add("hidden");
+  fieldsLoja.classList.add("hidden");
+  fieldsExpense.classList.add("hidden");
+
+  if (type === "earning") {
+    modalTitle.innerText = "Editar Ganho";
+    document.getElementById("edit-category").value = item.category;
+    // Adiciona a observação ao campo de edição
+    document.getElementById("edit-observation").value = item.observation || "";
+
+    if (item.category === "loja_fixa") {
+      fieldsLoja.classList.remove("hidden");
+      document.getElementById("edit-daily").value = item.details?.daily || 0;
+      document.getElementById("edit-loja-count").value =
+        item.details?.count || item.count || 0;
+      document.getElementById("edit-fee").value = item.details?.fee || 0;
+      document.getElementById("edit-extra").value = item.details?.extra || 0;
+    } else {
+      fieldsApp.classList.remove("hidden");
+      document.getElementById("edit-total").value = item.totalValue;
+      document.getElementById("edit-count").value = item.count;
+    }
+  } else if (type === "expense") {
+    modalTitle.innerText = "Editar Despesa";
+    fieldsExpense.classList.remove("hidden");
+    document.getElementById("edit-exp-category").value = item.category;
+    document.getElementById("edit-exp-total").value = item.totalValue;
+    document.getElementById("edit-exp-desc").value = item.observation || ""; // Usando o campo já existente
+  }
+
+  document.getElementById("edit-modal").classList.remove("hidden");
+}
+
 export function closeEditModal() {
   document.getElementById("edit-modal").classList.add("hidden");
 }
@@ -590,6 +640,7 @@ export function renderAddFinance(c) {
                         </div>
                     </div>
                 </div>
+                <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Observação (Opcional)</label><textarea id="fin-observation" class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200" placeholder="Ex: Corrida com valor dinâmico"></textarea></div>
                 <button id="btn-save-fin" type="submit" class="w-full bg-gray-900 text-white font-bold py-4 rounded-lg hover:bg-gray-800 shadow-lg mt-4 transition-transform active:scale-95">Salvar Ganho</button>
             </form>
 
@@ -607,7 +658,7 @@ export function renderAddFinance(c) {
                     </select>
                 </div>
                 <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Valor (R$)</label><input required type="number" step="0.01" id="exp-total" class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 text-lg font-semibold" placeholder="0.00"></div>
-                <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Descrição (Opcional)</label><textarea id="exp-desc" class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200" placeholder="Ex: Troca de óleo"></textarea></div>
+                <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Observação (Opcional)</label><textarea id="exp-desc" class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200" placeholder="Ex: Troca de óleo"></textarea></div>
                 <button id="btn-save-exp" type="submit" class="w-full bg-red-600 text-white font-bold py-4 rounded-lg hover:bg-red-500 shadow-lg mt-4 transition-transform active:scale-95">Salvar Despesa</button>
             </form>
         </div>`;
