@@ -22,21 +22,21 @@
   ],
   "screenshots": [
     {
-      "src": "screenshots/painel.png",
+      "src": "painel.png",
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Painel Principal"
     },
     {
-      "src": "screenshots/ganhos.png",
+      "src": "ganhos.png",
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Ganhos"
     },
     {
-      "src": "screenshots/ganhos2.png",
+      "src": "ganhos2.png",
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow",
