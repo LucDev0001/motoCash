@@ -48,7 +48,7 @@ export function router(view) {
       .classList.add("text-yellow-600", "font-bold");
     renderProfile(content);
   } else if (view === "about") {
-    title.innerText = "Sobre o MotoManager";
+    title.innerText = "Sobre o MotoCash";
     renderAbout(content);
   }
   setTimeout(() => lucide.createIcons(), 100);
@@ -504,7 +504,7 @@ export function closeShareModal() {
 
 export function shareCategory(type) {
   const pn = document.getElementById("period-label").innerText;
-  let txt = `🏍️ *Relatório MotoManager - ${pn}*\n\n`;
+  let txt = `🏍️ *Relatório MotoCash - ${pn}*\n\n`;
 
   const earnings = currentStats.earnings;
   const expenses = currentStats.expenses;
@@ -541,7 +541,7 @@ export function shareCategory(type) {
     txt += `🔴 Despesas: R$ ${expenses.total.toFixed(2)}\n\n`;
     txt += `💰 *Saldo Final: R$ ${balance.toFixed(2)}*`;
   }
-  txt += `\n\n_Gerado via MotoManager_`;
+  txt += `\n\n_Gerado via MotoCash_`;
   window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, "_blank");
   closeShareModal();
 }
@@ -791,7 +791,7 @@ function renderAbout(c) {
         <div class="bg-yellow-500 p-4 rounded-full inline-block mb-4">
           <i data-lucide="bike" class="w-12 h-12 text-black"></i>
         </div>
-        <h2 class="text-2xl font-bold dark:text-white">MotoManager Pro</h2>
+        <h2 class="text-2xl font-bold dark:text-white">MotoCash</h2>
         <p class="text-gray-500 dark:text-gray-400 mb-6">Versão ${appVersion}</p>
         
         <div class="space-y-2 text-left">

@@ -1,15 +1,24 @@
-const CACHE_NAME = "motomanager-v2";
-const urlsToCache = [
+const CACHE_NAME = "motomanager-v21";
+
+// Lista de arquivos essenciais para o App Shell.
+const assetsToCache = [
   "./",
   "./index.html",
   "./manifest.json",
   "./main.js",
-  "./api.js",
-  "./ui.js",
   "./auth.js",
-  "./config.js",
+  "./ui.js",
+  "./api.js",
   "./Icon-192.png",
   "./Icon-512.png",
+  // Adicione aqui os ícones dos atalhos se eles existirem
+  "./icons/add.png",
+  "./icons/profile.png",
+  // Adicione as screenshots para a experiência offline
+  "./painel.png",
+  "./ganhos.png",
+  "./ganhos2.png",
+  // Fontes e bibliotecas externas (importante para offline)
   "https://cdn.tailwindcss.com",
   "https://unpkg.com/lucide@latest",
   "https://cdn.jsdelivr.net/npm/chart.js",
@@ -18,53 +27,52 @@ const urlsToCache = [
   "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js",
 ];
 
-// Instalação do Service Worker
+// Evento de Instalação: Salva os assets em cache.
 self.addEventListener("install", (event) => {
+  console.log("[Service Worker] Instalando...");
   event.waitUntil(
-    (async () => {
-      const cache = await caches.open(CACHE_NAME);
-      console.log("Service Worker: Caching app shell");
-      await cache.addAll(urlsToCache);
-    })()
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => {
+        console.log("[Service Worker] Adicionando assets ao cache");
+        return cache.addAll(assetsToCache);
+      })
+      .catch((err) => {
+        console.error("[Service Worker] Falha ao abrir o cache", err);
+      })
   );
 });
 
-// Ativação e limpeza de caches antigos
+// Evento de Ativação: Limpa caches antigos.
 self.addEventListener("activate", (event) => {
+  console.log("[Service Worker] Ativando...");
   event.waitUntil(
-    (async () => {
-      const cacheNames = await caches.keys();
-      await Promise.all(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log("Service Worker: Deleting old cache", cacheName);
+            console.log("[Service Worker] Limpando cache antigo:", cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    })()
+    })
   );
   return self.clients.claim();
 });
 
-// Interceptar requisições (Estratégia Stale-While-Revalidate para assets locais)
+// Evento de Fetch: Intercepta requisições e serve do cache se disponível.
 self.addEventListener("fetch", (event) => {
-  // Ignorar requisições do Firebase para não interferir com o cache offline dele
-  if (event.request.url.includes("firestore.googleapis.com")) {
+  // Ignora requisições que não são GET (ex: POST para o Firebase)
+  if (event.request.method !== "GET") {
     return;
   }
 
   event.respondWith(
-    (async () => {
-      const cache = await caches.open(CACHE_NAME);
-      const cachedResponse = await cache.match(event.request);
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
-        cache.put(event.request, networkResponse.clone());
-        return networkResponse;
-      });
-
-      // Retorna do cache imediatamente se disponível, enquanto busca atualização em segundo plano.
-      return cachedResponse || fetchPromise;
-    })()
+    caches.match(event.request).then((response) => {
+      // Se encontrar no cache, retorna a resposta do cache.
+      // Senão, busca na rede.
+      return response || fetch(event.request);
+    })
   );
 });

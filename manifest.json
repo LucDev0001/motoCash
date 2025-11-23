@@ -1,11 +1,13 @@
 {
   "name": "MotoManager Pro",
   "short_name": "MotoManager",
+  "id": "/motocash/",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#EAB308",
   "orientation": "portrait",
+  "description": "Gerencie seus ganhos e despesas como motoboy de forma fácil e eficiente.",
   "icons": [
     {
       "src": "Icon-192.png",
@@ -17,5 +19,47 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/painel.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Painel Principal"
+    },
+    {
+      "src": "screenshots/ganhos.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Ganhos"
+    },
+    {
+      "src": "screenshots/ganhos2.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Ganhos Mensais"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Adicionar Transação",
+      "short_name": "Adicionar",
+      "description": "Adicionar um novo ganho ou despesa",
+      "url": "/index.html?action=finance",
+      "icons": [{ "src": "icons/add.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ver Perfil",
+      "short_name": "Perfil",
+      "description": "Acessar a tela de perfil e configurações",
+      "url": "/index.html?action=profile",
+      "icons": [{ "src": "icons/profile.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["finance", "productivity", "business"],
+  "scope": "./",
+  "lang": "pt-BR"
 }
