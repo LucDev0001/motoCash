@@ -2,11 +2,11 @@ import { db, appId, auth } from "./config.js";
 import { currentUser } from "./auth.js";
 import {
   router,
-  closeEditModal,
   customRange,
   currentShiftFilter,
   showNotification,
   showConfirmation,
+  closeEditModal,
 } from "./ui.js";
 
 export let allLoadedItems = [];

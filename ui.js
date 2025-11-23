@@ -9,6 +9,7 @@ import { auth, db, appId } from "./config.js";
 let currentChart = null;
 let unsubscribeListeners = [];
 export let currentPeriod = "week";
+export let currentShiftFilter = "all"; // 'all', 'dia', 'noite'
 export let customRange = { start: null, end: null };
 
 // --- ROUTER ---
