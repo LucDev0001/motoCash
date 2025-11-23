@@ -1,4 +1,4 @@
-const CACHE_NAME = "motomanager-v24";
+const CACHE_NAME = "motomanager-v26";
 
 // Lista de arquivos essenciais para o App Shell.
 const assetsToCache = [

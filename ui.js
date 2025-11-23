@@ -491,56 +491,6 @@ export function openEditModal(id, type) {
   document.getElementById("edit-modal").classList.remove("hidden");
 }
 
-export function openEditModal(id, type) {
-  const item = allLoadedItems.find((i) => i.id === id);
-  if (!item) return;
-
-  const modalTitle = document.querySelector("#edit-modal h3");
-  document.getElementById("edit-id").value = id;
-  document.getElementById("edit-type").value = type;
-  document.getElementById("edit-date").value = item.date;
-
-  const fieldsApp = document.getElementById("edit-fields-app");
-  const fieldsLoja = document.getElementById("edit-fields-loja");
-  const fieldsExpense = document.getElementById("edit-fields-expense");
-
-  // Dynamically handle required fields
-  document.getElementById("edit-exp-total").required = type === "expense";
-
-  // Reset all fields visibility
-  fieldsApp.classList.add("hidden");
-  fieldsLoja.classList.add("hidden");
-  fieldsExpense.classList.add("hidden");
-
-  if (type === "earning") {
-    modalTitle.innerText = "Editar Ganho";
-    document.getElementById("edit-category").value = item.category;
-    // Adiciona a observação ao campo de edição
-    document.getElementById("edit-observation").value = item.observation || "";
-
-    if (item.category === "loja_fixa") {
-      fieldsLoja.classList.remove("hidden");
-      document.getElementById("edit-daily").value = item.details?.daily || 0;
-      document.getElementById("edit-loja-count").value =
-        item.details?.count || item.count || 0;
-      document.getElementById("edit-fee").value = item.details?.fee || 0;
-      document.getElementById("edit-extra").value = item.details?.extra || 0;
-    } else {
-      fieldsApp.classList.remove("hidden");
-      document.getElementById("edit-total").value = item.totalValue;
-      document.getElementById("edit-count").value = item.count;
-    }
-  } else if (type === "expense") {
-    modalTitle.innerText = "Editar Despesa";
-    fieldsExpense.classList.remove("hidden");
-    document.getElementById("edit-exp-category").value = item.category;
-    document.getElementById("edit-exp-total").value = item.totalValue;
-    document.getElementById("edit-exp-desc").value = item.observation || ""; // Usando o campo já existente
-  }
-
-  document.getElementById("edit-modal").classList.remove("hidden");
-}
-
 export function closeEditModal() {
   document.getElementById("edit-modal").classList.add("hidden");
 }
