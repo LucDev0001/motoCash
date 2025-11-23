@@ -220,13 +220,23 @@ export function updateDashboardUI(stats, allItems, lineChartData, monthlyGoal) {
           ? "Uber/99 Moto"
           : "iFood/Entregas";
 
+        let shiftIcon = "";
+        if (i.shift === "dia") {
+          shiftIcon = `<i data-lucide="sun" class="w-3 h-3 text-yellow-500"></i>`;
+        } else if (i.shift === "noite") {
+          shiftIcon = `<i data-lucide="moon" class="w-3 h-3 text-blue-400"></i>`;
+        }
+
         return `
             <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border-l-4 ${borderColor} mb-2 flex justify-between items-center group">
                 <div class="flex-1">
                     <p class="font-bold text-sm text-gray-800 dark:text-gray-200">${title}</p>
-                    <p class="text-xs text-gray-400 dark:text-gray-500">${new Date(
-                      i.date + "T00:00:00"
-                    ).toLocaleDateString()}</p>
+                    <div class="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+                      <span>${new Date(
+                        i.date + "T00:00:00"
+                      ).toLocaleDateString()}</span>
+                      ${shiftIcon ? `<span>${shiftIcon}</span>` : ""}
+                    </div>
                     ${
                       i.description
                         ? `<p class="text-xs text-gray-500 dark:text-gray-400">${i.description}</p>`

@@ -359,9 +359,15 @@ export function saveEdit(e) {
   const id = document.getElementById("edit-id").value;
   const type = document.getElementById("edit-type").value;
   const category = document.getElementById("edit-category").value;
-  const date = document.getElementById("edit-date").value;
+  const dateValue = document.getElementById("edit-date").value;
 
-  let dataToUpdate = { date };
+  // Corrige o problema de fuso horário, tratando a data como local ao meio-dia.
+  const date = new Date(dateValue + "T12:00:00");
+
+  let dataToUpdate = {
+    // Armazenamos a data como string "YYYY-MM-DD" para consistência com o resto do app.
+    date: date.toISOString().split("T")[0],
+  };
 
   const safeFloat = (id) => {
     const val = document.getElementById(id)?.value;
@@ -378,6 +384,10 @@ export function saveEdit(e) {
   if (type === "earning") {
     collectionName = "earnings";
     successMessage = "Ganho atualizado com sucesso!";
+
+    // Adiciona o turno aos dados a serem salvos
+    dataToUpdate.shift = document.getElementById("edit-shift").value;
+
     if (category === "loja_fixa") {
       const d = safeFloat("edit-daily");
       const f = safeFloat("edit-fee");
