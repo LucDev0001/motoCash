@@ -48,14 +48,14 @@
       "name": "Adicionar Transação",
       "short_name": "Adicionar",
       "description": "Adicionar um novo ganho ou despesa",
-      "url": "/index.html?action=finance",
+      "url": "./index.html?action=finance",
       "icons": [{ "src": "icons/add.png", "sizes": "192x192" }]
     },
     {
       "name": "Ver Perfil",
       "short_name": "Perfil",
       "description": "Acessar a tela de perfil e configurações",
-      "url": "/index.html?action=profile",
+      "url": "./index.html?action=profile",
       "icons": [{ "src": "icons/profile.png", "sizes": "192x192" }]
     }
   ],

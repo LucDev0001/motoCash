@@ -14,18 +14,20 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-// Habilita a persistência offline do Firestore
-firebase
-  .firestore()
-  .enablePersistence()
-  .catch((err) => {
-    if (err.code == "failed-precondition") {
-      // Múltiplas abas abertas podem causar isso.
-    } else if (err.code == "unimplemented") {
-      // O navegador não suporta a persistência.
-    }
+let db;
+try {
+  // Nova forma de inicializar o Firestore com persistência offline
+  db = firebase.firestore();
+  firebase.firestore().settings({
+    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
+    experimentalForceLongPolling: true, // Ajuda a evitar alguns avisos no console
   });
+  db.enablePersistence({ synchronizeTabs: true });
+} catch (err) {
+  console.error("Erro ao habilitar a persistência do Firestore:", err.code);
+  db = firebase.firestore(); // Fallback para inicialização sem persistência
+}
 
 export const auth = firebase.auth();
-export const db = firebase.firestore();
+export { db };
 export const appId = "moto-manager-v1";
