@@ -1,6 +1,6 @@
 {
-  "name": "MotoManager Pro",
-  "short_name": "MotoManager",
+  "name": "MotoCash - Gerenciador de Finanças para Motoboys",
+  "short_name": "MotoCash",
   "id": "/motocash/",
   "start_url": "./index.html",
   "display": "standalone",

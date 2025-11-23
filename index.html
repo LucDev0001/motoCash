@@ -100,10 +100,42 @@
           transform: translateY(0);
         }
       }
+      .toast-enter {
+        animation: toast-in 0.5s ease-out forwards;
+      }
+      .toast-leave {
+        animation: toast-out 0.5s ease-in forwards;
+      }
+      @keyframes toast-in {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes toast-out {
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+      }
     </style>
   </head>
   <body>
     <div id="app-container" class="shadow-2xl">
+      <!-- Container para notificações/toasts -->
+      <div
+        id="toast-container"
+        class="fixed bottom-0 right-0 p-4 w-full max-w-sm z-[200] space-y-2 pointer-events-none"
+      ></div>
+
       <!-- MODAL DE NOTIFICAÇÃO/CONFIRMAÇÃO -->
       <div
         id="notification-modal"

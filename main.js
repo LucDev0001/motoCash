@@ -28,31 +28,37 @@ if (installBtn) {
 
 // --- PWA UPDATE LOGIC (SERVICE WORKER) ---
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js").then((reg) => {
-    console.log('Service Worker registado.');
+  navigator.serviceWorker
+    .register("./sw.js")
+    .then((reg) => {
+      console.log("Service Worker registado.");
 
-    // Se já houver uma atualização à espera
-    if (reg.waiting) {
-      showUpdateToast();
-      return;
-    }
+      // Se já houver uma atualização à espera
+      if (reg.waiting) {
+        showUpdateToast();
+        return;
+      }
 
-    // Monitoriza novas atualizações
-    reg.addEventListener('updatefound', () => {
-      const newWorker = reg.installing;
-      
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          // Nova versão pronta!
-          showUpdateToast();
-        }
+      // Monitoriza novas atualizações
+      reg.addEventListener("updatefound", () => {
+        const newWorker = reg.installing;
+
+        newWorker.addEventListener("statechange", () => {
+          if (
+            newWorker.state === "installed" &&
+            navigator.serviceWorker.controller
+          ) {
+            // Nova versão pronta!
+            showUpdateToast();
+          }
+        });
       });
-    });
-  }).catch(console.error);
+    })
+    .catch(console.error);
 
   // Recarrega a página quando o novo SW assumir o controlo
   let refreshing;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (refreshing) return;
     window.location.reload();
     refreshing = true;
@@ -61,44 +67,50 @@ if ("serviceWorker" in navigator) {
 
 // Função local para mostrar o Toast de Atualização Específico
 function showUpdateToast() {
-    const container = document.getElementById('toast-container');
-    
-    if (!container) {
-        // Fallback se não houver container
-        if(confirm("Nova versão disponível. Atualizar agora?")) {
-            window.location.reload();
-        }
-        return;
-    }
+  const container = document.getElementById("toast-container");
+  if (!container) return;
 
-    const toast = document.createElement('div');
-    toast.className = `flex flex-col gap-2 px-4 py-3 rounded-lg text-white shadow-xl border border-yellow-600 bg-gray-800 pointer-events-auto toast-enter z-[200]`;
-    toast.innerHTML = `
-        <div class="flex items-center gap-2">
-            <i data-lucide="refresh-cw" class="w-5 h-5 text-yellow-500"></i>
-            <span class="text-sm font-bold">Nova atualização disponível!</span>
+  // Remove toasts antigos se houver
+  const existingToast = document.getElementById("update-toast");
+  if (existingToast) existingToast.remove();
+
+  const toast = document.createElement("div");
+  toast.id = "update-toast";
+  toast.className = `w-full bg-gray-800 border border-yellow-600 shadow-2xl rounded-lg p-4 flex items-start gap-4 pointer-events-auto toast-enter`;
+  toast.innerHTML = `
+    <div>
+        <i data-lucide="refresh-cw" class="w-6 h-6 text-yellow-500 animate-spin" style="animation-duration: 2s;"></i>
+    </div>
+    <div class="flex-1">
+        <h4 class="font-bold text-white">Nova atualização disponível!</h4>
+        <p class="text-sm text-gray-400 mt-1">Recarregue para aplicar as melhorias e novas funcionalidades.</p>
+        <div class="mt-3 flex gap-2">
+            <button id="btn-update-now" class="flex-1 bg-yellow-500 text-black text-sm font-bold py-2 px-4 rounded hover:bg-yellow-400 transition">
+                Atualizar Agora
+            </button>
         </div>
-        <p class="text-xs text-gray-400">Melhorias foram aplicadas.</p>
-        <button id="btn-update-now" class="bg-yellow-500 text-black text-xs font-bold py-2 px-4 rounded hover:bg-yellow-400 transition w-full mt-1">
-            ATUALIZAR AGORA
+    </div>
+    <div>
+        <button id="btn-close-toast" class="text-gray-500 hover:text-white">
+            <i data-lucide="x" class="w-5 h-5"></i>
         </button>
-    `;
+    </div>
+  `;
 
-    container.appendChild(toast);
-    
-    // Tenta renderizar ícones se a biblioteca estiver disponível
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
+  container.appendChild(toast);
+  lucide.createIcons();
+
+  document.getElementById("btn-update-now").addEventListener("click", () => {
+    if (navigator.serviceWorker.waiting) {
+      navigator.serviceWorker.waiting.postMessage({ type: "SKIP_WAITING" });
     }
+  });
 
-    document.getElementById('btn-update-now').addEventListener('click', () => {
-        if (navigator.serviceWorker.waiting) {
-            // Envia mensagem para o SW pular a espera (skipWaiting)
-            navigator.serviceWorker.waiting.postMessage({ type: 'SKIP_WAITING' });
-        } else {
-            window.location.reload();
-        }
-    });
+  document.getElementById("btn-close-toast").addEventListener("click", () => {
+    toast.classList.remove("toast-enter");
+    toast.classList.add("toast-leave");
+    setTimeout(() => toast.remove(), 500); // Remove o elemento após a animação
+  });
 }
 
 // --- THEME LOGIC ---
@@ -125,10 +137,10 @@ window.toggleTheme = () => {
 
   const themeToggle = document.getElementById("theme-toggle");
   const themeToggleDot = document.getElementById("theme-toggle-dot");
-  
+
   if (themeToggle && themeToggleDot) {
-      themeToggle.classList.toggle("bg-green-600", isDark);
-      themeToggleDot.classList.toggle("translate-x-6", isDark);
+    themeToggle.classList.toggle("bg-green-600", isDark);
+    themeToggleDot.classList.toggle("translate-x-6", isDark);
   }
 };
 
@@ -183,8 +195,8 @@ window.backupData = APIActions.backupData;
 window.handleFileSelect = (event) => {
   const file = event.target.files[0];
   if (file) {
-      APIActions.restoreData(file);
-      event.target.value = null; // Limpa o input para permitir selecionar o mesmo arquivo novamente
+    APIActions.restoreData(file);
+    event.target.value = null; // Limpa o input para permitir selecionar o mesmo arquivo novamente
   }
 };
 
@@ -193,8 +205,7 @@ initTheme();
 initOnlineStatusIndicator();
 initAuth();
 setTimeout(() => {
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
+  if (typeof lucide !== "undefined") {
+    lucide.createIcons();
+  }
 }, 500);
-
