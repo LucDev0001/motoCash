@@ -4,6 +4,7 @@ import {
   router,
   closeEditModal,
   customRange,
+  currentShiftFilter,
   showNotification,
   showConfirmation,
 } from "./ui.js";
@@ -171,7 +172,7 @@ export function loadDashboardData(p, updateCallback) {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
-    const filtered = allItems.filter((i) => {
+    let filteredByDate = allItems.filter((i) => {
       const d = new Date(i.date + "T00:00:00");
       if (p === "day") return d.getTime() === now.getTime();
       if (p === "week")
@@ -188,6 +189,20 @@ export function loadDashboardData(p, updateCallback) {
       }
       if (p === "custom") return d >= customRange.start && d <= customRange.end;
       return true; // Fallback for periods not implemented yet
+    });
+
+    // Aplica o filtro de turno APÓS o filtro de data
+    const filtered = filteredByDate.filter((item) => {
+      if (currentShiftFilter === "all") {
+        return true; // Mostra todos os itens (ganhos e despesas)
+      }
+      // Se o item for uma despesa, sempre o inclua, pois despesas não têm turno.
+      if (item.type === "expense") {
+        return true;
+      }
+      // Para ganhos, filtre pelo turno. Ganhos antigos sem 'shift' serão mostrados em 'todos'.
+      // Se quiser que eles apareçam no filtro 'dia', pode usar: return item.shift === currentShiftFilter || !item.shift;
+      return item.shift === currentShiftFilter;
     });
 
     let stats = {
@@ -431,7 +446,11 @@ export function submitFinance(e) {
   // Validation logic here...
 
   const cat = document.getElementById("fin-category").value;
-  const date = document.getElementById("fin-date-earning").value;
+  const shift = document.getElementById("fin-shift").value;
+  const dateValue = document.getElementById("fin-date-earning").value;
+  // Corrige o problema de fuso horário, tratando a data como local ao meio-dia.
+  const correctedDate = new Date(dateValue + "T12:00:00");
+  const date = correctedDate.toISOString().split("T")[0];
   let tot = 0,
     cnt = 0,
     det = {};
@@ -467,6 +486,7 @@ export function submitFinance(e) {
     .add({
       category: cat,
       date,
+      shift,
       totalValue: tot,
       count: cnt,
       details: det,

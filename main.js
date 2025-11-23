@@ -85,6 +85,7 @@ window.logout = APIActions.logout;
 window.saveProfile = APIActions.saveProfile;
 window.saveMonthlyGoal = APIActions.saveMonthlyGoal;
 window.filterDashboard = UIActions.filterDashboard;
+window.filterByShift = UIActions.filterByShift;
 window.toggleCustomPicker = UIActions.toggleCustomPicker;
 window.applyCustomFilter = UIActions.applyCustomFilter;
 window.openShareModal = UIActions.openShareModal;

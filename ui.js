@@ -391,6 +391,34 @@ export function filterDashboard(p) {
   unsubscribeListeners.push(unsub);
 }
 
+export function filterByShift(shift) {
+  currentShiftFilter = shift;
+
+  // Atualiza a aparência dos botões de turno
+  document.querySelectorAll(".shift-filter-btn").forEach((btn) => {
+    btn.classList.remove(
+      "bg-gray-900",
+      "dark:bg-yellow-500",
+      "dark:text-black",
+      "text-white"
+    );
+    btn.classList.add("text-gray-500");
+  });
+
+  const activeBtn = document.getElementById(`shift-filter-${shift}`);
+  activeBtn.classList.add(
+    "bg-gray-900",
+    "dark:bg-yellow-500",
+    "dark:text-black",
+    "text-white"
+  );
+  activeBtn.classList.remove("text-gray-500");
+
+  // Recarrega os dados do dashboard com o período atual e o novo filtro de turno
+  const unsub = loadDashboardData(currentPeriod, updateDashboardUI);
+  unsubscribeListeners.push(unsub);
+}
+
 export function toggleCustomPicker() {
   document.getElementById("custom-date-picker").classList.toggle("hidden");
 }
@@ -530,7 +558,16 @@ export function renderAddFinance(c) {
             <!-- Formulário de Ganhos -->
             <form onsubmit="submitFinance(event)" id="form-earning" class="p-6 space-y-4">
                 <input type="hidden" id="fin-category" value="app_entrega">
-                <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Data</label><input required type="date" id="fin-date-earning" class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Data</label>
+                        <input required type="date" id="fin-date-earning" class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Turno</label>
+                        <select id="fin-shift" class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"><option value="dia">Dia</option><option value="noite">Noite</option></select>
+                    </div>
+                </div>
                 <div class="flex border-b dark:border-gray-700">
                     <button type="button" onclick="setFinanceTab('app_entrega')" id="tab-app_entrega" class="fin-tab-inner flex-1 py-2 text-[11px] font-bold bg-yellow-100 text-yellow-700 border-b-2 border-yellow-500 px-1">iFood</button>
                     <button type="button" onclick="setFinanceTab('app_passageiro')" id="tab-app_passageiro" class="fin-tab-inner flex-1 py-2 text-[11px] font-bold text-gray-500 px-1">Uber/99</button>
