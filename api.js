@@ -227,6 +227,7 @@ export function savePublicProfile(event) {
   const name = document.getElementById("public-name").value;
   const motoModel = document.getElementById("public-moto-model").value;
   const motoPlate = document.getElementById("public-moto-plate").value;
+  const whatsapp = document.getElementById("public-whatsapp").value;
   const terms = document.getElementById("public-terms-checkbox").checked;
 
   if (!terms) {
@@ -246,8 +247,7 @@ export function savePublicProfile(event) {
           name,
           motoModel,
           motoPlate,
-          whatsapp: currentUser.phoneNumber?.replace(/\D/g, ""), // Salva apenas os números do telefone
-          whatsapp: currentUser.phoneNumber?.replace(/\D/g, ""), // Salva apenas os números do telefone
+          whatsapp: whatsapp.replace(/\D/g, ""), // Salva apenas os números do telefone
         },
       },
       { merge: true }
