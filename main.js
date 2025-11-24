@@ -194,6 +194,27 @@ window.setHubView = UIActions.setHubView;
 window.openMotoboyDetails = UIActions.openMotoboyDetails;
 window.closeMotoboyDetails = UIActions.closeMotoboyDetails;
 window.savePublicProfile = APIActions.savePublicProfile;
+window.toggleUserOnlineStatus = async () => {
+  const toggle = document.getElementById("user-status-toggle");
+  const dot = document.getElementById("user-status-toggle-dot");
+  const text = document.getElementById("user-status-text");
+  const isGoingOnline = !toggle.classList.contains("bg-green-600");
+
+  try {
+    await APIActions.setUserOnlineStatus(isGoingOnline);
+
+    // A UI só será atualizada se a chamada for bem-sucedida (ou se o perfil já estiver completo)
+    toggle.classList.toggle("bg-green-600", isGoingOnline);
+    toggle.classList.toggle("bg-gray-700", !isGoingOnline);
+    dot.classList.toggle("translate-x-6", isGoingOnline);
+    text.textContent = isGoingOnline ? "ONLINE" : "OFFLINE";
+    text.classList.toggle("text-green-500", isGoingOnline);
+  } catch (error) {
+    // Se o perfil estiver incompleto, a promessa será rejeitada e o erro será capturado aqui.
+    // Não é necessário fazer nada, pois o modal de perfil já foi aberto pela função setUserOnlineStatus.
+    console.log("Ação de ficar online interrompida:", error);
+  }
+};
 window.deleteMarketItem = APIActions.deleteMarketItem;
 window.submitAd = APIActions.submitAd;
 window.backupData = APIActions.backupData;
