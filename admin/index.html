@@ -12,6 +12,14 @@
     <!-- Gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- Leaflet (Mapa) e Plugin Heatmap -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -121,7 +129,7 @@
                 id="metric-total-users"
                 class="text-3xl font-bold text-gray-800 mt-2"
               >
-                0
+                -
               </p>
             </div>
             <div class="p-6 bg-white rounded-lg shadow-md">
@@ -130,29 +138,29 @@
                 id="metric-online-users"
                 class="text-3xl font-bold text-green-500 mt-2"
               >
-                0
+                -
               </p>
             </div>
             <div class="p-6 bg-white rounded-lg shadow-md">
               <h3 class="text-sm font-bold text-gray-500">
-                Ganhos Totais (Mês)
+                Total de Registros (Mês)
               </h3>
               <p
-                id="metric-total-earnings"
+                id="metric-total-records"
                 class="text-3xl font-bold text-gray-800 mt-2"
               >
-                R$ 0,00
+                -
               </p>
             </div>
             <div class="p-6 bg-white rounded-lg shadow-md">
               <h3 class="text-sm font-bold text-gray-500">
-                Despesas Totais (Mês)
+                Usuário Mais Ativo
               </h3>
               <p
-                id="metric-total-expenses"
-                class="text-3xl font-bold text-red-500 mt-2"
+                id="metric-most-active-user"
+                class="text-xl font-bold text-blue-600 mt-2 truncate"
               >
-                R$ 0,00
+                -
               </p>
             </div>
           </div>
@@ -160,34 +168,47 @@
           <!-- Gráficos -->
           <div class="grid grid-cols-1 gap-6 mt-8 lg:grid-cols-2">
             <div class="p-6 bg-white rounded-lg shadow-md">
-              <h3 class="font-bold text-gray-800">
-                Novos Usuários (Últimos 7 dias)
-              </h3>
+              <h3 class="font-bold text-gray-800">Novos Usuários (7 dias)</h3>
               <canvas id="chart-new-users" class="mt-4"></canvas>
             </div>
             <div class="p-6 bg-white rounded-lg shadow-md">
               <h3 class="font-bold text-gray-800">
-                Ganhos por Categoria (Mês)
+                Atividade de Registros (7 dias)
               </h3>
-              <canvas id="chart-earnings-category" class="mt-4"></canvas>
+              <canvas id="chart-records-activity" class="mt-4"></canvas>
             </div>
+          </div>
+
+          <!-- Mapa de Calor -->
+          <div class="p-6 mt-8 bg-white rounded-lg shadow-md">
+            <h3 class="font-bold text-gray-800">
+              Mapa de Concentração de Usuários
+            </h3>
+            <div
+              id="heatmap-container"
+              class="mt-4 h-96 w-full rounded-lg bg-gray-200"
+            ></div>
           </div>
 
           <!-- Tabela de Usuários Recentes -->
           <div class="p-6 mt-8 bg-white rounded-lg shadow-md">
-            <h3 class="font-bold text-gray-800">Usuários Recentes</h3>
+            <h3 class="font-bold text-gray-800">Ranking de Atividade</h3>
             <div class="overflow-x-auto mt-4">
               <table class="w-full text-left">
                 <thead>
                   <tr class="text-sm font-bold text-gray-500 border-b">
                     <th class="p-3">Nome</th>
                     <th class="p-3">Email</th>
-                    <th class="p-3">Data de Cadastro</th>
+                    <th class="p-3">Registros</th>
                     <th class="p-3">Status</th>
                   </tr>
                 </thead>
                 <tbody id="table-users-body">
-                  <!-- Linhas serão injetadas aqui -->
+                  <tr>
+                    <td colspan="4" class="text-center p-8 text-gray-400">
+                      Carregando dados...
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
