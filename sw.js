@@ -1,36 +1,22 @@
-const CACHE_NAME = "motomanager-v29.1.24";
+const CACHE_NAME = "motomanager-v29.1.25"; // Versão incrementada para forçar a atualização
 
 // Lista de arquivos essenciais para o App Shell.
 const assetsToCache = [
   "./",
   "./index.html",
   "./freelancermoto.html",
-  "./config.js",
-  "./styles.css",
-  "./freelancermoto.js",
   "./manifest.json",
+  "./config.js",
   "./main.js",
+  "./auth.js",
   "./ui.js",
   "./api.js",
+  "./freelancermoto.js",
   "./Icon-192.png",
   "./Icon-512.png",
-  // Adicione aqui os ícones dos atalhos se eles existirem
-  "./icons/add.png",
-  "./icons/profile.png",
-  // Adicione as screenshots para a experiência offline
-  "./painel.png",
-  "./ganhos.png",
-  "./ganhos2.png",
-  // Fontes e bibliotecas externas. É melhor deixar o cache do navegador lidar com elas,
-  // pois podem causar falhas no 'addAll' do Service Worker se os links mudarem ou redirecionarem.
-  // Removendo-os da lista de cache principal para garantir que o App Shell funcione.
-  "https://cdn.tailwindcss.com",
-  "https://unpkg.com/lucide@latest",
-  "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js",
-  "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js",
-  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
-  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
-  "https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js",
+  // Os arquivos de CDN (Tailwind, Leaflet, Firebase, etc.)
+  // e imagens de screenshots/atalhos foram removidos.
+  // O cache do navegador é mais eficiente para eles e isso evita a falha do Service Worker.
 ];
 
 // Evento de Instalação: Salva os assets em cache.

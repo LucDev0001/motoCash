@@ -93,7 +93,12 @@ async function loadDashboardData() {
     const usersTableBody = document.getElementById("table-users-body");
     usersTableBody.innerHTML = ""; // Limpa a tabela
     const recentUsers = users
-      .sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis())
+      .sort((a, b) => {
+        // Garante que usuários sem data de criação fiquem no final
+        const timeA = a.createdAt ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt ? b.createdAt.toMillis() : 0;
+        return timeB - timeA;
+      })
       .slice(0, 5); // Pega os 5 mais recentes
 
     recentUsers.forEach((user) => {
@@ -101,9 +106,11 @@ async function loadDashboardData() {
         <tr class="text-sm text-gray-700 border-b">
             <td class="p-3">${user.publicProfile?.name || "Não informado"}</td>
             <td class="p-3">${user.email || user.id}</td>
-            <td class="p-3">${new Date(
-              user.createdAt.seconds * 1000
-            ).toLocaleDateString()}</td>
+            <td class="p-3">${
+              user.createdAt
+                ? new Date(user.createdAt.seconds * 1000).toLocaleDateString()
+                : "N/A"
+            }</td>
             <td class="p-3">
                 <span class="px-2 py-1 text-xs font-bold rounded-full ${
                   user.status?.isOnline
