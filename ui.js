@@ -1245,5 +1245,15 @@ export function showCompleteProfileModal() {
   document.getElementById("complete-profile-modal").classList.remove("hidden");
 }
 export function closeCompleteProfileModal() {
-  document.getElementById("complete-profile-modal").classList.add("hidden");
+  const modal = document.getElementById("complete-profile-modal");
+  if (!modal) return;
+
+  modal.classList.add("hidden");
+  // Reseta o formulário e os textos do modal para o padrão
+  modal.querySelector("form")?.reset();
+  document.getElementById("public-profile-modal-title").textContent =
+    "Complete seu Perfil Público";
+  document
+    .getElementById("public-profile-submit-btn")
+    .querySelector("span").textContent = "Ficar Online";
 }
