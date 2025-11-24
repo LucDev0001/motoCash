@@ -949,21 +949,42 @@ function renderSupport(c) {
         </div>
 
         <div id="support-articles-list" class="space-y-3">
+            <!-- Artigos Detalhados -->
             <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <h3 class="font-bold text-gray-900 dark:text-white">Como adicionar um ganho?</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Clique no botão amarelo com o sinal de '+' na barra de navegação inferior. Selecione a aba 'Ganho', preencha os detalhes e clique em 'Salvar Ganho'.</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Clique no botão amarelo com o sinal de '+' na barra de navegação. Na tela de 'Adicionar', selecione a aba 'Ganho'. Escolha o tipo de ganho (iFood, Uber/99 ou Loja Fixa), preencha os detalhes e clique em 'Salvar Ganho'.</p>
             </div>
             <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-                <h3 class="font-bold text-gray-900 dark:text-white">Como registrar uma despesa de combustível?</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Clique no botão '+' e selecione a aba 'Despesa'. Escolha a categoria 'Combustível', insira o valor e salve.</p>
+                <h3 class="font-bold text-gray-900 dark:text-white">Como registrar uma despesa?</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Clique no botão '+' e selecione a aba 'Despesa'. Escolha a data, a categoria da despesa (ex: Combustível), insira o valor e uma observação (opcional). Depois, clique em 'Salvar Despesa'.</p>
+            </div>
+            <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <h3 class="font-bold text-gray-900 dark:text-white">Como usar os filtros do Painel?</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">No topo do Painel, você pode filtrar seus dados por 'Hoje', 'Esta Semana', 'Semana Passada', 'Este Mês' e 'Mês Passado'. Use o filtro 'Personalizado' para escolher um intervalo de datas específico.</p>
+            </div>
+            <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <h3 class="font-bold text-gray-900 dark:text-white">Como editar ou apagar um lançamento?</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">No Painel, role para baixo até a lista de 'Histórico'. Cada lançamento tem dois botões: um lápis (para editar) e uma lixeira (para apagar). Clique no botão desejado para realizar a ação.</p>
+            </div>
+            <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <h3 class="font-bold text-gray-900 dark:text-white">Como definir uma meta mensal?</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Vá para a tela de 'Perfil', encontre a seção 'Meta de Ganhos Mensal', digite o valor desejado e clique em 'Salvar Meta'. O progresso aparecerá no seu Painel quando o filtro 'Este Mês' estiver ativo.</p>
             </div>
             <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <h3 class="font-bold text-gray-900 dark:text-white">Como fazer backup dos meus dados?</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Vá para a tela de 'Perfil' e clique no botão 'Fazer Backup dos Dados'. Um arquivo .json será baixado para o seu dispositivo.</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Na tela de 'Perfil', clique em 'Fazer Backup dos Dados'. Um arquivo JSON com todos os seus ganhos e despesas será salvo no seu dispositivo. Guarde este arquivo em um local seguro.</p>
             </div>
             <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-                <h3 class="font-bold text-gray-900 dark:text-white">O que são os filtros de período?</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">No painel, você pode filtrar seus lançamentos por 'Hoje', '7 Dias', 'Este Mês', etc. Isso ajuda a visualizar seu desempenho em diferentes períodos.</p>
+                <h3 class="font-bold text-gray-900 dark:text-white">Como restaurar um backup?</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Na tela de 'Perfil', clique em 'Restaurar Backup' e selecione o arquivo JSON que você salvou anteriormente. ATENÇÃO: Isso substituirá todos os dados atuais pelos dados do arquivo.</p>
+            </div>
+            <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <h3 class="font-bold text-gray-900 dark:text-white">Como compartilhar um relatório?</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">No Painel, clique no ícone de compartilhamento (canto superior direito do card de saldo). Uma janela aparecerá para você escolher qual parte do relatório (ganhos, despesas ou geral) deseja compartilhar no WhatsApp.</p>
+            </div>
+            <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <h3 class="font-bold text-gray-900 dark:text-white">Como apagar minha conta?</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Vá em 'Perfil' e role até o final. Clique em 'Apagar Conta Permanentemente'. Você precisará confirmar a ação digitando a palavra 'APAGAR'. Esta ação é irreversível e todos os seus dados serão perdidos.</p>
             </div>
             <div id="no-results" class="hidden text-center text-gray-500 py-8">
                 <i data-lucide="frown" class="w-10 h-10 mx-auto mb-2"></i>
