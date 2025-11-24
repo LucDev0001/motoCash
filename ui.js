@@ -63,8 +63,9 @@ function renderDashboard(c) {
                 <div class="flex bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm overflow-x-auto">
                     <button onclick="filterDashboard('day')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap" id="filter-day">Hoje</button>
                     <button onclick="filterDashboard('week')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded bg-gray-900 dark:bg-yellow-500 dark:text-black text-white whitespace-nowrap" id="filter-week">7 Dias</button>
+                    <button onclick="filterDashboard('last-week')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap" id="filter-last-week">Semana Passada</button>
                     <button onclick="filterDashboard('month')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap" id="filter-month">Este Mês</button>
-                    <button onclick="filterDashboard('last-month')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap border-l border-gray-100" id="filter-last-month">Mês Passado</button>
+                    <button onclick="filterDashboard('last-month')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap" id="filter-last-month">Mês Passado</button>
                     <button onclick="toggleCustomPicker()" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap border-l border-gray-100" id="filter-custom">Personalizado</button>
                 </div>
                 <div id="custom-date-picker" class="hidden bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex gap-2 items-end">
@@ -397,7 +398,7 @@ export function filterDashboard(p) {
   const labels = {
     day: "Hoje",
     week: "Últimos 7 Dias",
-    "last-week": "Semana Passada",
+    "last-week": "Semana Passada", // Adicionado
     month: "Este Mês",
     "last-month": "Mês Passado",
   };

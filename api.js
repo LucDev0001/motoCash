@@ -182,6 +182,24 @@ export function loadDashboardData(p, updateCallback) {
           d.getMonth() === now.getMonth() &&
           d.getFullYear() === now.getFullYear()
         );
+      if (p === "last-week") {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Dia da semana (0=Domingo, 1=Segunda, ..., 6=Sábado)
+        const dayOfWeek = today.getDay();
+
+        // Calcula o deslocamento para a segunda-feira da semana passada.
+        // Se hoje for domingo (0), voltamos 6 + 7 = 13 dias para a segunda anterior.
+        // Se hoje for segunda (1), voltamos 7 dias.
+        const daysToLastMonday = dayOfWeek === 0 ? 13 : dayOfWeek - 1 + 7;
+
+        const lastMonday = new Date(today);
+        lastMonday.setDate(today.getDate() - daysToLastMonday);
+        const lastSunday = new Date(lastMonday);
+        lastSunday.setDate(lastMonday.getDate() + 6);
+        return d >= lastMonday && d <= lastSunday;
+      }
       if (p === "last-month") {
         const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
         const lme = new Date(now.getFullYear(), now.getMonth(), 0);
