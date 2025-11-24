@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin - MotoCash</title>
+
+    <!-- Tailwind e Ícones -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <!-- Nosso Script -->
+    <script type="module" src="admin.js" defer></script>
+
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <!-- TELA DE LOGIN -->
+    <div
+      id="login-screen"
+      class="flex items-center justify-center min-h-screen bg-gray-900"
+    >
+      <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+        <div class="text-center">
+          <h1 class="text-2xl font-bold text-gray-900">Painel de Admin</h1>
+          <p class="text-gray-500">Acesso restrito</p>
+        </div>
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label for="email" class="text-sm font-bold text-gray-600"
+              >Email</label
+            >
+            <input
+              type="email"
+              id="admin-email"
+              required
+              class="w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            />
+          </div>
+          <div>
+            <label for="password" class="text-sm font-bold text-gray-600"
+              >Senha</label
+            >
+            <input
+              type="password"
+              id="admin-password"
+              required
+              class="w-full p-3 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full py-3 font-bold text-white bg-gray-800 rounded-md hover:bg-gray-900"
+          >
+            Entrar
+          </button>
+          <p id="login-error" class="text-sm text-center text-red-500"></p>
+        </form>
+      </div>
+    </div>
+
+    <!-- PAINEL PRINCIPAL (DASHBOARD) -->
+    <div id="dashboard-screen" class="hidden">
+      <div class="flex h-screen bg-gray-100">
+        <!-- Barra Lateral -->
+        <aside class="w-64 bg-gray-800 text-white flex flex-col">
+          <div class="p-4 border-b border-gray-700">
+            <h2 class="text-xl font-bold">MotoCash Admin</h2>
+          </div>
+          <nav class="flex-1 p-4 space-y-2">
+            <a
+              href="#"
+              class="flex items-center gap-3 px-4 py-2 rounded bg-gray-700"
+            >
+              <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+              <span>Dashboard</span>
+            </a>
+            <a
+              href="#"
+              class="flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700"
+            >
+              <i data-lucide="users" class="w-5 h-5"></i>
+              <span>Usuários</span>
+            </a>
+          </nav>
+          <div class="p-4 border-t border-gray-700">
+            <button
+              id="logout-btn"
+              class="w-full text-left flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700"
+            >
+              <i data-lucide="log-out" class="w-5 h-5"></i>
+              <span>Sair</span>
+            </button>
+          </div>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 p-8 overflow-y-auto">
+          <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
+
+          <!-- Métricas Principais -->
+          <div
+            class="grid grid-cols-1 gap-6 mt-6 md:grid-cols-2 lg:grid-cols-4"
+          >
+            <div class="p-6 bg-white rounded-lg shadow-md">
+              <h3 class="text-sm font-bold text-gray-500">Total de Usuários</h3>
+              <p
+                id="metric-total-users"
+                class="text-3xl font-bold text-gray-800 mt-2"
+              >
+                0
+              </p>
+            </div>
+            <div class="p-6 bg-white rounded-lg shadow-md">
+              <h3 class="text-sm font-bold text-gray-500">Usuários Online</h3>
+              <p
+                id="metric-online-users"
+                class="text-3xl font-bold text-green-500 mt-2"
+              >
+                0
+              </p>
+            </div>
+            <div class="p-6 bg-white rounded-lg shadow-md">
+              <h3 class="text-sm font-bold text-gray-500">
+                Ganhos Totais (Mês)
+              </h3>
+              <p
+                id="metric-total-earnings"
+                class="text-3xl font-bold text-gray-800 mt-2"
+              >
+                R$ 0,00
+              </p>
+            </div>
+            <div class="p-6 bg-white rounded-lg shadow-md">
+              <h3 class="text-sm font-bold text-gray-500">
+                Despesas Totais (Mês)
+              </h3>
+              <p
+                id="metric-total-expenses"
+                class="text-3xl font-bold text-red-500 mt-2"
+              >
+                R$ 0,00
+              </p>
+            </div>
+          </div>
+
+          <!-- Gráficos -->
+          <div class="grid grid-cols-1 gap-6 mt-8 lg:grid-cols-2">
+            <div class="p-6 bg-white rounded-lg shadow-md">
+              <h3 class="font-bold text-gray-800">
+                Novos Usuários (Últimos 7 dias)
+              </h3>
+              <canvas id="chart-new-users" class="mt-4"></canvas>
+            </div>
+            <div class="p-6 bg-white rounded-lg shadow-md">
+              <h3 class="font-bold text-gray-800">
+                Ganhos por Categoria (Mês)
+              </h3>
+              <canvas id="chart-earnings-category" class="mt-4"></canvas>
+            </div>
+          </div>
+
+          <!-- Tabela de Usuários Recentes -->
+          <div class="p-6 mt-8 bg-white rounded-lg shadow-md">
+            <h3 class="font-bold text-gray-800">Usuários Recentes</h3>
+            <div class="overflow-x-auto mt-4">
+              <table class="w-full text-left">
+                <thead>
+                  <tr class="text-sm font-bold text-gray-500 border-b">
+                    <th class="p-3">Nome</th>
+                    <th class="p-3">Email</th>
+                    <th class="p-3">Data de Cadastro</th>
+                    <th class="p-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="table-users-body">
+                  <!-- Linhas serão injetadas aqui -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
