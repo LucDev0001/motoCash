@@ -188,5 +188,27 @@
         class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl text-center"
       ></div>
     </div>
+
+    <!-- Modal para Solicitação de Localização -->
+    <div
+      id="location-permission-modal"
+      class="hidden fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 text-center shadow-2xl"
+      >
+        <h3 class="text-lg font-bold dark:text-white">Acesso à Localização</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mt-2 mb-6">
+          Para encontrar motoboys perto de você e calcular distâncias,
+          precisamos da sua localização.
+        </p>
+        <button
+          id="request-location-btn"
+          class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700"
+        >
+          Permitir Localização
+        </button>
+      </div>
+    </div>
   </body>
 </html>

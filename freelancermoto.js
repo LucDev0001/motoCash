@@ -108,6 +108,11 @@ function getDistance(lat1, lon1, lat2, lon2) {
  * Inicializa o mapa Leaflet.
  */
 function initMap() {
+  // Adiciona o grupo de marcadores ao mapa assim que ele for inicializado
+  if (!markerClusterGroup) {
+    markerClusterGroup = L.markerClusterGroup();
+  }
+
   if (map) return; // Não inicializa se já existir
   map = L.map("leaflet-map").setView([-14.235, -51.925], 4); // Centro do Brasil
 
@@ -115,6 +120,8 @@ function initMap() {
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(map);
+
+  map.addLayer(markerClusterGroup);
 }
 
 function updateMapMarkers(motoboys) {
@@ -215,7 +222,7 @@ window.closeMotoboyDetails = function () {
   document.getElementById("hub-motoboy-details-modal").classList.add("hidden");
 };
 
-window.setHubView = function (view) {
+function setHubView(view) {
   const listView = document.getElementById("hub-view-list");
   const mapTab = document.getElementById("hub-tab-map");
   const listTab = document.getElementById("hub-tab-list");
@@ -233,9 +240,9 @@ window.setHubView = function (view) {
     mapTab.className =
       "fin-tab flex-1 py-3 text-sm font-bold text-gray-500 rounded-l-lg";
   }
-};
+}
 
-window.centerOnViewerLocation = function () {
+function centerOnViewerLocation() {
   if (viewerLocation && map) {
     map.setView(
       [viewerLocation.latitude, viewerLocation.longitude],
@@ -246,53 +253,132 @@ window.centerOnViewerLocation = function () {
       "Sua localização não está disponível. Por favor, permita o acesso à localização no seu navegador."
     );
   }
-};
+}
 
 function getViewerLocation() {
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      viewerLocation = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-      };
+  const handleSuccess = (position) => {
+    // Esconde o modal de permissão se estiver visível
+    document
+      .getElementById("location-permission-modal")
+      .classList.add("hidden");
 
-      // Adiciona ou atualiza o marcador do visualizador no mapa
-      if (viewerMarker) {
-        viewerMarker.setLatLng([
-          viewerLocation.latitude,
-          viewerLocation.longitude,
-        ]);
-      } else {
-        viewerMarker = L.circleMarker(
-          [viewerLocation.latitude, viewerLocation.longitude],
-          {
-            radius: 8,
-            color: "#3b82f6", // Azul
-            fillColor: "#60a5fa",
-            fillOpacity: 0.8,
-          }
-        )
-          .addTo(map)
-          .bindPopup("Sua localização");
+    viewerLocation = {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+    };
+
+    // **NOVO: Centraliza e aplica zoom na localização do usuário**
+    if (map) {
+      map.setView(
+        [viewerLocation.latitude, viewerLocation.longitude],
+        15, // Nível de zoom mais próximo
+        { animate: true }
+      );
+    }
+
+    // Adiciona ou atualiza o marcador do visualizador no mapa
+    if (viewerMarker) {
+      viewerMarker.setLatLng([
+        viewerLocation.latitude,
+        viewerLocation.longitude,
+      ]);
+    } else {
+      viewerMarker = L.circleMarker(
+        [viewerLocation.latitude, viewerLocation.longitude],
+        {
+          radius: 8,
+          color: "#3b82f6", // Azul
+          fillColor: "#60a5fa",
+          fillOpacity: 0.8,
+        }
+      )
+        .addTo(map)
+        .bindPopup("Sua localização");
+    }
+
+    // Atualiza a UI com os dados já em cache para exibir as distâncias imediatamente
+    updateHubUI(motoboysData);
+  };
+
+  const handleError = (error) => {
+    console.warn(
+      "Não foi possível obter a localização do visualizador:",
+      error.message
+    );
+    // Se o erro for de permissão negada, mostra o modal.
+    if (error.code === error.PERMISSION_DENIED) {
+      document
+        .getElementById("location-permission-modal")
+        .classList.remove("hidden");
+    }
+  };
+
+  // Verifica o status da permissão antes de pedir
+  navigator.permissions
+    .query({ name: "geolocation" })
+    .then((permissionStatus) => {
+      if (permissionStatus.state === "granted") {
+        // Se já tem permissão, pega a localização
+        navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
+          enableHighAccuracy: true,
+        });
+      } else if (permissionStatus.state === "prompt") {
+        // Se ainda não perguntou, mostra nosso modal customizado
+        document
+          .getElementById("location-permission-modal")
+          .classList.remove("hidden");
+      } else if (permissionStatus.state === "denied") {
+        // Se foi negado, mostra nosso modal (o navegador pode não mostrar o prompt de novo)
+        document
+          .getElementById("location-permission-modal")
+          .classList.remove("hidden");
       }
 
-      // Atualiza a UI com os dados já em cache para exibir as distâncias imediatamente
-      updateHubUI(motoboysData);
-    },
-    (error) => {
-      console.warn(
-        "Não foi possível obter a localização do visualizador:",
-        error.message
-      );
-    },
-    { enableHighAccuracy: true } // Solicita a localização mais precisa possível
-  );
+      // Ouve por mudanças na permissão
+      permissionStatus.onchange = () => {
+        if (permissionStatus.state === "granted") {
+          navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
+            enableHighAccuracy: true,
+          });
+        }
+      };
+    });
 }
 
 // Inicialização
 document.addEventListener("DOMContentLoaded", () => {
   lucide.createIcons();
   initMap();
-  getViewerLocation(); // Pede a localização do usuário
+  getViewerLocation(); // Verifica a permissão e/ou pede a localização do usuário
   getOnlineMotoboys(updateHubUI);
+
+  // --- NOVOS EVENT LISTENERS ---
+  // Botões de aba (Mapa/Lista)
+  document
+    .getElementById("hub-tab-map")
+    .addEventListener("click", () => setHubView("map"));
+  document
+    .getElementById("hub-tab-list")
+    .addEventListener("click", () => setHubView("list"));
+
+  // Alça para fechar a lista
+  document
+    .getElementById("list-view-handle")
+    .addEventListener("click", () => setHubView("map"));
+
+  // Botão para centralizar no usuário
+  document
+    .getElementById("center-view-btn")
+    .addEventListener("click", centerOnViewerLocation);
+
+  // Botão no modal para solicitar permissão
+  document
+    .getElementById("request-location-btn")
+    .addEventListener("click", () => {
+      navigator.geolocation.getCurrentPosition(
+        () => {},
+        () => {},
+        {}
+      ); // Apenas para acionar o prompt do navegador
+    });
 });
