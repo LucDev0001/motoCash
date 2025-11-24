@@ -112,6 +112,14 @@ async function loadDashboardData() {
       (u) => u.status?.isOnline
     ).length;
 
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const monthlyActiveUsers = usersWithRecordCounts.filter((user) => {
+      if (!user.status?.lastSeen) return false;
+      const lastSeenDate = user.status.lastSeen.toDate();
+      return lastSeenDate >= thirtyDaysAgo;
+    }).length;
+
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const totalRecordsThisMonth = usersWithRecordCounts.reduce((acc, user) => {
@@ -130,6 +138,9 @@ async function loadDashboardData() {
 
     document.getElementById("metric-total-users").textContent = totalUsers;
     document.getElementById("metric-online-users").textContent = onlineUsers;
+    document.getElementById("metric-monthly-active-users").textContent =
+      monthlyActiveUsers;
+
     document.getElementById("metric-total-records").textContent =
       totalRecordsThisMonth;
     document.getElementById("metric-most-active-user").textContent =
