@@ -51,6 +51,12 @@ export function router(view) {
   } else if (view === "about") {
     title.innerText = "Sobre o MotoCash";
     renderAbout(content);
+  } else if (view === "privacy") {
+    title.innerText = "Política de Privacidade";
+    renderPrivacyPolicy(content);
+  } else if (view === "support") {
+    title.innerText = "Suporte e Tutoriais";
+    renderSupport(content);
   }
   setTimeout(() => lucide.createIcons(), 100);
 }
@@ -652,6 +658,8 @@ export function setTransactionType(type) {
       "fin-tab flex-1 py-3 text-sm font-bold text-gray-500 dark:text-gray-400";
     tabExpense.className =
       "fin-tab flex-1 py-3 text-sm font-bold bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 border-b-2 border-red-500";
+    // Esconde o checkbox de termos na aba de despesa (e login)
+    document.getElementById("terms-container")?.classList.add("hidden");
   }
 }
 
@@ -813,11 +821,17 @@ function renderAbout(c) {
         <p class="text-gray-500 dark:text-gray-400 mb-6">Versão ${appVersion}</p>
         
         <div class="space-y-2 text-left">
+            <a href="#" onclick="router('support')" class="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300">
+                <i data-lucide="help-circle"></i> <span>Suporte e Tutoriais</span>
+            </a>
             <a href="mailto:lucianosantosseverino@gmail.com?subject=Bug%20no%20MotoManager%20v${appVersion}" class="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300">
                 <i data-lucide="bug"></i> <span>Reportar um Bug</span>
             </a>
             <a href="mailto:lucianosantosseverino@gmail.com?subject=Sugestão%20para%20o%20MotoManager" class="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300">
                 <i data-lucide="lightbulb"></i> <span>Sugerir Melhoria</span>
+            </a>
+            <a href="#" onclick="router('privacy')" class="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300">
+                <i data-lucide="shield"></i> <span>Política de Privacidade</span>
             </a>
         </div>
 
@@ -837,6 +851,149 @@ function renderAbout(c) {
         <button onclick="router('profile')" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg mt-8">Voltar</button>
     </div>`;
   lucide.createIcons();
+}
+
+// --- PRIVACY POLICY UI ---
+function renderPrivacyPolicy(c) {
+  c.innerHTML = `
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 space-y-6 fade-in text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Política de Privacidade e Termos de Uso</h2>
+        <p><strong>Última atualização:</strong> ${new Date().toLocaleDateString(
+          "pt-BR"
+        )}</p>
+        <p>Sua privacidade é importante para nós. Esta política explica como coletamos, usamos, compartilhamos e protegemos suas informações ao usar o aplicativo MotoCash ("Serviço"). Ao criar uma conta, você concorda com os termos aqui descritos.</p>
+
+        <div class="space-y-2">
+            <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">1. Informações que Coletamos</h3>
+            <p><strong>a. Dados Fornecidos por Você:</strong> Coletamos as informações que você insere diretamente no aplicativo, incluindo: nome, endereço de e-mail, e todos os dados de lançamentos financeiros, como valores, datas, categorias, observações e turnos.</p>
+            <p><strong>b. Dados de Uso (Anônimos):</strong> Podemos coletar informações anônimas sobre como você interage com o aplicativo, como quais funcionalidades são mais usadas. Estes dados nos ajudam a entender o uso do app e a identificar áreas para melhoria, mas não identificam você pessoalmente.</p>
+        </div>
+
+        <div class="space-y-2">
+            <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">2. Como Usamos Suas Informações</h3>
+            <p>Suas informações são usadas exclusivamente para:</p>
+            <ul class="list-disc list-inside pl-4 space-y-1">
+                <li>Fornecer a funcionalidade principal do aplicativo, como registrar e exibir seus dados financeiros.</li>
+                <li>Calcular estatísticas, balanços e exibir gráficos sobre suas finanças.</li>
+                <li>Personalizar sua experiência, como salvar seu nome e metas.</li>
+                <li>Garantir a segurança da sua conta e enviar comunicações importantes, como e-mails de verificação ou redefinição de senha.</li>
+                <li>Melhorar e otimizar o aplicativo com base nos dados de uso anônimos.</li>
+            </ul>
+        </div>
+
+        <div class="space-y-2">
+            <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">3. Armazenamento e Compartilhamento</h3>
+            <p><strong>Nós não vendemos seus dados.</strong> Suas informações são armazenadas de forma segura nos servidores do Google Firebase, nosso provedor de infraestrutura de banco de dados e autenticação. Não compartilhamos seus dados pessoais com terceiros, exceto nas seguintes circunstâncias:</p>
+            <ul class="list-disc list-inside pl-4 space-y-1">
+                <li>Para cumprir uma obrigação legal ou ordem judicial.</li>
+                <li>Para proteger os direitos, a propriedade ou a segurança do MotoCash e de seus usuários.</li>
+            </ul>
+        </div>
+
+        <div class="space-y-2">
+            <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">4. Segurança</h3>
+            <p>Levamos a segurança a sério. Utilizamos as práticas de segurança fornecidas pelo Google Firebase, incluindo criptografia para dados em trânsito (HTTPS). No entanto, é importante lembrar que nenhum método de transmissão pela internet ou armazenamento eletrônico é 100% seguro.</p>
+        </div>
+
+        <div class="space-y-2">
+            <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">5. Seus Direitos</h3>
+            <p>Você tem total controle sobre seus dados. A qualquer momento, você pode:</p>
+            <ul class="list-disc list-inside pl-4 space-y-1">
+                <li><strong>Acessar e Editar:</strong> Visualizar e editar todos os seus lançamentos financeiros diretamente no aplicativo.</li>
+                <li><strong>Excluir:</strong> Apagar lançamentos individuais ou todos os seus dados através da função de restauração (substituindo por um backup vazio, se desejar).</li>
+                <li><strong>Exportar (Backup):</strong> Fazer o backup completo de seus dados em um arquivo JSON a partir da tela de Perfil.</li>
+            </ul>
+        </div>
+
+        <div class="border-t dark:border-gray-700 my-6"></div>
+
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Termos de Uso</h2>
+
+        <div class="space-y-2">
+            <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">1. Aceitação dos Termos</h3>
+            <p>Ao acessar e usar o MotoCash, você confirma que leu, entendeu e concorda em estar vinculado a estes Termos de Uso. Se você não concorda com estes termos, não deve usar o aplicativo.</p>
+        </div>
+
+        <div class="space-y-2">
+            <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">2. Uso do Serviço</h3>
+            <p>O MotoCash é fornecido para seu uso pessoal e não comercial. Você é responsável por manter a confidencialidade de sua conta e senha e por todas as atividades que ocorrem em sua conta.</p>
+        </div>
+
+        <div class="space-y-2">
+            <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">3. Conduta do Usuário</h3>
+            <p>Você concorda em não usar o Serviço para qualquer finalidade ilegal ou proibida por estes termos. Você não deve tentar obter acesso não autorizado a qualquer parte do Serviço ou aos seus sistemas.</p>
+        </div>
+
+        <div class="space-y-2">
+            <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">4. Limitação de Responsabilidade</h3>
+            <p>O aplicativo é fornecido "como está", sem garantias de qualquer tipo. Não nos responsabilizamos por qualquer perda de dados ou danos resultantes do uso do nosso Serviço. É sua responsabilidade realizar backups regulares de seus dados.</p>
+        </div>
+
+        <button onclick="window.history.back()" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg mt-4">Voltar</button>
+    </div>
+    `;
+}
+
+// --- SUPPORT PAGE UI ---
+function renderSupport(c) {
+  c.innerHTML = `
+    <div class="space-y-4 fade-in">
+        <div class="relative">
+            <input onkeyup="searchSupportArticles()" id="support-search" type="text" placeholder="Buscar artigo..." class="w-full p-3 pl-10 rounded-full shadow-sm outline-none dark:bg-gray-800 dark:border-gray-700 border">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+        </div>
+
+        <div id="support-articles-list" class="space-y-3">
+            <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <h3 class="font-bold text-gray-900 dark:text-white">Como adicionar um ganho?</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Clique no botão amarelo com o sinal de '+' na barra de navegação inferior. Selecione a aba 'Ganho', preencha os detalhes e clique em 'Salvar Ganho'.</p>
+            </div>
+            <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <h3 class="font-bold text-gray-900 dark:text-white">Como registrar uma despesa de combustível?</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Clique no botão '+' e selecione a aba 'Despesa'. Escolha a categoria 'Combustível', insira o valor e salve.</p>
+            </div>
+            <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <h3 class="font-bold text-gray-900 dark:text-white">Como fazer backup dos meus dados?</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Vá para a tela de 'Perfil' e clique no botão 'Fazer Backup dos Dados'. Um arquivo .json será baixado para o seu dispositivo.</p>
+            </div>
+            <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <h3 class="font-bold text-gray-900 dark:text-white">O que são os filtros de período?</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">No painel, você pode filtrar seus lançamentos por 'Hoje', '7 Dias', 'Este Mês', etc. Isso ajuda a visualizar seu desempenho em diferentes períodos.</p>
+            </div>
+            <div id="no-results" class="hidden text-center text-gray-500 py-8">
+                <i data-lucide="frown" class="w-10 h-10 mx-auto mb-2"></i>
+                <p>Nenhum artigo encontrado.</p>
+            </div>
+        </div>
+    </div>
+    `;
+  lucide.createIcons();
+}
+
+export function searchSupportArticles() {
+  const searchTerm = document
+    .getElementById("support-search")
+    .value.toLowerCase();
+  const articles = document.querySelectorAll(".support-article");
+  const noResults = document.getElementById("no-results");
+  let found = false;
+
+  articles.forEach((article) => {
+    const title = article.querySelector("h3").textContent.toLowerCase();
+    const content = article.querySelector("p").textContent.toLowerCase();
+    if (title.includes(searchTerm) || content.includes(searchTerm)) {
+      article.style.display = "block";
+      found = true;
+    } else {
+      article.style.display = "none";
+    }
+  });
+
+  if (found) {
+    noResults.classList.add("hidden");
+  } else {
+    noResults.classList.remove("hidden");
+  }
 }
 
 export function copyPixKey() {
@@ -895,3 +1052,12 @@ export function showConfirmation(message, title = "Confirmação", onConfirm) {
 export function closeNotification() {
   document.getElementById("notification-modal").classList.add("hidden");
 }
+
+// Adicionado para controlar a visibilidade do checkbox de termos
+document.addEventListener("click", function (event) {
+  if (event.target && event.target.getAttribute("data-mode") === "register") {
+    document.getElementById("terms-container")?.classList.remove("hidden");
+  } else if (event.target && event.target.id === "btn-signin") {
+    document.getElementById("terms-container")?.classList.add("hidden");
+  }
+});

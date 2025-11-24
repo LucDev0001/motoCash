@@ -488,6 +488,24 @@
             placeholder="Senha"
             class="w-full p-3 rounded bg-gray-800 border border-gray-700 text-white outline-none focus:ring-2 focus:ring-yellow-500"
           />
+          <!-- Checkbox de Termos - Visível apenas no cadastro -->
+          <div id="terms-container" class="hidden items-center space-x-2 pt-2">
+            <input
+              type="checkbox"
+              id="terms-checkbox"
+              class="rounded border-gray-600 bg-gray-800 text-yellow-500 focus:ring-yellow-500"
+            />
+            <label for="terms-checkbox" class="text-xs text-gray-400">
+              Eu li e aceito os
+              <a
+                href="#"
+                onclick="event.preventDefault(); router('privacy')"
+                class="underline text-yellow-500"
+              >
+                Termos e Política de Privacidade </a
+              >.
+            </label>
+          </div>
           <div class="text-right">
             <button
               onclick="handlePasswordReset()"
@@ -508,6 +526,7 @@
               onclick="handleEmailLogin('register')"
               id="btn-signup"
               class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded"
+              data-mode="register"
             >
               Cadastrar
             </button>

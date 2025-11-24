@@ -28,6 +28,16 @@ export function handleEmailLogin(mode) {
     return showLoginError("A senha deve ter no mínimo 6 caracteres.");
   }
 
+  // Validação do aceite de termos apenas no cadastro
+  if (mode === "register") {
+    const termsCheckbox = document.getElementById("terms-checkbox");
+    if (!termsCheckbox.checked) {
+      return showLoginError(
+        "Você deve aceitar os termos e a política de privacidade para se cadastrar."
+      );
+    }
+  }
+
   const btn = document.getElementById(
     mode === "login" ? "btn-signin" : "btn-signup"
   );
