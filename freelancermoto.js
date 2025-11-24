@@ -174,7 +174,7 @@ function updateMapMarkers(motoboys) {
   }
 }
 
-window.openMotoboyDetails = (motoboy) => {
+window.openMotoboyDetails = function (motoboy) {
   const modal = document.getElementById("hub-motoboy-details-modal");
   const content = document.getElementById("motoboy-details-content");
   const whatsappLink = `https://wa.me/55${
@@ -211,11 +211,11 @@ window.openMotoboyDetails = (motoboy) => {
   lucide.createIcons();
 };
 
-window.closeMotoboyDetails = () => {
+window.closeMotoboyDetails = function () {
   document.getElementById("hub-motoboy-details-modal").classList.add("hidden");
 };
 
-window.setHubView = (view) => {
+window.setHubView = function (view) {
   const listView = document.getElementById("hub-view-list");
   const mapTab = document.getElementById("hub-tab-map");
   const listTab = document.getElementById("hub-tab-list");
@@ -235,7 +235,7 @@ window.setHubView = (view) => {
   }
 };
 
-window.centerOnViewerLocation = () => {
+window.centerOnViewerLocation = function () {
   if (viewerLocation && map) {
     map.setView(
       [viewerLocation.latitude, viewerLocation.longitude],

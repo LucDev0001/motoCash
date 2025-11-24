@@ -246,7 +246,8 @@ export function savePublicProfile(event) {
           name,
           motoModel,
           motoPlate,
-          whatsapp: currentUser.phoneNumber, // Assumindo que o whatsapp é o telefone do usuário
+          whatsapp: currentUser.phoneNumber?.replace(/\D/g, ""), // Salva apenas os números do telefone
+          whatsapp: currentUser.phoneNumber?.replace(/\D/g, ""), // Salva apenas os números do telefone
         },
       },
       { merge: true }
