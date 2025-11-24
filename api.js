@@ -165,7 +165,8 @@ export async function setUserOnlineStatus(isOnline) {
     if (
       !userData.publicProfile?.name ||
       !userData.publicProfile?.motoModel ||
-      !userData.publicProfile?.motoPlate
+      !userData.publicProfile?.motoPlate ||
+      !userData.publicProfile?.whatsapp
     ) {
       // Perfil incompleto, mostrar modal para preenchimento
       showCompleteProfileModal();

@@ -1244,6 +1244,46 @@ export function closeMotoboyDetails() {
 export function showCompleteProfileModal() {
   document.getElementById("complete-profile-modal").classList.remove("hidden");
 }
+
+export async function openPublicProfileEditor() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  document.getElementById("loading-overlay")?.classList.remove("hidden");
+
+  try {
+    const userDoc = await db
+      .collection("artifacts")
+      .doc(appId)
+      .collection("users")
+      .doc(user.uid)
+      .get();
+    const publicProfile = userDoc.data()?.publicProfile || {};
+
+    // Altera o título e o texto do botão para o modo de edição
+    document.getElementById("public-profile-modal-title").textContent =
+      "Editar Perfil Freelancer";
+    document
+      .getElementById("public-profile-submit-btn")
+      .querySelector("span").textContent = "Salvar Alterações";
+
+    // Preenche o formulário com os dados existentes
+    document.getElementById("public-name").value = publicProfile.name || "";
+    document.getElementById("public-whatsapp").value =
+      publicProfile.whatsapp || "";
+    document.getElementById("public-moto-model").value =
+      publicProfile.motoModel || "";
+    document.getElementById("public-moto-plate").value =
+      publicProfile.motoPlate || "";
+
+    showCompleteProfileModal();
+  } catch (error) {
+    console.error("Erro ao carregar perfil público:", error);
+    showNotification("Erro ao carregar seus dados. Tente novamente.", "error");
+  } finally {
+    document.getElementById("loading-overlay")?.classList.add("hidden");
+  }
+}
 export function closeCompleteProfileModal() {
   const modal = document.getElementById("complete-profile-modal");
   if (!modal) return;

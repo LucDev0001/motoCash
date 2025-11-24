@@ -194,6 +194,8 @@ window.setHubView = UIActions.setHubView;
 window.openMotoboyDetails = UIActions.openMotoboyDetails;
 window.closeMotoboyDetails = UIActions.closeMotoboyDetails;
 window.savePublicProfile = APIActions.savePublicProfile;
+window.openPublicProfileEditor = UIActions.openPublicProfileEditor;
+window.closeCompleteProfileModal = UIActions.closeCompleteProfileModal;
 window.toggleUserOnlineStatus = async () => {
   const toggle = document.getElementById("user-status-toggle");
   const dot = document.getElementById("user-status-toggle-dot");
