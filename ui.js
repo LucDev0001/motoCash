@@ -68,7 +68,7 @@ function renderDashboard(c) {
             <div class="flex flex-col space-y-2">
                 <div class="flex bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm overflow-x-auto">
                     <button onclick="filterDashboard('day')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap" id="filter-day">Hoje</button>
-                    <button onclick="filterDashboard('week')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded bg-gray-900 dark:bg-yellow-500 dark:text-black text-white whitespace-nowrap" id="filter-week">7 Dias</button>
+                    <button onclick="filterDashboard('week')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded bg-gray-900 dark:bg-yellow-500 dark:text-black text-white whitespace-nowrap" id="filter-week">Esta Semana</button>
                     <button onclick="filterDashboard('last-week')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap" id="filter-last-week">Semana Passada</button>
                     <button onclick="filterDashboard('month')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap" id="filter-month">Este Mês</button>
                     <button onclick="filterDashboard('last-month')" class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap" id="filter-last-month">Mês Passado</button>
@@ -84,7 +84,7 @@ function renderDashboard(c) {
                 <button onclick="openShareModal()" class="absolute top-4 right-4 text-green-600 bg-green-50 dark:bg-green-900/50 dark:text-green-400 p-2 rounded-full z-10">
                     <i data-lucide="share-2" class="w-5 h-5"></i>
                 </button>
-                <div class="text-center"><h2 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider mb-1" id="period-label">Últimos 7 Dias</h2><p class="text-4xl font-bold text-gray-900 dark:text-white" id="balance-value">R$ 0.00</p><p class="text-sm text-green-600 mt-1 font-semibold" id="balance-label">Saldo no período</p></div>
+                <div class="text-center"><h2 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider mb-1" id="period-label">Esta Semana</h2><p class="text-4xl font-bold text-gray-900 dark:text-white" id="balance-value">R$ 0.00</p><p class="text-sm text-green-600 mt-1 font-semibold" id="balance-label">Saldo no período</p></div>
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-green-50 dark:bg-green-900/50 border border-green-200 dark:border-green-800 p-4 rounded-xl shadow-sm text-center"><p class="text-xs text-green-800 dark:text-green-300 font-bold uppercase">Ganhos</p><p class="text-2xl font-bold text-green-700 dark:text-green-400" id="total-earnings">R$ 0.00</p></div>
@@ -403,7 +403,7 @@ export function filterDashboard(p) {
   currentPeriod = p;
   const labels = {
     day: "Hoje",
-    week: "Últimos 7 Dias",
+    week: "Esta Semana",
     "last-week": "Semana Passada", // Adicionado
     month: "Este Mês",
     "last-month": "Mês Passado",

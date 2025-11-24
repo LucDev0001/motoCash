@@ -185,8 +185,21 @@ export function loadDashboardData(p, updateCallback) {
     let filteredByDate = allItems.filter((i) => {
       const d = new Date(i.date + "T00:00:00");
       if (p === "day") return d.getTime() === now.getTime();
-      if (p === "week")
-        return (now - d) / (1000 * 60 * 60 * 24) < 7 && now - d >= 0;
+      if (p === "week") {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const dayOfWeek = today.getDay(); // 0=Domingo, 1=Segunda, ...
+
+        // Calcula a diferença para chegar na última segunda-feira.
+        // Se hoje for domingo (0), voltamos 6 dias. Se for segunda (1), 0 dias. Se for terça (2), 1 dia.
+        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+
+        const monday = new Date(today);
+        monday.setDate(today.getDate() - diff);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        return d >= monday && d <= sunday;
+      }
       if (p === "month")
         return (
           d.getMonth() === now.getMonth() &&
