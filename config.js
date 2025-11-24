@@ -16,12 +16,14 @@ firebase.initializeApp(firebaseConfig);
 
 let db;
 try {
-  // Nova forma de inicializar o Firestore com persistência offline
+  // Inicializa o Firestore primeiro
   db = firebase.firestore();
+  // Aplica as configurações
   firebase.firestore().settings({
     cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
     experimentalForceLongPolling: true, // Ajuda a evitar alguns avisos no console
   });
+  // Habilita a persistência
   db.enablePersistence({ synchronizeTabs: true });
 } catch (err) {
   console.error("Erro ao habilitar a persistência do Firestore:", err.code);

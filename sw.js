@@ -1,4 +1,4 @@
-const CACHE_NAME = "motomanager-v29.1.22";
+const CACHE_NAME = "motomanager-v29.1.23";
 
 // Lista de arquivos essenciais para o App Shell.
 const assetsToCache = [
@@ -21,13 +21,16 @@ const assetsToCache = [
   "./painel.png",
   "./ganhos.png",
   "./ganhos2.png",
-  // Fontes e bibliotecas externas (importante para offline)
+  // Fontes e bibliotecas externas. É melhor deixar o cache do navegador lidar com elas,
+  // pois podem causar falhas no 'addAll' do Service Worker se os links mudarem ou redirecionarem.
+  // Removendo-os da lista de cache principal para garantir que o App Shell funcione.
   "https://cdn.tailwindcss.com",
   "https://unpkg.com/lucide@latest",
-  "https://cdn.jsdelivr.net/npm/chart.js",
   "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js",
-  "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js",
   "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js",
+  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+  "https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js",
 ];
 
 // Evento de Instalação: Salva os assets em cache.

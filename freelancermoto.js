@@ -129,7 +129,7 @@ function updateMapMarkers(motoboys) {
   markerClusterGroup.clearLayers(); // Limpa marcadores antigos
 
   // Ícone de moto SVG para marcadores individuais
-  const bikeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M19.82 19a2 2_0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="m3 19-1-4-1-1"/><path d="m19 19 2-4 1-1"/><path d="M12 8s-2 4-4 4"/><path d="M12 8s2 4 4 4"/><path d="M12 8V5l-2-3h4l-2 3Z"/></svg>`;
+  const bikeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M19.82 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="m3 19-1-4-1-1"/><path d="m19 19 2-4 1-1"/><path d="M12 8s-2 4-4 4"/><path d="M12 8s2 4 4 4"/><path d="M12 8V5l-2-3h4l-2 3Z"/></svg>`;
 
   motoboys.forEach((m) => {
     if (m.status?.location) {
