@@ -189,6 +189,7 @@ window.copyPixKey = UIActions.copyPixKey;
 window.submitFinance = APIActions.submitFinance;
 window.submitExpense = APIActions.submitExpense;
 window.searchMarket = UIActions.searchMarket;
+window.searchSupportArticles = UIActions.searchSupportArticles;
 window.deleteMarketItem = APIActions.deleteMarketItem;
 window.submitAd = APIActions.submitAd;
 window.backupData = APIActions.backupData;
