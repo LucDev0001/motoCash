@@ -3,6 +3,7 @@ import {
   allLoadedItems,
   currentStats,
   listenForMarketplaceItems,
+  getOnlineMotoboys,
 } from "./api.js";
 import { currentUser } from "./auth.js";
 import { auth, db, appId } from "./config.js";
@@ -30,6 +31,12 @@ export function router(view) {
       .getElementById("nav-dashboard")
       .classList.add("text-yellow-600", "font-bold");
     renderDashboard(content);
+  } else if (view === "hub") {
+    title.innerText = "Painel de Entregadores";
+    document
+      .getElementById("nav-hub")
+      .classList.add("text-yellow-600", "font-bold");
+    renderHub(content);
   } else if (view === "finance") {
     title.innerText = "Adicionar Ganho  ou  Despesas";
     renderAddFinance(content);
@@ -934,6 +941,11 @@ function renderPrivacyPolicy(c) {
             <p>O aplicativo é fornecido "como está", sem garantias de qualquer tipo. Não nos responsabilizamos por qualquer perda de dados ou danos resultantes do uso do nosso Serviço. É sua responsabilidade realizar backups regulares de seus dados.</p>
         </div>
 
+        <div class="space-y-2">
+            <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">5. Hub de Entregas</h3>
+            <p>Ao ativar o status "Online" no Hub de Entregas, você concorda em compartilhar publicamente as seguintes informações: seu nome completo, modelo e placa da sua moto. Estes dados serão visíveis para empresas e outros usuários que acessarem o Hub com o propósito de contratar serviços de entrega. Sua localização exata não é compartilhada, apenas a sua presença online.</p>
+        </div>
+
         <button onclick="window.history.back()" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg mt-4">Voltar</button>
     </div>
     `;
@@ -1112,3 +1124,126 @@ document.addEventListener("click", function (event) {
     document.getElementById("terms-container")?.classList.add("hidden");
   }
 });
+
+// --- HUB UI ---
+function renderHub(c) {
+  c.innerHTML = `
+    <div class="fade-in space-y-4">
+      <div class="flex border-b dark:border-gray-700 bg-white dark:bg-gray-800 rounded-t-lg">
+          <button onclick="setHubView('map')" id="hub-tab-map" class="fin-tab flex-1 py-3 text-sm font-bold bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-b-2 border-yellow-500">Mapa</button>
+          <button onclick="setHubView('list')" id="hub-tab-list" class="fin-tab flex-1 py-3 text-sm font-bold text-gray-500">Lista</button>
+      </div>
+
+      <div id="hub-view-map">
+        <div class="bg-gray-200 dark:bg-gray-800 h-64 rounded-lg flex items-center justify-center text-center text-gray-500 p-4">
+          <p>A visualização do mapa estará disponível em breve. Por enquanto, use a aba 'Lista'.</p>
+          <!-- Placeholder para o mapa real. Ex: <div id="leaflet-map" class="h-full w-full"></div> -->
+        </div>
+      </div>
+
+      <div id="hub-view-list" class="hidden space-y-2">
+        <!-- A lista de motoboys será injetada aqui -->
+        <p class="text-center text-gray-400 py-8">Buscando motoboys online...</p>
+      </div>
+    </div>
+
+    <!-- Modal de Detalhes do Motoboy -->
+    <div id="hub-motoboy-details-modal" class="hidden absolute inset-0 z-[90] bg-black/80 flex items-center justify-center p-4">
+        <div id="motoboy-details-content" class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl text-center">
+            <!-- Conteúdo injetado por JS -->
+        </div>
+    </div>
+  `;
+
+  getOnlineMotoboys(updateHubUI);
+}
+
+export function setHubView(view) {
+  const mapView = document.getElementById("hub-view-map");
+  const listView = document.getElementById("hub-view-list");
+  const mapTab = document.getElementById("hub-tab-map");
+  const listTab = document.getElementById("hub-tab-list");
+
+  if (view === "map") {
+    mapView.classList.remove("hidden");
+    listView.classList.add("hidden");
+    mapTab.className =
+      "fin-tab flex-1 py-3 text-sm font-bold bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-b-2 border-yellow-500";
+    listTab.className = "fin-tab flex-1 py-3 text-sm font-bold text-gray-500";
+  } else {
+    mapView.classList.add("hidden");
+    listView.classList.remove("hidden");
+    listTab.className =
+      "fin-tab flex-1 py-3 text-sm font-bold bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-b-2 border-yellow-500";
+    mapTab.className = "fin-tab flex-1 py-3 text-sm font-bold text-gray-500";
+  }
+}
+
+function updateHubUI(motoboys) {
+  const listContainer = document.getElementById("hub-view-list");
+  if (!listContainer) return;
+
+  if (motoboys.length === 0) {
+    listContainer.innerHTML = `<p class="text-center text-gray-400 py-8">Nenhum motoboy online no momento.</p>`;
+    return;
+  }
+
+  listContainer.innerHTML = motoboys
+    .map(
+      (m) => `
+    <div onclick='openMotoboyDetails(${JSON.stringify(
+      m
+    )})' class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm flex items-center justify-between cursor-pointer">
+      <div class="flex items-center gap-3">
+        <div class="bg-gray-200 dark:bg-gray-700 p-2 rounded-full"><i data-lucide="bike" class="w-6 h-6 text-gray-600 dark:text-gray-300"></i></div>
+        <div>
+          <p class="font-bold text-gray-900 dark:text-white">${
+            m.publicProfile.name
+          }</p>
+          <p class="text-xs text-gray-500">${m.publicProfile.motoModel}</p>
+        </div>
+      </div>
+      <i data-lucide="chevron-right" class="text-gray-400"></i>
+    </div>
+  `
+    )
+    .join("");
+
+  lucide.createIcons();
+}
+
+export function openMotoboyDetails(motoboy) {
+  const modal = document.getElementById("hub-motoboy-details-modal");
+  const content = document.getElementById("motoboy-details-content");
+  const whatsappLink = `https://wa.me/55${
+    motoboy.publicProfile.whatsapp
+  }?text=${encodeURIComponent(
+    `Olá ${motoboy.publicProfile.name}, vi seu perfil no Hub do MotoCash e gostaria de solicitar uma entrega.`
+  )}`;
+
+  content.innerHTML = `
+        <div class="flex justify-end"><button onclick="closeMotoboyDetails()" class="text-gray-400"><i data-lucide="x"></i></button></div>
+        <div class="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto -mt-4 mb-4 flex items-center justify-center"><i data-lucide="user" class="w-10 text-gray-400"></i></div>
+        <h3 class="text-xl font-bold dark:text-white">${motoboy.publicProfile.name}</h3>
+        <div class="text-sm text-gray-500 dark:text-gray-400 mt-2 space-y-1">
+            <p><strong>Moto:</strong> ${motoboy.publicProfile.motoModel}</p>
+            <p><strong>Placa:</strong> ${motoboy.publicProfile.motoPlate}</p>
+        </div>
+        <a href="${whatsappLink}" target="_blank" class="w-full mt-6 bg-green-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2">
+            <i data-lucide="message-circle"></i> Chamar no WhatsApp
+        </a>
+    `;
+  modal.classList.remove("hidden");
+  lucide.createIcons();
+}
+
+export function closeMotoboyDetails() {
+  document.getElementById("hub-motoboy-details-modal").classList.add("hidden");
+}
+
+export function showCompleteProfileModal() {
+  document.getElementById("complete-profile-modal").classList.remove("hidden");
+}
+export function closeCompleteProfileModal() {
+  document.getElementById("complete-profile-modal").classList.add("hidden");
+}

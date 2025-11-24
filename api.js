@@ -7,6 +7,8 @@ import {
   showNotification,
   showConfirmation,
   closeEditModal,
+  showCompleteProfileModal,
+  closeCompleteProfileModal,
 } from "./ui.js";
 
 export let allLoadedItems = [];
@@ -145,6 +147,118 @@ export function saveMonthlyGoal() {
     .catch((e) =>
       showNotification(`Erro ao salvar meta: ${e.message}`, "Erro")
     );
+}
+
+export async function setUserOnlineStatus(isOnline) {
+  if (!currentUser) return;
+
+  const userRef = db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("users")
+    .doc(currentUser.uid);
+
+  // Se o usuário quer ficar online, primeiro checamos se o perfil público está completo
+  if (isOnline) {
+    const userDoc = await userRef.get();
+    const userData = userDoc.data() || {};
+    if (
+      !userData.publicProfile?.name ||
+      !userData.publicProfile?.motoModel ||
+      !userData.publicProfile?.motoPlate
+    ) {
+      // Perfil incompleto, mostrar modal para preenchimento
+      showCompleteProfileModal();
+      return Promise.reject("Perfil incompleto"); // Interrompe a função e retorna uma promessa rejeitada
+    }
+  }
+
+  // Se for para ficar online, pega a localização
+  if (isOnline) {
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const location = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          };
+          userRef
+            .set(
+              {
+                status: {
+                  isOnline: true,
+                  lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+                  location,
+                },
+              },
+              { merge: true }
+            )
+            .then(resolve)
+            .catch(reject);
+        },
+        (error) => {
+          showNotification(
+            "Não foi possível obter sua localização. Ative a permissão no seu navegador.",
+            "Erro de Localização"
+          );
+          reject(error);
+        }
+      );
+    });
+  } else {
+    // Se for para ficar offline, apenas atualiza o status
+    return userRef.set(
+      {
+        status: {
+          isOnline: isOnline,
+          lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+        },
+      },
+      { merge: true }
+    );
+  }
+}
+
+export function savePublicProfile(event) {
+  event.preventDefault();
+  if (!currentUser) return;
+
+  const name = document.getElementById("public-name").value;
+  const motoModel = document.getElementById("public-moto-model").value;
+  const motoPlate = document.getElementById("public-moto-plate").value;
+  const terms = document.getElementById("public-terms-checkbox").checked;
+
+  if (!terms) {
+    return showNotification("Você deve aceitar os termos para continuar.");
+  }
+
+  const userRef = db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("users")
+    .doc(currentUser.uid);
+
+  userRef
+    .set(
+      {
+        publicProfile: {
+          name,
+          motoModel,
+          motoPlate,
+          whatsapp: currentUser.phoneNumber, // Assumindo que o whatsapp é o telefone do usuário
+        },
+      },
+      { merge: true }
+    )
+    .then(() => {
+      closeCompleteProfileModal();
+      // Agora que o perfil está salvo, tentamos colocar o usuário online
+      setUserOnlineStatus(true);
+      showNotification("Perfil salvo! Você agora está online.", "Sucesso");
+    })
+    .catch((e) => {
+      showNotification(`Erro ao salvar perfil: ${e.message}`, "Erro");
+    });
 }
 
 // --- DASHBOARD API ---
@@ -721,6 +835,27 @@ export function submitAd(e) {
       showNotification(err.message, "Erro ao Publicar");
       btn.disabled = false;
     });
+}
+
+// --- HUB API ---
+export function getOnlineMotoboys(callback) {
+  db.collection("artifacts")
+    .doc(appId)
+    .collection("users")
+    .where("status.isOnline", "==", true)
+    .onSnapshot(
+      (snapshot) => {
+        const onlineUsers = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        callback(onlineUsers);
+      },
+      (error) => {
+        console.error("Erro ao buscar motoboys online:", error);
+        showNotification("Não foi possível carregar os dados do Hub.", "Erro");
+      }
+    );
 }
 
 export async function backupData() {

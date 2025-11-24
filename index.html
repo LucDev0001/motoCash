@@ -465,6 +465,67 @@
         </div>
       </div>
 
+      <!-- MODAL PARA COMPLETAR PERFIL PÚBLICO -->
+      <div
+        id="complete-profile-modal"
+        class="hidden absolute inset-0 z-[90] bg-black/80 flex items-center justify-center transition-opacity p-4"
+      >
+        <div
+          class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl"
+        >
+          <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2">
+            Complete seu Perfil Público
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Para ficar online no Hub, preencha seus dados. Eles serão visíveis
+            para as empresas.
+          </p>
+          <form onsubmit="savePublicProfile(event)" class="space-y-3">
+            <input
+              required
+              id="public-name"
+              placeholder="Nome Completo"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+            />
+            <input
+              required
+              id="public-moto-model"
+              placeholder="Modelo da Moto (Ex: Honda CG 160)"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+            />
+            <input
+              required
+              id="public-moto-plate"
+              placeholder="Placa da Moto (Ex: BRA2E19)"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+            />
+            <div class="flex items-start space-x-2 pt-2">
+              <input
+                type="checkbox"
+                id="public-terms-checkbox"
+                class="mt-1 rounded border-gray-600 bg-gray-800 text-yellow-500 focus:ring-yellow-500"
+              />
+              <label for="public-terms-checkbox" class="text-xs text-gray-400">
+                Eu concordo em compartilhar meu nome, modelo e placa da moto no
+                Hub de Entregas, conforme os
+                <a
+                  href="#"
+                  onclick="event.preventDefault(); router('privacy')"
+                  class="underline text-yellow-500"
+                  >Termos de Uso</a
+                >.
+              </label>
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-yellow-500 text-black font-bold py-3 rounded-lg mt-2"
+            >
+              Ficar Online
+            </button>
+          </form>
+        </div>
+      </div>
+
       <!-- LOGIN -->
       <div
         id="login-screen"
@@ -610,11 +671,21 @@
           <h1 id="page-title" class="text-xl font-bold flex items-center gap-2">
             Meu Painel
           </h1>
-          <div
-            id="pro-badge"
-            class="text-yellow-500 font-bold text-sm border border-yellow-500 px-2 py-1 rounded hidden"
-          >
-            PRO
+          <!-- Toggle Online/Offline -->
+          <div class="flex items-center gap-2">
+            <span id="user-status-text" class="text-xs font-bold text-gray-400"
+              >OFFLINE</span
+            >
+            <button
+              onclick="toggleUserOnlineStatus()"
+              id="user-status-toggle"
+              class="w-12 h-6 flex items-center bg-gray-700 rounded-full p-1 duration-300 ease-in-out"
+            >
+              <div
+                id="user-status-toggle-dot"
+                class="w-4 h-4 bg-white rounded-full shadow-md transform duration-300 ease-in-out"
+              ></div>
+            </button>
           </div>
         </header>
 
@@ -633,6 +704,14 @@
           >
             <i data-lucide="dollar-sign" class="w-5 h-5"></i
             ><span class="text-[10px] mt-1">Painel</span>
+          </button>
+          <button
+            onclick="router('hub')"
+            class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400"
+            id="nav-hub"
+          >
+            <i data-lucide="map" class="w-5 h-5"></i>
+            <span class="text-[10px] mt-1">Hub</span>
           </button>
           <div class="relative -top-5">
             <button
