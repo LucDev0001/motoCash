@@ -28,6 +28,12 @@ try {
   db = firebase.firestore(); // Fallback para inicialização sem persistência
 }
 
-export const auth = firebase.auth();
+let auth;
+// Inicializa o auth apenas se a função existir, evitando erros em páginas que não o carregam.
+if (typeof firebase.auth === "function") {
+  auth = firebase.auth();
+}
+
 export { db };
+export { auth };
 export const appId = "moto-manager-v1";

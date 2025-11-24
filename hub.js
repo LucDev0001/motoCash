@@ -118,23 +118,44 @@ function initMap() {
 }
 
 function updateMapMarkers(motoboys) {
+  if (!markerClusterGroup) return;
+  markerClusterGroup.clearLayers(); // Limpa marcadores antigos
+
   motoboys.forEach((m) => {
     if (m.status?.location) {
       const { latitude, longitude } = m.status.location;
-      const marker = L.marker([latitude, longitude]).addTo(map);
+      const marker = L.marker([latitude, longitude]);
+
+      let distanceInfo = "";
+      if (viewerLocation) {
+        const distance = getDistance(
+          viewerLocation.latitude,
+          viewerLocation.longitude,
+          latitude,
+          longitude
+        );
+        distanceInfo = `<br>~ ${distance.toFixed(1)} km de distância`;
+      }
+
       marker.bindPopup(
         `<b>${
           m.publicProfile.name
-        }</b><br><button onclick='openMotoboyDetails(${JSON.stringify(
+        }</b>${distanceInfo}<br><button onclick='openMotoboyDetails(${JSON.stringify(
           m
-        )})' class='text-blue-500 underline'>Ver Detalhes</button>`
+        )})' class='text-blue-500 underline mt-1'>Ver Detalhes</button>`
       );
-      markers.push(marker);
+      markerClusterGroup.addLayer(marker);
     }
   });
+
+  // Ajusta o zoom do mapa para mostrar todos os marcadores
+  const bounds = markerClusterGroup.getBounds();
+  if (bounds.isValid()) {
+    map.fitBounds(bounds, { padding: [50, 50] });
+  }
 }
 
-window.openMotoboyDetails = function (motoboy) {
+window.openMotoboyDetails = (motoboy) => {
   const modal = document.getElementById("hub-motoboy-details-modal");
   const content = document.getElementById("motoboy-details-content");
   const whatsappLink = `https://wa.me/55${
@@ -171,11 +192,11 @@ window.openMotoboyDetails = function (motoboy) {
   lucide.createIcons();
 };
 
-window.closeMotoboyDetails = function () {
+window.closeMotoboyDetails = () => {
   document.getElementById("hub-motoboy-details-modal").classList.add("hidden");
 };
 
-window.setHubView = function (view) {
+window.setHubView = (view) => {
   const mapView = document.getElementById("hub-view-map");
   const listView = document.getElementById("hub-view-list");
   const mapTab = document.getElementById("hub-tab-map");
@@ -196,7 +217,7 @@ window.setHubView = function (view) {
   }
 };
 
-window.centerOnViewerLocation = function () {
+window.centerOnViewerLocation = () => {
   if (viewerLocation && map) {
     map.setView(
       [viewerLocation.latitude, viewerLocation.longitude],
