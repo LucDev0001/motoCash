@@ -791,7 +791,12 @@ function renderProfile(c) {
     </button>
     <input type="file" id="restore-input" class="hidden" accept=".json" onchange="handleFileSelect(event)">
   </div>
-  </div><button onclick="logout()" class="w-full flex justify-center gap-2 text-red-500 font-bold p-4 mt-4"><i data-lucide="log-out"></i> Sair</button>`;
+  <div class="border-t dark:border-gray-700 my-4"></div>
+    <button onclick="logout()" class="w-full flex justify-center gap-2 text-gray-500 dark:text-gray-400 font-bold p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><i data-lucide="log-out"></i> Sair</button>
+    <button onclick="deleteUserAccount()" class="w-full flex justify-center gap-2 text-red-600 font-bold p-3 mt-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/50">
+        <i data-lucide="trash-2"></i> Apagar Conta Permanentemente
+    </button>
+  </div>`;
 
   // Carregar a meta atual do usuário
   db.collection("artifacts")
@@ -1028,23 +1033,48 @@ export function showNotification(message, title = "Aviso") {
   modal.classList.remove("hidden");
 }
 
-export function showConfirmation(message, title = "Confirmação", onConfirm) {
+export function showConfirmation(
+  message,
+  title = "Confirmação",
+  onConfirm,
+  requireTextInput = null
+) {
   const modal = document.getElementById("notification-modal");
   const titleEl = document.getElementById("notification-title");
   const messageEl = document.getElementById("notification-message");
   const buttonsEl = document.getElementById("notification-buttons");
 
   titleEl.innerText = title;
-  messageEl.innerText = message;
+  let textInputHTML = "";
+  if (requireTextInput) {
+    textInputHTML = `<p class="text-xs text-gray-500 dark:text-gray-400 mt-4 mb-2">Para confirmar, digite <strong>${requireTextInput}</strong> no campo abaixo:</p>
+    <input id="confirmation-input" type="text" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600" autocomplete="off">`;
+  }
+  messageEl.innerHTML = `<p>${message}</p>${textInputHTML}`;
+
   buttonsEl.innerHTML = `
         <button onclick="closeNotification()" class="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-6 rounded-lg">Cancelar</button>
-        <button id="confirm-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">Confirmar</button>
+        <button id="confirm-btn" class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg disabled:bg-red-400 dark:disabled:bg-red-800 disabled:cursor-not-allowed">Confirmar</button>
     `;
 
   document.getElementById("confirm-btn").onclick = () => {
     onConfirm();
     closeNotification();
   };
+
+  if (requireTextInput) {
+    const confirmBtn = document.getElementById("confirm-btn");
+    const confirmInput = document.getElementById("confirmation-input");
+    confirmBtn.disabled = true;
+
+    confirmInput.addEventListener("input", () => {
+      if (confirmInput.value === requireTextInput) {
+        confirmBtn.disabled = false;
+      } else {
+        confirmBtn.disabled = true;
+      }
+    });
+  }
 
   modal.classList.remove("hidden");
 }

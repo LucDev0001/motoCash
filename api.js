@@ -397,6 +397,65 @@ export function deleteItem(id, type) {
   );
 }
 
+export function deleteUserAccount() {
+  showConfirmation(
+    "Esta ação é IRREVERSÍVEL. Todos os seus dados (lançamentos, metas, etc.) e sua conta serão apagados permanentemente. Não será possível recuperar sua conta.",
+    "Apagar Conta Permanentemente?",
+    async () => {
+      showNotification("Apagando sua conta e dados...", "Aguarde");
+
+      const user = currentUser;
+      if (!user) {
+        return showNotification("Nenhum usuário logado.", "Erro");
+      }
+
+      const userRef = db
+        .collection("artifacts")
+        .doc(appId)
+        .collection("users")
+        .doc(user.uid);
+
+      try {
+        // 1. Apagar subcoleções (earnings e expenses)
+        const earningsPromise = userRef.collection("earnings").get();
+        const expensesPromise = userRef.collection("expenses").get();
+
+        const [earningsSnap, expensesSnap] = await Promise.all([
+          earningsPromise,
+          expensesPromise,
+        ]);
+
+        const batch = db.batch();
+
+        earningsSnap.docs.forEach((doc) => batch.delete(doc.ref));
+        expensesSnap.docs.forEach((doc) => batch.delete(doc.ref));
+
+        // 2. Apagar o documento principal do usuário
+        batch.delete(userRef);
+
+        // 3. Executar o batch para apagar todos os dados do Firestore
+        await batch.commit();
+
+        // 4. Apagar o usuário do Firebase Auth
+        await user.delete();
+
+        showNotification(
+          "Sua conta e todos os seus dados foram apagados com sucesso.",
+          "Conta Apagada"
+        );
+        // O onAuthStateChanged cuidará do redirecionamento para a tela de login
+      } catch (error) {
+        console.error("Erro ao apagar conta:", error);
+        showNotification(
+          `Ocorreu um erro ao apagar sua conta: ${error.message}. Se o erro persistir, tente fazer login novamente antes de apagar.`,
+          "Erro Crítico"
+        );
+      }
+    },
+    "APAGAR" // Palavra de confirmação
+  );
+}
+
 export function saveEdit(e) {
   e.preventDefault();
   const id = document.getElementById("edit-id").value;
