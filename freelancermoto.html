@@ -130,7 +130,7 @@
           </div>
         </div>
         <button
-          onclick="centerOnViewerLocation()"
+          id="center-view-btn"
           class="bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-700"
         >
           <i data-lucide="crosshair" class="w-5 h-5"></i>
@@ -146,14 +146,14 @@
             class="flex bg-white dark:bg-gray-800 rounded-lg shadow-lg pointer-events-auto"
           >
             <button
-              onclick="setHubView('map')"
+              data-view="map"
               id="hub-tab-map"
               class="fin-tab flex-1 py-3 text-sm font-bold bg-gray-900 dark:bg-yellow-500 dark:text-black text-white rounded-l-lg"
             >
               Mapa
             </button>
             <button
-              onclick="setHubView('list')"
+              data-view="list"
               id="hub-tab-list"
               class="fin-tab flex-1 py-3 text-sm font-bold text-gray-500 rounded-r-lg"
             >
@@ -169,7 +169,7 @@
       class="fixed bottom-0 left-0 right-0 z-20 h-[60%] bg-gray-100 dark:bg-gray-900 rounded-t-2xl shadow-[0_-10px_30px_rgba(0,0,0,0.2)] p-4 transform translate-y-full transition-transform duration-300 ease-out pointer-events-auto overflow-y-auto"
     >
       <div
-        onclick="setHubView('map')"
+        id="list-view-handle"
         class="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-4 cursor-pointer"
       ></div>
       <div id="list-content" class="space-y-2">
