@@ -149,9 +149,18 @@ function updateMapMarkers(motoboys) {
   });
 
   // Ajusta o zoom do mapa para mostrar todos os marcadores
-  const bounds = markerClusterGroup.getBounds();
-  if (bounds.isValid()) {
-    map.fitBounds(bounds, { padding: [50, 50] });
+  const markers = markerClusterGroup.getLayers();
+  if (markers.length > 1) {
+    const bounds = markerClusterGroup.getBounds();
+    if (bounds.isValid()) {
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  } else if (markers.length === 1) {
+    // Se houver apenas um marcador, centraliza nele com um zoom fixo
+    map.setView(markers[0].getLatLng(), 15);
+  } else {
+    // Se não houver marcadores, volta para a visão do Brasil
+    map.setView([-14.235, -51.925], 4);
   }
 }
 
@@ -266,7 +275,8 @@ function getViewerLocation() {
         "Não foi possível obter a localização do visualizador:",
         error.message
       );
-    }
+    },
+    { enableHighAccuracy: true } // Solicita a localização mais precisa possível
   );
 }
 

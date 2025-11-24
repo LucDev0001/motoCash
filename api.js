@@ -202,7 +202,8 @@ export async function setUserOnlineStatus(isOnline) {
             "Erro de Localização"
           );
           reject(error);
-        }
+        },
+        { enableHighAccuracy: true } // Solicita a localização mais precisa possível
       );
     });
   } else {
