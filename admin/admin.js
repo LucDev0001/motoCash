@@ -142,13 +142,10 @@ function listenForDashboardUpdates() {
         id: doc.id,
         ...doc.data(),
       }));
-      allUsersData = usersData; // Atualiza o cache global
-
-      // Atualiza o cache global de usuários
-      allUsersData = users;
+      allUsersData = usersData; // Atualiza o cache global com os dados mais recentes
 
       // Processa e renderiza os dados
-      await processAndRenderData(users);
+      await processAndRenderData(usersData);
     },
     (error) => {
       console.error("Erro no listener do dashboard:", error);
