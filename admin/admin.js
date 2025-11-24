@@ -24,6 +24,11 @@ const loginError = document.getElementById("login-error");
 const logoutBtn = document.getElementById("logout-btn");
 let allUsersData = []; // Cache para todos os dados de usuários
 let heatmap = null; // Variável global para o mapa
+let unsubscribeDashboardListener = null; // Função para parar o listener do Firestore
+
+// Expondo funções para o escopo global para serem chamadas pelo HTML
+window.exportChartDataToCSV = exportChartDataToCSV;
+window.exportAllUsersToCSV = exportAllUsersToCSV;
 
 /**
  * Monitora o estado de autenticação do usuário.
@@ -39,12 +44,13 @@ auth.onAuthStateChanged((user) => {
     lucide.createIcons(); // Renderiza os ícones
     initHeatmap(); // Inicializa o mapa de calor
     initNavigation(); // Inicializa a navegação da sidebar
-    loadDashboardData(); // Carrega os dados do dashboard
+    listenForDashboardUpdates(); // Inicia o listener para dados em tempo real
   } else {
     // Usuário está deslogado
     console.log("Nenhum admin logado.");
     loginScreen.style.display = "flex";
     dashboardScreen.style.display = "none";
+    if (unsubscribeDashboardListener) unsubscribeDashboardListener(); // Para o listener ao deslogar
   }
 });
 
@@ -88,6 +94,15 @@ function initNavigation() {
     .addEventListener("keyup", (e) => {
       renderAllUsersTable(e.target.value.toLowerCase());
     });
+
+  // Adiciona o listener para o botão de recarregar
+  document.getElementById("refresh-data-btn").addEventListener("click", () => {
+    const btnIcon = document.querySelector("#refresh-data-btn i");
+    if (!btnIcon) return;
+    btnIcon.classList.add("animate-spin");
+    // A função processAndRenderData agora é chamada pelo listener, que vai recarregar tudo.
+    // A animação será removida dentro da própria função.
+  });
 }
 
 /**
@@ -112,10 +127,37 @@ function navigateTo(viewId) {
 }
 
 /**
- * Carrega e exibe todos os dados do dashboard.
+ * Inicia o listener do Firestore para atualizações em tempo real dos usuários.
  */
-async function loadDashboardData() {
-  // Mostra um estado de carregamento inicial
+function listenForDashboardUpdates() {
+  // Se já houver um listener, cancela antes de criar um novo
+  if (unsubscribeDashboardListener) unsubscribeDashboardListener();
+
+  const usersQuery = db.collection("artifacts").doc(appId).collection("users");
+
+  unsubscribeDashboardListener = usersQuery.onSnapshot(
+    async (usersSnapshot) => {
+      console.log("🔄 Dados do dashboard atualizados em tempo real!");
+      const usersData = usersSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      allUsersData = usersData; // Atualiza o cache global
+
+      // Atualiza o cache global de usuários
+      allUsersData = users;
+
+      // Processa e renderiza os dados
+      await processAndRenderData(users);
+    },
+    (error) => {
+      console.error("Erro no listener do dashboard:", error);
+      alert("Erro ao receber atualizações em tempo real. Verifique o console.");
+    }
+  );
+}
+
+async function processAndRenderData(usersData) {
   document.getElementById("table-users-body").innerHTML =
     '<tr><td colspan="4" class="text-center p-8 text-gray-400">Carregando dados de uso...</td></tr>';
 
@@ -124,11 +166,13 @@ async function loadDashboardData() {
       .collection("artifacts")
       .doc(appId)
       .collection("users")
-      .get();
+      .get(); // Usamos get() aqui para a contagem de registros, que não é em tempo real
 
-    // Busca a contagem de registros para cada usuário
     const usersWithRecordCounts = await Promise.all(
-      usersSnapshot.docs.map(async (doc) => {
+      usersData.map(async (user) => {
+        const doc = usersSnapshot.docs.find((d) => d.id === user.id);
+        if (!doc) return user;
+
         const earningsPromise = doc.ref.collection("earnings").get();
         const expensesPromise = doc.ref.collection("expenses").get();
 
@@ -149,7 +193,7 @@ async function loadDashboardData() {
       })
     );
 
-    allUsersData = usersWithRecordCounts; // Salva os dados no cache global
+    allUsersData = usersWithRecordCounts; // Atualiza o cache global com os dados completos
 
     // --- Métricas Principais ---
     const totalUsers = usersWithRecordCounts.length;
@@ -229,6 +273,7 @@ async function loadDashboardData() {
     renderNewUsersChart(usersWithRecordCounts);
     renderRecordsActivityChart(usersWithRecordCounts);
     renderUserHeatmap(usersWithRecordCounts);
+    await renderLocationReports(usersWithRecordCounts); // Adicionado await para garantir que os dados de localização sejam processados
     renderCategoryDistributionChart(usersWithRecordCounts);
     renderAllUsersTable(); // Renderiza a tabela completa na view de usuários
   } catch (error) {
@@ -236,6 +281,10 @@ async function loadDashboardData() {
     alert(
       "Não foi possível carregar os dados. Verifique as regras de segurança do Firestore."
     );
+  } finally {
+    // Garante que a animação do botão de refresh pare, mesmo se houver erro.
+    const btnIcon = document.querySelector("#refresh-data-btn i");
+    if (btnIcon) btnIcon.classList.remove("animate-spin");
   }
 }
 
@@ -297,6 +346,148 @@ function renderNewUsersChart(users) {
       },
     },
   });
+}
+
+/**
+ * Busca dados de geolocalização e renderiza os relatórios de localização.
+ * @param {Array} users - Lista de todos os usuários.
+ */
+async function renderLocationReports(users) {
+  const usersWithLocation = users.filter(
+    (user) => user.status?.location?.latitude
+  );
+
+  // Para evitar sobrecarregar a API, podemos fazer cache das localizações
+  const cityCounts = {};
+
+  // Usamos Promise.all para fazer as buscas de geolocalização em paralelo
+  await Promise.all(
+    usersWithLocation.map(async (user) => {
+      try {
+        // API gratuita de reverse geocoding. Cuidado com limites de uso para apps grandes.
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${user.status.location.latitude}&lon=${user.status.location.longitude}`
+        );
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const city = data.address?.city || data.address?.town || "Desconhecida";
+
+        if (city !== "Desconhecida") {
+          cityCounts[city] = (cityCounts[city] || 0) + 1;
+        }
+      } catch (error) {
+        console.warn("Erro no reverse geocoding:", error);
+      }
+    })
+  );
+
+  // Ordena as cidades por contagem de usuários e pega o top 5
+  const sortedCities = Object.entries(cityCounts).sort(([, a], [, b]) => b - a);
+  const top5Cities = sortedCities.slice(0, 5);
+
+  renderUsersByCityChart(top5Cities);
+}
+
+/**
+ * Renderiza o gráfico de barras de usuários por cidade.
+ * @param {Array} cityData - Array com os dados das cidades [["Cidade", contagem], ...].
+ */
+function renderUsersByCityChart(cityData) {
+  const chartCanvas = document.getElementById("chart-users-by-city");
+  if (!chartCanvas) return;
+  if (window.myCityChart) window.myCityChart.destroy();
+
+  const ctx = chartCanvas.getContext("2d");
+  const labels = cityData.map((item) => item[0]);
+  const data = cityData.map((item) => item[1]);
+
+  window.myCityChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Nº de Usuários",
+          data: data,
+          backgroundColor: "rgba(168, 85, 247, 0.7)", // Roxo
+          borderColor: "rgba(168, 85, 247, 1)",
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      indexAxis: "y", // Transforma em gráfico de barras horizontais
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 },
+        },
+      },
+    },
+  });
+}
+
+/**
+ * Exporta os dados de um gráfico para um arquivo CSV.
+ * @param {string} chartId - O ID do elemento canvas do gráfico.
+ * @param {string} filename - O nome do arquivo CSV a ser gerado.
+ */
+function exportChartDataToCSV(chartId, filename) {
+  const chartInstance = Chart.getChart(chartId);
+  if (!chartInstance) {
+    alert("Gráfico não encontrado ou ainda não renderizado.");
+    return;
+  }
+
+  const labels = chartInstance.data.labels;
+  const data = chartInstance.data.datasets[0].data;
+
+  let csvContent = "data:text/csv;charset=utf-8,Categoria,Valor\n";
+  labels.forEach((label, index) => {
+    csvContent += `${label},${data[index]}\n`;
+  });
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/**
+ * Exporta a lista completa de usuários para um arquivo CSV.
+ */
+function exportAllUsersToCSV() {
+  if (allUsersData.length === 0) {
+    alert("Não há dados de usuários para exportar.");
+    return;
+  }
+
+  let csvContent =
+    "data:text/csv;charset=utf-8,Nome,Email,DataCadastro,TotalRegistros,Status\n";
+  allUsersData.forEach((user) => {
+    const name = `"${user.publicProfile?.name || "N/A"}"`;
+    const email = user.email || "N/A";
+    const joinDate = user.createdAt
+      ? new Date(user.createdAt.seconds * 1000).toLocaleDateString("pt-BR")
+      : "N/A";
+    const records = user.totalRecords;
+    const status = user.status?.isOnline ? "Online" : "Offline";
+    csvContent += `${name},${email},${joinDate},${records},${status}\n`;
+  });
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "lista_completa_usuarios.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 /**
