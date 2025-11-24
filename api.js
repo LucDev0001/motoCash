@@ -838,7 +838,7 @@ export function submitAd(e) {
     });
 }
 
-// --- HUB API ---
+// --- FreelancerMoto API ---
 export function getOnlineMotoboys(callback) {
   db.collection("artifacts")
     .doc(appId)
@@ -854,7 +854,10 @@ export function getOnlineMotoboys(callback) {
       },
       (error) => {
         console.error("Erro ao buscar motoboys online:", error);
-        showNotification("Não foi possível carregar os dados do Hub.", "Erro");
+        showNotification(
+          "Não foi possível carregar os dados do FreelancerMoto.",
+          "Erro"
+        );
       }
     );
 }

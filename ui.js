@@ -32,7 +32,7 @@ export function router(view) {
       .classList.add("text-yellow-600", "font-bold");
     renderDashboard(content);
   } else if (view === "hub") {
-    title.innerText = "Painel de Entregadores";
+    title.innerText = "FreelancerMoto";
     document
       .getElementById("nav-hub")
       .classList.add("text-yellow-600", "font-bold");
@@ -942,8 +942,8 @@ function renderPrivacyPolicy(c) {
         </div>
 
         <div class="space-y-2">
-            <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">5. Hub de Entregas</h3>
-            <p>Ao ativar o status "Online" no Hub de Entregas, você concorda em compartilhar publicamente as seguintes informações: seu nome completo, modelo e placa da sua moto. Estes dados serão visíveis para empresas e outros usuários que acessarem o Hub com o propósito de contratar serviços de entrega. Sua localização exata não é compartilhada, apenas a sua presença online.</p>
+            <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">5. FreelancerMoto</h3>
+            <p>Ao ativar o status "Online" no painel FreelancerMoto, você concorda em compartilhar publicamente as seguintes informações: seu nome completo, modelo, placa da sua moto e sua localização aproximada. Estes dados serão visíveis para empresas que acessarem a plataforma com o propósito de contratar serviços de entrega.</p>
         </div>
 
         <button onclick="window.history.back()" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg mt-4">Voltar</button>
@@ -1131,7 +1131,7 @@ function renderHub(c) {
     <div class="fade-in space-y-4">
       <div class="flex border-b dark:border-gray-700 bg-white dark:bg-gray-800 rounded-t-lg">
           <button onclick="setHubView('map')" id="hub-tab-map" class="fin-tab flex-1 py-3 text-sm font-bold bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-b-2 border-yellow-500">Mapa</button>
-          <button onclick="setHubView('list')" id="hub-tab-list" class="fin-tab flex-1 py-3 text-sm font-bold text-gray-500">Lista</button>
+          <button onclick="setHubView('list')" id="hub-tab-list" class="fin-tab flex-1 py-3 text-sm font-bold text-gray-500">Lista</button> 
       </div>
 
       <div id="hub-view-map">
@@ -1143,7 +1143,7 @@ function renderHub(c) {
 
       <div id="hub-view-list" class="hidden space-y-2">
         <!-- A lista de motoboys será injetada aqui -->
-        <p class="text-center text-gray-400 py-8">Buscando motoboys online...</p>
+        <p class="text-center text-gray-400 py-8">Buscando entregadores online...</p>
       </div>
     </div>
 
@@ -1184,7 +1184,7 @@ function updateHubUI(motoboys) {
   if (!listContainer) return;
 
   if (motoboys.length === 0) {
-    listContainer.innerHTML = `<p class="text-center text-gray-400 py-8">Nenhum motoboy online no momento.</p>`;
+    listContainer.innerHTML = `<p class="text-center text-gray-400 py-8">Nenhum entregador online no momento.</p>`;
     return;
   }
 
@@ -1218,7 +1218,7 @@ export function openMotoboyDetails(motoboy) {
   const whatsappLink = `https://wa.me/55${
     motoboy.publicProfile.whatsapp
   }?text=${encodeURIComponent(
-    `Olá ${motoboy.publicProfile.name}, vi seu perfil no Hub do MotoCash e gostaria de solicitar uma entrega.`
+    `Olá ${motoboy.publicProfile.name}, vi seu perfil no FreelancerMoto e gostaria de solicitar uma entrega.`
   )}`;
 
   content.innerHTML = `

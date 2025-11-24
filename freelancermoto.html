@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>FreelancerMoto - MotoCash</title>
+
+    <!-- Bibliotecas -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+      };
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Leaflet.js (para o mapa) -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Leaflet.markercluster -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
+    />
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
+    <!-- FIREBASE COMPAT -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script type="module" src="freelancermoto.js" defer></script>
+
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        background-color: #f3f4f6;
+      }
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+      }
+      .dark body {
+        background-color: #111827;
+      }
+      .modal-enter {
+        /* A animação agora é controlada por classes do Tailwind */
+        transform: translateY(100%);
+        transition: transform 0.3s ease-out;
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(100%);
+        }
+        to {
+          transform: translateY(0);
+        }
+      }
+      /* Estilos para o ícone de cluster customizado */
+      .custom-cluster-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background-color: #eab308; /* Amarelo do tema */
+        border-radius: 50%;
+        border: 2px solid #fbbf24; /* Amarelo um pouco mais claro */
+        color: black;
+        font-weight: bold;
+        font-size: 12px;
+        position: relative;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      }
+      .custom-cluster-icon .cluster-count {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #111827;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 5px;
+        font-size: 10px;
+        border: 1px solid #eab308;
+      }
+    </style>
+  </head>
+  <body class="dark" id="hub-body">
+    <!-- O mapa agora é o fundo da página -->
+    <div id="leaflet-map" class="fixed inset-0 z-0"></div>
+
+    <div
+      id="app-container"
+      class="relative z-10 h-full w-full max-w-4xl mx-auto flex flex-col pointer-events-none"
+    >
+      <!-- Cabeçalho -->
+      <header
+        class="text-white p-4 flex justify-between items-center pointer-events-auto"
+      >
+        <div class="flex items-center gap-3">
+          <div class="bg-yellow-500 p-2 rounded-lg">
+            <i data-lucide="bike" class="w-8 h-8 text-black"></i>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold">FreelancerMoto</h1>
+            <p class="text-sm text-gray-400">
+              Encontre entregadores disponíveis para suas entregas
+            </p>
+          </div>
+        </div>
+        <button
+          onclick="centerOnViewerLocation()"
+          class="bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
+          <i data-lucide="crosshair" class="w-5 h-5"></i>
+        </button>
+      </header>
+
+      <!-- Conteúdo Principal -->
+      <main
+        id="content-area"
+        class="flex-1 flex flex-col justify-end pointer-events-none"
+      >
+        <div class="fade-in space-y-4 p-4 pt-0">
+          <div
+            class="flex bg-white dark:bg-gray-800 rounded-lg shadow-lg pointer-events-auto"
+          >
+            <button
+              onclick="setHubView('map')"
+              id="hub-tab-map"
+              class="fin-tab flex-1 py-3 text-sm font-bold bg-gray-900 dark:bg-yellow-500 dark:text-black text-white rounded-l-lg"
+            >
+              Mapa
+            </button>
+            <button
+              onclick="setHubView('list')"
+              id="hub-tab-list"
+              class="fin-tab flex-1 py-3 text-sm font-bold text-gray-500 rounded-r-lg"
+            >
+              Lista
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Painel da Lista (desliza de baixo) -->
+    <div
+      id="hub-view-list"
+      class="fixed bottom-0 left-0 right-0 z-20 h-[60%] bg-gray-100 dark:bg-gray-900 rounded-t-2xl shadow-[0_-10px_30px_rgba(0,0,0,0.2)] p-4 transform translate-y-full transition-transform duration-300 ease-out pointer-events-auto overflow-y-auto"
+    >
+      <div
+        class="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-4"
+      ></div>
+      <div id="list-content" class="space-y-2">
+        <p class="text-center text-gray-400 py-8">
+          Buscando motoboys online...
+        </p>
+      </div>
+    </div>
+
+    <!-- Modal de Detalhes do Motoboy -->
+    <div
+      id="hub-motoboy-details-modal"
+      class="hidden fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4"
+    >
+      <div
+        id="motoboy-details-content"
+        class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl text-center"
+      >
+        <!-- Conteúdo injetado por JS -->
+      </div>
+    </div>
+  </body>
+</html>
