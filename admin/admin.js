@@ -22,6 +22,7 @@ const dashboardScreen = document.getElementById("dashboard-screen");
 const loginForm = document.getElementById("login-form");
 const loginError = document.getElementById("login-error");
 const logoutBtn = document.getElementById("logout-btn");
+let allUsersData = []; // Cache para todos os dados de usuários
 let heatmap = null; // Variável global para o mapa
 
 /**
@@ -37,6 +38,7 @@ auth.onAuthStateChanged((user) => {
     dashboardScreen.style.display = "block";
     lucide.createIcons(); // Renderiza os ícones
     initHeatmap(); // Inicializa o mapa de calor
+    initNavigation(); // Inicializa a navegação da sidebar
     loadDashboardData(); // Carrega os dados do dashboard
   } else {
     // Usuário está deslogado
@@ -66,6 +68,41 @@ loginForm.addEventListener("submit", (e) => {
  */
 logoutBtn.addEventListener("click", () => {
   auth.signOut();
+});
+
+/**
+ * Inicializa os eventos de clique para a navegação da sidebar.
+ */
+function initNavigation() {
+  document.querySelectorAll(".nav-link").forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const viewId = e.currentTarget.id.replace("nav-", "view-");
+      navigateTo(viewId);
+    });
+  });
+
+  // Adiciona o listener para a busca de usuários
+  document.getElementById("user-search-input").addEventListener("keyup", (e) => {
+    renderAllUsersTable(e.target.value.toLowerCase());
+  });
+}
+
+/**
+ * Controla a visibilidade das "páginas" do dashboard.
+ * @param {string} viewId - O ID da view a ser mostrada (ex: "view-dashboard").
+ */
+function navigateTo(viewId) {
+  // Esconde todas as views
+  document.querySelectorAll("main > div[id^='view-']").forEach(view => {
+    view.classList.add("hidden");
+  });
+  // Mostra a view correta
+  document.getElementById(viewId).classList.remove("hidden");
+
+  // Atualiza o estado ativo na sidebar
+  document.querySelectorAll(".nav-link").forEach(link => link.classList.remove("bg-gray-700"));
+  document.getElementById(viewId.replace("view-", "nav-")).classList.add("bg-gray-700");
 });
 
 /**
@@ -105,6 +142,8 @@ async function loadDashboardData() {
         };
       })
     );
+
+    allUsersData = usersWithRecordCounts; // Salva os dados no cache global
 
     // --- Métricas Principais ---
     const totalUsers = usersWithRecordCounts.length;
@@ -184,6 +223,7 @@ async function loadDashboardData() {
     renderNewUsersChart(usersWithRecordCounts);
     renderRecordsActivityChart(usersWithRecordCounts);
     renderUserHeatmap(usersWithRecordCounts);
+    renderAllUsersTable(); // Renderiza a tabela completa na view de usuários
   } catch (error) {
     console.error("Erro ao carregar dados do dashboard:", error);
     alert(
@@ -251,6 +291,46 @@ function renderNewUsersChart(users) {
     },
   });
 }
+
+/**
+ * Renderiza a tabela completa de usuários com filtro de busca.
+ * @param {string} searchTerm - Termo para filtrar usuários por nome ou email.
+ */
+function renderAllUsersTable(searchTerm = "") {
+    const tableBody = document.getElementById("all-users-table-body");
+    if (!tableBody) return;
+
+    const filteredUsers = allUsersData.filter(user => 
+        (user.publicProfile?.name?.toLowerCase() || "").includes(searchTerm) ||
+        (user.email?.toLowerCase() || "").includes(searchTerm)
+    );
+
+    if (filteredUsers.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-gray-400">Nenhum usuário encontrado.</td></tr>`;
+        return;
+    }
+
+    tableBody.innerHTML = filteredUsers.map(user => `
+        <tr class="text-sm text-gray-700 border-b hover:bg-gray-50">
+            <td class="p-3">${user.publicProfile?.name || "Não informado"}</td>
+            <td class="p-3">${user.email || user.id}</td>
+            <td class="p-3">${
+              user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleDateString() : "N/A"
+            }</td>
+            <td class="p-3 font-bold text-center">${user.totalRecords}</td>
+            <td class="p-3">
+                <span class="px-2 py-1 text-xs font-bold rounded-full ${
+                  user.status?.isOnline
+                    ? "bg-green-100 text-green-700"
+                    : "bg-gray-200 text-gray-600"
+                }">
+                    ${user.status?.isOnline ? "Online" : "Offline"}
+                </span>
+            </td>
+        </tr>
+    `).join("");
+}
+
 
 /**
  * Inicializa o mapa Leaflet para o heatmap.

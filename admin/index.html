@@ -91,17 +91,35 @@
           <nav class="flex-1 p-4 space-y-2">
             <a
               href="#"
-              class="flex items-center gap-3 px-4 py-2 rounded bg-gray-700"
+              id="nav-dashboard"
+              class="nav-link flex items-center gap-3 px-4 py-2 rounded bg-gray-700"
             >
               <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
               <span>Dashboard</span>
             </a>
             <a
               href="#"
-              class="flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700"
+              id="nav-users"
+              class="nav-link flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700"
             >
               <i data-lucide="users" class="w-5 h-5"></i>
               <span>Usuários</span>
+            </a>
+            <a
+              href="#"
+              id="nav-reports"
+              class="nav-link flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700"
+            >
+              <i data-lucide="pie-chart" class="w-5 h-5"></i>
+              <span>Relatórios</span>
+            </a>
+            <a
+              href="#"
+              id="nav-settings"
+              class="nav-link flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700"
+            >
+              <i data-lucide="settings" class="w-5 h-5"></i>
+              <span>Configurações</span>
             </a>
           </nav>
           <div class="p-4 border-t border-gray-700">
@@ -116,112 +134,156 @@
         </aside>
 
         <!-- Conteúdo Principal -->
-        <main class="flex-1 p-8 overflow-y-auto">
-          <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
-
-          <!-- Métricas Principais -->
-          <div
-            class="grid grid-cols-1 gap-6 mt-6 md:grid-cols-2 lg:grid-cols-4"
-          >
-            <div class="p-6 bg-white rounded-lg shadow-md">
-              <h3 class="text-sm font-bold text-gray-500">Total de Usuários</h3>
-              <p
-                id="metric-total-users"
-                class="text-3xl font-bold text-gray-800 mt-2"
-              >
-                -
-              </p>
-            </div>
-            <div class="p-6 bg-white rounded-lg shadow-md">
-              <h3 class="text-sm font-bold text-gray-500">Usuários Online</h3>
-              <p
-                id="metric-online-users"
-                class="text-3xl font-bold text-green-500 mt-2"
-              >
-                -
-              </p>
-            </div>
-            <div class="p-6 bg-white rounded-lg shadow-md">
-              <h3 class="text-sm font-bold text-gray-500">
-                Usuários Ativos (Mês)
-              </h3>
-              <p
-                id="metric-monthly-active-users"
-                class="text-3xl font-bold text-purple-500 mt-2"
-              >
-                -
-              </p>
-            </div>
-            <div class="p-6 bg-white rounded-lg shadow-md">
-              <h3 class="text-sm font-bold text-gray-500">
-                Total de Registros (Mês)
-              </h3>
-              <p
-                id="metric-total-records"
-                class="text-3xl font-bold text-gray-800 mt-2"
-              >
-                -
-              </p>
-            </div>
-            <div class="p-6 bg-white rounded-lg shadow-md">
-              <h3 class="text-sm font-bold text-gray-500">
-                Usuário Mais Ativo
-              </h3>
-              <p
-                id="metric-most-active-user"
-                class="text-xl font-bold text-blue-600 mt-2 truncate"
-              >
-                -
-              </p>
-            </div>
-          </div>
-
-          <!-- Gráficos -->
-          <div class="grid grid-cols-1 gap-6 mt-8 lg:grid-cols-2">
-            <div class="p-6 bg-white rounded-lg shadow-md">
-              <h3 class="font-bold text-gray-800">Novos Usuários (7 dias)</h3>
-              <canvas id="chart-new-users" class="mt-4"></canvas>
-            </div>
-            <div class="p-6 bg-white rounded-lg shadow-md">
-              <h3 class="font-bold text-gray-800">
-                Atividade de Registros (7 dias)
-              </h3>
-              <canvas id="chart-records-activity" class="mt-4"></canvas>
-            </div>
-          </div>
-
-          <!-- Mapa de Calor -->
-          <div class="p-6 mt-8 bg-white rounded-lg shadow-md">
-            <h3 class="font-bold text-gray-800">
-              Mapa de Concentração de Usuários
-            </h3>
+        <main class="flex-1 p-8 overflow-y-auto relative">
+          <!-- ======================= VIEW: DASHBOARD ======================= -->
+          <div id="view-dashboard">
+            <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
+            <!-- Métricas Principais -->
             <div
-              id="heatmap-container"
-              class="mt-4 h-96 w-full rounded-lg bg-gray-200"
-            ></div>
+              class="grid grid-cols-1 gap-6 mt-6 md:grid-cols-2 lg:grid-cols-4"
+            >
+              <div class="p-6 bg-white rounded-lg shadow-md">
+                <h3 class="text-sm font-bold text-gray-500">
+                  Total de Usuários
+                </h3>
+                <p
+                  id="metric-total-users"
+                  class="text-3xl font-bold text-gray-800 mt-2"
+                >
+                  -
+                </p>
+              </div>
+              <div class="p-6 bg-white rounded-lg shadow-md">
+                <h3 class="text-sm font-bold text-gray-500">Usuários Online</h3>
+                <p
+                  id="metric-online-users"
+                  class="text-3xl font-bold text-green-500 mt-2"
+                >
+                  -
+                </p>
+              </div>
+              <div class="p-6 bg-white rounded-lg shadow-md">
+                <h3 class="text-sm font-bold text-gray-500">
+                  Usuários Ativos (Mês)
+                </h3>
+                <p
+                  id="metric-monthly-active-users"
+                  class="text-3xl font-bold text-purple-500 mt-2"
+                >
+                  -
+                </p>
+              </div>
+              <div class="p-6 bg-white rounded-lg shadow-md">
+                <h3 class="text-sm font-bold text-gray-500">
+                  Total de Registros (Mês)
+                </h3>
+                <p
+                  id="metric-total-records"
+                  class="text-3xl font-bold text-gray-800 mt-2"
+                >
+                  -
+                </p>
+              </div>
+              <div class="p-6 bg-white rounded-lg shadow-md">
+                <h3 class="text-sm font-bold text-gray-500">
+                  Usuário Mais Ativo
+                </h3>
+                <p
+                  id="metric-most-active-user"
+                  class="text-xl font-bold text-blue-600 mt-2 truncate"
+                >
+                  -
+                </p>
+              </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="grid grid-cols-1 gap-6 mt-8 lg:grid-cols-2">
+              <div class="p-6 bg-white rounded-lg shadow-md">
+                <h3 class="font-bold text-gray-800">Novos Usuários (7 dias)</h3>
+                <canvas id="chart-new-users" class="mt-4"></canvas>
+              </div>
+              <div class="p-6 bg-white rounded-lg shadow-md">
+                <h3 class="font-bold text-gray-800">
+                  Atividade de Registros (7 dias)
+                </h3>
+                <canvas id="chart-records-activity" class="mt-4"></canvas>
+              </div>
+            </div>
+
+            <!-- Mapa de Calor -->
+            <div class="p-6 mt-8 bg-white rounded-lg shadow-md">
+              <h3 class="font-bold text-gray-800">
+                Mapa de Concentração de Usuários
+              </h3>
+              <div
+                id="heatmap-container"
+                class="mt-4 h-96 w-full rounded-lg bg-gray-200"
+              ></div>
+            </div>
+
+            <!-- Tabela de Usuários Recentes -->
+            <div class="p-6 mt-8 bg-white rounded-lg shadow-md">
+              <h3 class="font-bold text-gray-800">Ranking de Atividade</h3>
+              <div class="overflow-x-auto mt-4">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="text-sm font-bold text-gray-500 border-b">
+                      <th class="p-3">Nome</th>
+                      <th class="p-3">Email</th>
+                      <th class="p-3">Registros</th>
+                      <th class="p-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-users-body">
+                    <tr>
+                      <td colspan="4" class="text-center p-8 text-gray-400">
+                        Carregando dados...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
-          <!-- Tabela de Usuários Recentes -->
-          <div class="p-6 mt-8 bg-white rounded-lg shadow-md">
-            <h3 class="font-bold text-gray-800">Ranking de Atividade</h3>
-            <div class="overflow-x-auto mt-4">
-              <table class="w-full text-left">
-                <thead>
-                  <tr class="text-sm font-bold text-gray-500 border-b">
-                    <th class="p-3">Nome</th>
-                    <th class="p-3">Email</th>
-                    <th class="p-3">Registros</th>
-                    <th class="p-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody id="table-users-body">
-                  <tr>
-                    <td colspan="4" class="text-center p-8 text-gray-400">
-                      Carregando dados...
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+          <!-- ======================= VIEW: USUÁRIOS ======================= -->
+          <div id="view-users" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-800">
+              Gerenciamento de Usuários
+            </h1>
+            <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-gray-800">Todos os Usuários</h3>
+                <div class="relative">
+                  <input
+                    type="text"
+                    id="user-search-input"
+                    placeholder="Buscar por nome ou email..."
+                    class="w-64 pl-10 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  />
+                  <i
+                    data-lucide="search"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                  ></i>
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="text-sm font-bold text-gray-500 border-b">
+                      <th class="p-3">Nome</th>
+                      <th class="p-3">Email</th>
+                      <th class="p-3">Data de Cadastro</th>
+                      <th class="p-3">Registros</th>
+                      <th class="p-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="all-users-table-body">
+                    <!-- Linhas da tabela de todos os usuários serão injetadas aqui -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </main>
