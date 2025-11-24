@@ -74,7 +74,7 @@ logoutBtn.addEventListener("click", () => {
  * Inicializa os eventos de clique para a navegação da sidebar.
  */
 function initNavigation() {
-  document.querySelectorAll(".nav-link").forEach(link => {
+  document.querySelectorAll(".nav-link").forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
       const viewId = e.currentTarget.id.replace("nav-", "view-");
@@ -83,9 +83,11 @@ function initNavigation() {
   });
 
   // Adiciona o listener para a busca de usuários
-  document.getElementById("user-search-input").addEventListener("keyup", (e) => {
-    renderAllUsersTable(e.target.value.toLowerCase());
-  });
+  document
+    .getElementById("user-search-input")
+    .addEventListener("keyup", (e) => {
+      renderAllUsersTable(e.target.value.toLowerCase());
+    });
 }
 
 /**
@@ -94,16 +96,20 @@ function initNavigation() {
  */
 function navigateTo(viewId) {
   // Esconde todas as views
-  document.querySelectorAll("main > div[id^='view-']").forEach(view => {
+  document.querySelectorAll("main > div[id^='view-']").forEach((view) => {
     view.classList.add("hidden");
   });
   // Mostra a view correta
   document.getElementById(viewId).classList.remove("hidden");
 
   // Atualiza o estado ativo na sidebar
-  document.querySelectorAll(".nav-link").forEach(link => link.classList.remove("bg-gray-700"));
-  document.getElementById(viewId.replace("view-", "nav-")).classList.add("bg-gray-700");
-});
+  document
+    .querySelectorAll(".nav-link")
+    .forEach((link) => link.classList.remove("bg-gray-700"));
+  document
+    .getElementById(viewId.replace("view-", "nav-"))
+    .classList.add("bg-gray-700");
+}
 
 /**
  * Carrega e exibe todos os dados do dashboard.
@@ -223,6 +229,7 @@ async function loadDashboardData() {
     renderNewUsersChart(usersWithRecordCounts);
     renderRecordsActivityChart(usersWithRecordCounts);
     renderUserHeatmap(usersWithRecordCounts);
+    renderCategoryDistributionChart(usersWithRecordCounts);
     renderAllUsersTable(); // Renderiza a tabela completa na view de usuários
   } catch (error) {
     console.error("Erro ao carregar dados do dashboard:", error);
@@ -293,29 +300,98 @@ function renderNewUsersChart(users) {
 }
 
 /**
+ * Renderiza o gráfico de pizza com a distribuição de registros por categoria.
+ * @param {Array} users - Lista de todos os usuários com seus registros.
+ */
+function renderCategoryDistributionChart(users) {
+  const chartCanvas = document.getElementById("chart-category-distribution");
+  if (!chartCanvas) return;
+  if (window.myCategoryChart) window.myCategoryChart.destroy(); // Destroi gráfico antigo
+
+  const ctx = chartCanvas.getContext("2d");
+
+  const categoryCounts = {
+    "iFood/Entregas": 0,
+    "Uber/99": 0,
+    "Loja Fixa": 0,
+    Despesas: 0,
+  };
+
+  users.forEach((user) => {
+    user.earnings.forEach((earning) => {
+      if (earning.category === "app_entrega")
+        categoryCounts["iFood/Entregas"]++;
+      if (earning.category === "app_passageiro") categoryCounts["Uber/99"]++;
+      if (earning.category === "loja_fixa") categoryCounts["Loja Fixa"]++;
+    });
+    categoryCounts["Despesas"] += user.expenses.length;
+  });
+
+  window.myCategoryChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: Object.keys(categoryCounts),
+      datasets: [
+        {
+          label: "Distribuição de Registros",
+          data: Object.values(categoryCounts),
+          backgroundColor: [
+            "rgba(251, 191, 36, 0.8)", // Amarelo (iFood)
+            "rgba(59, 130, 246, 0.8)", // Azul (Uber)
+            "rgba(239, 68, 68, 0.8)", // Vermelho (Loja)
+            "rgba(107, 114, 128, 0.7)", // Cinza (Despesas)
+          ],
+          borderColor: "#fff",
+          borderWidth: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            color: document.documentElement.classList.contains("dark")
+              ? "#d1d5db"
+              : "#374151",
+          },
+        },
+      },
+    },
+  });
+}
+
+/**
  * Renderiza a tabela completa de usuários com filtro de busca.
  * @param {string} searchTerm - Termo para filtrar usuários por nome ou email.
  */
 function renderAllUsersTable(searchTerm = "") {
-    const tableBody = document.getElementById("all-users-table-body");
-    if (!tableBody) return;
+  const tableBody = document.getElementById("all-users-table-body");
+  if (!tableBody) return;
 
-    const filteredUsers = allUsersData.filter(user => 
-        (user.publicProfile?.name?.toLowerCase() || "").includes(searchTerm) ||
-        (user.email?.toLowerCase() || "").includes(searchTerm)
-    );
+  const filteredUsers = allUsersData.filter(
+    (user) =>
+      (user.publicProfile?.name?.toLowerCase() || "").includes(searchTerm) ||
+      (user.email?.toLowerCase() || "").includes(searchTerm)
+  );
 
-    if (filteredUsers.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-gray-400">Nenhum usuário encontrado.</td></tr>`;
-        return;
-    }
+  if (filteredUsers.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-gray-400">Nenhum usuário encontrado.</td></tr>`;
+    return;
+  }
 
-    tableBody.innerHTML = filteredUsers.map(user => `
+  tableBody.innerHTML = filteredUsers
+    .map(
+      (user) => `
         <tr class="text-sm text-gray-700 border-b hover:bg-gray-50">
             <td class="p-3">${user.publicProfile?.name || "Não informado"}</td>
             <td class="p-3">${user.email || user.id}</td>
             <td class="p-3">${
-              user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleDateString() : "N/A"
+              user.createdAt
+                ? new Date(user.createdAt.seconds * 1000).toLocaleDateString()
+                : "N/A"
             }</td>
             <td class="p-3 font-bold text-center">${user.totalRecords}</td>
             <td class="p-3">
@@ -328,9 +404,10 @@ function renderAllUsersTable(searchTerm = "") {
                 </span>
             </td>
         </tr>
-    `).join("");
+    `
+    )
+    .join("");
 }
-
 
 /**
  * Inicializa o mapa Leaflet para o heatmap.

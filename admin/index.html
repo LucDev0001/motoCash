@@ -142,7 +142,9 @@
             <div
               class="grid grid-cols-1 gap-6 mt-6 md:grid-cols-2 lg:grid-cols-4"
             >
-              <div class="p-6 bg-white rounded-lg shadow-md">
+              <div
+                class="p-6 bg-white rounded-lg shadow-md col-span-1 md:col-span-2 lg:col-span-1"
+              >
                 <h3 class="text-sm font-bold text-gray-500">
                   Total de Usuários
                 </h3>
@@ -153,7 +155,9 @@
                   -
                 </p>
               </div>
-              <div class="p-6 bg-white rounded-lg shadow-md">
+              <div
+                class="p-6 bg-white rounded-lg shadow-md col-span-1 md:col-span-2 lg:col-span-1"
+              >
                 <h3 class="text-sm font-bold text-gray-500">Usuários Online</h3>
                 <p
                   id="metric-online-users"
@@ -162,7 +166,9 @@
                   -
                 </p>
               </div>
-              <div class="p-6 bg-white rounded-lg shadow-md">
+              <div
+                class="p-6 bg-white rounded-lg shadow-md col-span-1 md:col-span-2 lg:col-span-1"
+              >
                 <h3 class="text-sm font-bold text-gray-500">
                   Usuários Ativos (Mês)
                 </h3>
@@ -173,7 +179,9 @@
                   -
                 </p>
               </div>
-              <div class="p-6 bg-white rounded-lg shadow-md">
+              <div
+                class="p-6 bg-white rounded-lg shadow-md col-span-1 md:col-span-2 lg:col-span-1"
+              >
                 <h3 class="text-sm font-bold text-gray-500">
                   Total de Registros (Mês)
                 </h3>
@@ -184,7 +192,9 @@
                   -
                 </p>
               </div>
-              <div class="p-6 bg-white rounded-lg shadow-md">
+              <div
+                class="p-6 bg-white rounded-lg shadow-md col-span-full lg:col-span-4"
+              >
                 <h3 class="text-sm font-bold text-gray-500">
                   Usuário Mais Ativo
                 </h3>
@@ -285,6 +295,30 @@
                 </table>
               </div>
             </div>
+          </div>
+
+          <!-- ======================= VIEW: RELATÓRIOS ======================= -->
+          <div id="view-reports" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-800">Relatórios</h1>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <div class="p-6 bg-white rounded-lg shadow-md">
+                <h3 class="font-bold text-gray-800">
+                  Distribuição de Registros por Categoria
+                </h3>
+                <div class="relative h-80 mt-4">
+                  <canvas id="chart-category-distribution"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================= VIEW: CONFIGURAÇÕES ======================= -->
+          <div id="view-settings" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-800">Configurações</h1>
+            <p class="mt-4 text-gray-600">
+              Esta área será usada para futuras configurações do painel de
+              administração.
+            </p>
           </div>
         </main>
       </div>
