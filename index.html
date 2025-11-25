@@ -691,21 +691,23 @@
             Meu Painel
           </h1>
           <!-- Toggle Online/Offline -->
-          <div class="flex items-center gap-2">
-            <span id="user-status-text" class="text-xs font-bold text-gray-400"
-              >OFFLINE</span
-            >
-            <button
-              onclick="toggleUserOnlineStatus()"
-              id="user-status-toggle"
-              class="w-12 h-6 flex items-center bg-gray-700 rounded-full p-1 duration-300 ease-in-out"
-            >
-              <div
-                id="user-status-toggle-dot"
-                class="w-4 h-4 bg-white rounded-full shadow-md transform duration-300 ease-in-out"
-              ></div>
-            </button>
-          </div>
+          <!-- 
+            <div class="flex items-center gap-2">
+              <span id="user-status-text" class="text-xs font-bold text-gray-400"
+                >OFFLINE</span
+              >
+              <button
+                onclick="toggleUserOnlineStatus()"
+                id="user-status-toggle"
+                class="w-12 h-6 flex items-center bg-gray-700 rounded-full p-1 duration-300 ease-in-out"
+              >
+                <div
+                  id="user-status-toggle-dot"
+                  class="w-4 h-4 bg-white rounded-full shadow-md transform duration-300 ease-in-out"
+                ></div>
+              </button>
+            </div> 
+          -->
         </header>
 
         <main
@@ -724,14 +726,16 @@
             <i data-lucide="dollar-sign" class="w-5 h-5"></i
             ><span class="text-[10px] mt-1">Painel</span>
           </button>
-          <button
-            onclick="router('hub')"
-            class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400"
-            id="nav-hub"
-          >
-            <i data-lucide="map" class="w-5 h-5"></i>
-            <span class="text-[10px] mt-1">Freelancer</span>
-          </button>
+          <!-- 
+            <button
+              onclick="router('hub')"
+              class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400"
+              id="nav-hub"
+            >
+              <i data-lucide="map" class="w-5 h-5"></i>
+              <span class="text-[10px] mt-1">Freelancer</span>
+            </button> 
+          -->
           <div class="relative -top-5">
             <button
               onclick="router('finance')"
