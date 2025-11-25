@@ -787,16 +787,9 @@ function renderProfile(c) {
     <button onclick="saveMonthlyGoal()" class="w-full bg-green-600 text-white py-3 rounded font-bold mt-2">Salvar Meta</button>
   </div>
   <div class="border-t dark:border-gray-700 my-4"></div>
-  <div class="bg-white dark:bg-gray-800 rounded-lg p-0 space-y-3">
-    <h3 class="font-bold text-gray-500 dark:text-gray-400 text-sm text-left">MODO FREELANCER</h3>
-    <button onclick="openPublicProfileEditor()" class="w-full flex items-center justify-between text-left p-3 -m-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50">
-        <div class="flex items-center gap-3">
-            <i data-lucide="edit" class="w-5 h-5 text-yellow-500"></i>
-            <span class="font-semibold text-gray-700 dark:text-gray-200">Editar Cadastro Freelancer</span>
-        </div>
-        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
-    </button>
-  </div>
+  <!-- 
+    Funcionalidade de Freelancer/Hub desativada temporariamente
+  -->
   <div class="text-left space-y-2 mt-6">
     <button onclick="backupData()" class="w-full bg-blue-600 text-white py-3 rounded font-bold mt-4 flex items-center justify-center gap-2">
         <i data-lucide="download"></i> Fazer Backup dos Dados
