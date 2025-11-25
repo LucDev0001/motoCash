@@ -187,7 +187,7 @@ window.openMotoboyDetails = function (motoboy) {
   const whatsappLink = `https://wa.me/55${
     motoboy.publicProfile.whatsapp
   }?text=${encodeURIComponent(
-    `Olá ${motoboy.publicProfile.name}, vi seu perfil no Hub do MotoCash e gostaria de solicitar uma entrega.`
+    `Olá ${motoboy.publicProfile.name}, vi seu perfil no Hub do AppMotoCash e gostaria de solicitar uma entrega.`
   )}`;
 
   content.innerHTML = `

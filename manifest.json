@@ -1,7 +1,7 @@
 {
-  "name": "MotoCash - Gerenciador de Finanças para Motoboys",
-  "short_name": "MotoCash",
-  "id": "/motocash/",
+  "name": "AppMotoCash - Gerenciador Financeiro para Motoboys",
+  "short_name": "AppMotoCash",
+  "id": "/appmotocash/",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#111827",
