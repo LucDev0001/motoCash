@@ -29,6 +29,8 @@ let unsubscribeDashboardListener = null; // Função para parar o listener do Fi
 // Expondo funções para o escopo global para serem chamadas pelo HTML
 window.exportChartDataToCSV = exportChartDataToCSV;
 window.exportAllUsersToCSV = exportAllUsersToCSV;
+// Expondo a função de exclusão para o onclick do botão
+window.confirmDeleteUser = confirmDeleteUser;
 
 /**
  * Monitora o estado de autenticação do usuário.
@@ -558,10 +560,15 @@ function renderCategoryDistributionChart(users) {
 function renderAllUsersTable(searchTerm = "") {
   const tableBody = document.getElementById("all-users-table-body");
   if (!tableBody) return;
+  tableBody.innerHTML = ""; // Limpa a tabela antes de renderizar
 
   const filteredUsers = allUsersData.filter(
     (user) =>
-      (user.publicProfile?.name?.toLowerCase() || "").includes(searchTerm) ||
+      (user.publicProfile?.name
+        ?.toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") || ""
+      ).includes(searchTerm) ||
       (user.email?.toLowerCase() || "").includes(searchTerm)
   );
 
@@ -573,7 +580,7 @@ function renderAllUsersTable(searchTerm = "") {
   tableBody.innerHTML = filteredUsers
     .map(
       (user) => `
-        <tr class="text-sm text-gray-700 border-b hover:bg-gray-50">
+        <tr id="user-row-${user.id}" class="text-sm text-gray-700 border-b hover:bg-gray-50">
             <td class="p-3">${user.publicProfile?.name || "Não informado"}</td>
             <td class="p-3">${user.email || user.id}</td>
             <td class="p-3">${
@@ -591,10 +598,78 @@ function renderAllUsersTable(searchTerm = "") {
                     ${user.status?.isOnline ? "Online" : "Offline"}
                 </span>
             </td>
+            <td class="p-3">
+              <button 
+                onclick="confirmDeleteUser('${user.id}', '${user.email}')" 
+                class="text-red-500 hover:text-red-700 font-semibold text-xs"
+                title="Excluir usuário">
+                Excluir
+              </button>
+            </td>
         </tr>
     `
     )
     .join("");
+}
+
+/**
+ * Exibe um diálogo de confirmação antes de excluir um usuário.
+ * @param {string} userId - O ID do usuário a ser excluído.
+ * @param {string} userEmail - O email do usuário para exibição na confirmação.
+ */
+function confirmDeleteUser(userId, userEmail) {
+  const confirmation = confirm(
+    `Tem certeza que deseja excluir o usuário ${userEmail}?\n\nATENÇÃO: Esta ação é irreversível e todos os dados (ganhos, despesas, perfil) deste usuário serão permanentemente apagados.`
+  );
+
+  if (confirmation) {
+    deleteUser(userId, userEmail);
+  }
+}
+
+/**
+ * Exclui os dados de um usuário do Firestore.
+ * @param {string} userId - O ID do usuário a ser excluído.
+ * @param {string} userEmail - O email do usuário para logs.
+ */
+async function deleteUser(userId, userEmail) {
+  console.log(`Iniciando exclusão do usuário: ${userEmail} (ID: ${userId})`);
+  // TODO: Adicionar um overlay de 'loading' para melhor UX
+
+  try {
+    // Referência ao documento do usuário
+    const userRef = db.collection("artifacts").doc(appId).collection("users").doc(userId);
+
+    // 1. Excluir subcoleção 'earnings'
+    const earningsSnapshot = await userRef.collection("earnings").get();
+    const earningsDeletions = earningsSnapshot.docs.map((doc) => doc.ref.delete());
+    await Promise.all(earningsDeletions);
+    console.log(`Subcoleção 'earnings' do usuário ${userEmail} excluída.`);
+
+    // 2. Excluir subcoleção 'expenses'
+    const expensesSnapshot = await userRef.collection("expenses").get();
+    const expensesDeletions = expensesSnapshot.docs.map((doc) => doc.ref.delete());
+    await Promise.all(expensesDeletions);
+    console.log(`Subcoleção 'expenses' do usuário ${userEmail} excluída.`);
+
+    // 3. Excluir o documento principal do usuário
+    await userRef.delete();
+    console.log(`Documento principal do usuário ${userEmail} excluído com sucesso.`);
+
+    alert(`Usuário ${userEmail} foi excluído com sucesso.`);
+
+    // Remove a linha da tabela na UI para feedback imediato
+    const userRow = document.getElementById(`user-row-${userId}`);
+    if (userRow) {
+      userRow.remove();
+    }
+  } catch (error) {
+    console.error(`Erro ao excluir o usuário ${userEmail}:`, error);
+    alert(
+      `Ocorreu um erro ao tentar excluir o usuário. Verifique o console para mais detalhes.`
+    );
+  }
+  // TODO: Esconder o overlay de 'loading' aqui.
 }
 
 /**
