@@ -56,7 +56,7 @@ export function router(view) {
       .classList.add("text-yellow-600", "font-bold");
     renderProfile(content);
   } else if (view === "about") {
-    title.innerText = "Sobre o MotoCash";
+    title.innerText = "Sobre o AppMotoCash";
     renderAbout(content);
   } else if (view === "privacy") {
     title.innerText = "Política de Privacidade";
@@ -534,7 +534,7 @@ export function closeShareModal() {
 
 export function shareCategory(type) {
   const pn = document.getElementById("period-label").innerText;
-  let txt = `🏍️ *Relatório MotoCash - ${pn}*\n\n`;
+  let txt = `🏍️ *Relatório AppMotoCash - ${pn}*\n\n`;
 
   const earnings = currentStats.earnings;
   const expenses = currentStats.expenses;
@@ -571,7 +571,7 @@ export function shareCategory(type) {
     txt += `🔴 Despesas: R$ ${expenses.total.toFixed(2)}\n\n`;
     txt += `💰 *Saldo Final: R$ ${balance.toFixed(2)}*`;
   }
-  txt += `\n\n_Gerado via MotoCash_`;
+  txt += `\n\n_Gerado via AppMotoCash_`;
   window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, "_blank");
   closeShareModal();
 }
@@ -840,7 +840,7 @@ function renderAbout(c) {
         <div class="bg-yellow-500 p-4 rounded-full inline-block mb-4">
           <i data-lucide="bike" class="w-12 h-12 text-black"></i>
         </div>
-        <h2 class="text-2xl font-bold dark:text-white">MotoCash</h2>
+        <h2 class="text-2xl font-bold dark:text-white">AppMotoCash</h2>
         <p class="text-gray-500 dark:text-gray-400 mb-6">Versão ${appVersion}</p>
         
         <div class="space-y-2 text-left">
@@ -884,7 +884,7 @@ function renderPrivacyPolicy(c) {
         <p><strong>Última atualização:</strong> ${new Date().toLocaleDateString(
           "pt-BR"
         )}</p>
-        <p>Sua privacidade é importante para nós. Esta política explica como coletamos, usamos, compartilhamos e protegemos suas informações ao usar o aplicativo MotoCash ("Serviço"). Ao criar uma conta, você concorda com os termos aqui descritos.</p>
+        <p>Sua privacidade é importante para nós. Esta política explica como coletamos, usamos, compartilhamos e protegemos suas informações ao usar o aplicativo AppMotoCash ("Serviço"). Ao criar uma conta, você concorda com os termos aqui descritos.</p>
 
         <div class="space-y-2">
             <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">1. Informações que Coletamos</h3>
@@ -909,7 +909,7 @@ function renderPrivacyPolicy(c) {
             <p><strong>Nós não vendemos seus dados.</strong> Suas informações são armazenadas de forma segura nos servidores do Google Firebase, nosso provedor de infraestrutura de banco de dados e autenticação. Não compartilhamos seus dados pessoais com terceiros, exceto nas seguintes circunstâncias:</p>
             <ul class="list-disc list-inside pl-4 space-y-1">
                 <li>Para cumprir uma obrigação legal ou ordem judicial.</li>
-                <li>Para proteger os direitos, a propriedade ou a segurança do MotoCash e de seus usuários.</li>
+                <li>Para proteger os direitos, a propriedade ou a segurança do AppMotoCash e de seus usuários.</li>
             </ul>
         </div>
 
@@ -934,12 +934,12 @@ function renderPrivacyPolicy(c) {
 
         <div class="space-y-2">
             <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">1. Aceitação dos Termos</h3>
-            <p>Ao acessar e usar o MotoCash, você confirma que leu, entendeu e concorda em estar vinculado a estes Termos de Uso. Se você não concorda com estes termos, não deve usar o aplicativo.</p>
+            <p>Ao acessar e usar o AppMotoCash, você confirma que leu, entendeu e concorda em estar vinculado a estes Termos de Uso. Se você não concorda com estes termos, não deve usar o aplicativo.</p>
         </div>
 
         <div class="space-y-2">
             <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">2. Uso do Serviço</h3>
-            <p>O MotoCash é fornecido para seu uso pessoal e não comercial. Você é responsável por manter a confidencialidade de sua conta e senha e por todas as atividades que ocorrem em sua conta.</p>
+            <p>O AppMotoCash é fornecido para seu uso pessoal e não comercial. Você é responsável por manter a confidencialidade de sua conta e senha e por todas as atividades que ocorrem em sua conta.</p>
         </div>
 
         <div class="space-y-2">
