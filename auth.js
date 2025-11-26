@@ -104,8 +104,8 @@ function listenForUserNotifications(uid) {
 
   unsubscribeUserNotifications = notificationsRef.onSnapshot((snapshot) => {
     const unreadCount = snapshot.size;
-    const previousUnreadCount = parseInt(indicator.textContent) || 0;
     const indicator = document.getElementById("notification-indicator");
+    const previousUnreadCount = parseInt(indicator.textContent) || 0;
 
     if (indicator) {
       if (unreadCount > 0) {
