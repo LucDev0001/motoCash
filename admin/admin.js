@@ -127,9 +127,11 @@ function navigateTo(viewId) {
   document
     .querySelectorAll(".nav-link")
     .forEach((link) => link.classList.remove("bg-gray-700"));
-  document
-    .getElementById(viewId.replace("view-", "nav-"))
-    .classList.add("bg-gray-700");
+  const navLink = document.getElementById(viewId.replace("view-", "nav-"));
+  // Apenas tenta adicionar a classe se o link de navegação correspondente existir.
+  if (navLink) {
+    navLink.classList.add("bg-gray-700");
+  }
 }
 
 /**
@@ -264,7 +266,12 @@ function openNotificationModal(user) {
     const message = messageInput.value;
 
     try {
-      await sendNotificationToUser(user.id, title, message);
+      await sendNotificationToUser(
+        user.id,
+        title,
+        message,
+        user.email || user.id
+      );
       alert("Notificação enviada com sucesso!");
       closeModal();
     } catch (error) {
@@ -273,6 +280,11 @@ function openNotificationModal(user) {
     }
   };
 }
+/**
+ * Suspende ou reativa a conta de um usuário.
+ * @param {string} userId - O ID do usuário.
+ * @param {string} newStatus - O novo status ('suspended' ou 'active').
+ */
 
 /**
  * Atualiza a seção de ação do usuário (suspender/reativar) na página de detalhes.
@@ -312,8 +324,9 @@ function updateUserActionSection(user) {
  * @param {string} userId - O ID do usuário.
  * @param {string} title - O título da notificação.
  * @param {string} message - A mensagem da notificação.
+ * @param {string} userEmail - O email do usuário alvo.
  */
-async function sendNotificationToUser(userId, title, message) {
+async function sendNotificationToUser(userId, title, message, userEmail) {
   if (!userId || !message) {
     throw new Error("ID do usuário e mensagem são obrigatórios.");
   }
@@ -331,6 +344,47 @@ async function sendNotificationToUser(userId, title, message) {
     read: false,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
   });
+}
+
+/**
+ * Registra uma ação do administrador no log de auditoria.
+ * @param {string} action - O tipo de ação (ex: 'suspend_user').
+ * @param {string} targetUserId - O ID do usuário afetado.
+ * @param {string} targetUserEmail - O email do usuário afetado.
+ * @param {object} [details={}] - Detalhes adicionais da ação.
+ */
+async function logAdminAction(
+  action,
+  targetUserId,
+  targetUserEmail,
+  details = {}
+) {
+  const adminUser = auth.currentUser;
+  if (!adminUser) {
+    console.error("Tentativa de log sem admin autenticado.");
+    return;
+  }
+
+  const logEntry = {
+    action,
+    adminId: adminUser.uid,
+    adminEmail: adminUser.email,
+    targetUserId,
+    targetUserEmail,
+    details,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+
+  try {
+    await db
+      .collection("artifacts")
+      .doc(appId)
+      .collection("admin_logs")
+      .add(logEntry);
+  } catch (error) {
+    console.error("Falha ao registrar ação do admin:", error);
+    // Não notificar o usuário para não interromper o fluxo, apenas logar o erro.
+  }
 }
 
 /**
@@ -359,6 +413,9 @@ function listenForDashboardUpdates() {
       alert("Erro ao receber atualizações em tempo real. Verifique o console.");
     }
   );
+
+  // Inicia o listener para o log de atividades
+  listenForAdminLogs();
 }
 
 async function processAndRenderData(usersData) {

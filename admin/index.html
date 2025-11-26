@@ -115,6 +115,14 @@
             </a>
             <a
               href="#"
+              id="nav-logs"
+              class="nav-link flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700"
+            >
+              <i data-lucide="history" class="w-5 h-5"></i>
+              <span>Log de Atividades</span>
+            </a>
+            <a
+              href="#"
               id="nav-settings"
               class="nav-link flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700"
             >
@@ -398,7 +406,10 @@
             </div>
 
             <!-- Seção de Comunicação -->
-            <div class="mt-8 p-6 bg-white rounded-lg shadow-md">
+            <div
+              id="communication-section"
+              class="mt-8 p-6 bg-white rounded-lg shadow-md"
+            >
               <h3 class="font-bold text-lg text-gray-800">Comunicação</h3>
               <div
                 class="mt-4 flex flex-col md:flex-row justify-between items-center gap-4"
@@ -416,6 +427,34 @@
                 >
                   Enviar Notificação
                 </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================= VIEW: LOG DE ATIVIDADES ======================= -->
+          <div id="view-logs" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-800">Log de Atividades</h1>
+            <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="text-sm font-bold text-gray-500 border-b">
+                      <th class="p-3">Data/Hora</th>
+                      <th class="p-3">Ação</th>
+                      <th class="p-3">Admin</th>
+                      <th class="p-3">Usuário Alvo</th>
+                      <th class="p-3">Detalhes</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-logs-table-body">
+                    <!-- Linhas do log serão injetadas aqui -->
+                    <tr>
+                      <td colspan="5" class="text-center p-8 text-gray-400">
+                        Carregando logs...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
