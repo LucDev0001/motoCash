@@ -1,5 +1,5 @@
 const CACHE_NAME =
-  "motomanager-v29.1.34; // Versão incrementada para forçar a atualização do cache";
+  "motomanager-v29.1.35; // Versão incrementada para forçar a atualização do cache";
 
 // Lista de arquivos essenciais para o App Shell.
 const assetsToCache = [

@@ -109,6 +109,12 @@ function initNavigation() {
     // A função processAndRenderData agora é chamada pelo listener, que vai recarregar tudo.
     // A animação será removida dentro da própria função.
   });
+
+  // Adiciona listener para o botão de broadcast
+  const broadcastBtn = document.getElementById("open-broadcast-modal-btn");
+  if (broadcastBtn) {
+    broadcastBtn.onclick = () => openBroadcastModal();
+  }
 }
 
 /**
@@ -280,6 +286,92 @@ function openNotificationModal(user) {
     }
   };
 }
+/**
+ * Abre o modal para enviar uma notificação em massa (broadcast).
+ */
+function openBroadcastModal() {
+  // Reutiliza o mesmo modal de notificação
+  document.getElementById("notification-user-name").textContent =
+    "TODOS OS USUÁRIOS";
+  document.getElementById("notification-modal").classList.remove("hidden");
+  lucide.createIcons();
+
+  const form = document.getElementById("send-notification-form");
+  const titleInput = document.getElementById("notification-title-input");
+  const messageInput = document.getElementById("notification-message-input");
+
+  form.reset();
+
+  const closeModal = () =>
+    document.getElementById("notification-modal").classList.add("hidden");
+
+  document.getElementById("close-notification-modal-btn").onclick = closeModal;
+  document.getElementById("cancel-notification-btn").onclick = closeModal;
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const title = titleInput.value || "Aviso Importante";
+    const message = messageInput.value;
+
+    const confirmation = confirm(
+      `Você está prestes a enviar uma notificação para ${allUsersData.length} usuários. Deseja continuar?`
+    );
+
+    if (!confirmation) {
+      return;
+    }
+
+    try {
+      await sendBroadcastNotification(title, message);
+      alert("Notificação em massa enviada com sucesso!");
+      closeModal();
+    } catch (error) {
+      console.error("Erro ao enviar notificação em massa:", error);
+      alert(`Erro ao enviar notificação em massa: ${error.message}`);
+    }
+  };
+}
+
+/**
+ * Envia uma notificação para todos os usuários.
+ * @param {string} title - O título da notificação.
+ * @param {string} message - A mensagem da notificação.
+ */
+async function sendBroadcastNotification(title, message) {
+  if (allUsersData.length === 0) {
+    throw new Error("Nenhum usuário encontrado para enviar a notificação.");
+  }
+
+  // **AVISO IMPORTANTE:**
+  // Esta abordagem de cliente é funcional para um número PEQUENO de usuários.
+  // Para uma aplicação em produção com muitos usuários, o ideal é usar uma
+  // Cloud Function do Firebase para evitar timeouts e sobrecarga no navegador.
+
+  const batch = db.batch();
+  const usersCollectionRef = db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("users");
+
+  allUsersData.forEach((user) => {
+    const notificationRef = usersCollectionRef
+      .doc(user.id)
+      .collection("notifications")
+      .doc();
+    batch.set(notificationRef, {
+      title,
+      message,
+      read: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+  });
+
+  await batch.commit();
+
+  // Loga a ação de broadcast
+  logAdminAction("broadcast_notification", "all_users", "N/A", { message });
+}
+
 /**
  * Suspende ou reativa a conta de um usuário.
  * @param {string} userId - O ID do usuário.
