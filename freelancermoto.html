@@ -6,221 +6,78 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
-    <title>FreelancerMoto - AppMotoCash</title>
+    <title>Manutenção - FreelancerMoto</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         darkMode: "class",
+        theme: {
+          extend: {
+            animation: {
+              'slow-pulse': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            }
+          }
+        }
       };
     </script>
     <script src="https://unpkg.com/lucide@latest"></script>
-
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
-    />
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-    <script type="module" src="freelancermoto.js" defer></script>
 
     <style>
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Helvetica, Arial, sans-serif;
-        background-color: #f3f4f6;
       }
-      html,
-      body {
-        height: 100%;
-        width: 100%;
-        overflow: hidden;
-      }
-      .dark body {
-        background-color: #111827;
-      }
-      .modal-enter {
-        animation: modal-fade-in 0.3s ease-out forwards;
-      }
-      @keyframes modal-fade-in {
-        from {
-          opacity: 0;
-          transform: scale(0.95);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
-      /* Estilos para o ícone de cluster customizado */
-      .custom-cluster-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        background-color: #eab308; /* Amarelo do tema */
-        border-radius: 50%;
-        border: 2px solid #fbbf24; /* Amarelo um pouco mais claro */
-        color: black;
-        font-weight: bold;
-        font-size: 12px;
-        position: relative;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-      }
-      .custom-cluster-icon .cluster-count {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        background: #111827;
-        color: white;
-        border-radius: 50%;
-        padding: 2px 5px;
-        font-size: 10px;
-        border: 1px solid #eab308;
-      }
-
-      /* --- CORREÇÃO DE RESPONSIVIDADE --- */
-      /* Move os controles de zoom do Leaflet para baixo, 
-         evitando colisão com o Header (Logo/Texto) */
-      .leaflet-top.leaflet-left {
-        margin-top: 100px; /* Ajuste este valor conforme a altura do seu header */
-      }
-
-      /* Em telas muito pequenas, podemos ajustar ainda mais se necessário */
-      @media (max-width: 380px) {
-        .leaflet-top.leaflet-left {
-          margin-top: 110px;
-        }
+      /* Animação de brilho no fundo */
+      .bg-grid {
+        background-size: 40px 40px;
+        background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
       }
     </style>
   </head>
-  <body class="dark" id="hub-body">
-    <div id="leaflet-map" class="fixed inset-0 z-0"></div>
+  <body class="bg-[#111827] text-white h-screen w-screen overflow-hidden flex flex-col items-center justify-center relative">
+    
+    <div class="absolute inset-0 bg-grid pointer-events-none"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#111827] pointer-events-none"></div>
 
-    <div
-      id="app-container"
-      class="relative z-10 h-full w-full max-w-4xl mx-auto flex flex-col pointer-events-none"
-    >
-      <header
-        class="text-white p-4 pt-6 flex justify-between items-center pointer-events-auto"
-      >
-        <div
-          class="flex items-center gap-3 bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-xl border border-gray-100 max-w-sm"
-        >
-          <div
-            class="bg-[#eab308] p-3 rounded-xl shadow-sm shrink-0 flex items-center justify-center"
-          >
-            <i data-lucide="bike" class="w-8 h-8 text-black"></i>
-          </div>
-
-          <div class="flex flex-col justify-center">
-            <h1
-              class="text-2xl font-black tracking-tight leading-none text-[#eab308]"
-              style="-webkit-text-stroke: 1px black; paint-order: stroke fill"
-            >
-              FreelancerMoto
-            </h1>
-
-            <p class="text-xs font-semibold text-gray-600 mt-1 leading-snug">
-              Motoboys Cadastrados Pelo
-              <strong class="text-gray-900">AppMotoCash</strong>
-            </p>
-          </div>
+    <main class="z-10 flex flex-col items-center px-6 text-center max-w-md">
+      
+      <div class="relative mb-8">
+        <div class="absolute inset-0 bg-yellow-500 rounded-full animate-ping opacity-20"></div>
+        <div class="absolute inset-0 bg-yellow-500 rounded-full animate-pulse opacity-10 blur-xl"></div>
+        
+        <div class="relative bg-gray-900 border-4 border-yellow-500 p-6 rounded-full shadow-[0_0_30px_rgba(234,179,8,0.3)]">
+          <i data-lucide="shield-alert" class="w-16 h-16 text-yellow-500"></i>
         </div>
-        <button
-          id="center-view-btn"
-          class="bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
-          <i data-lucide="crosshair" class="w-5 h-5"></i>
-        </button>
-      </header>
+      </div>
 
-      <main
-        id="content-area"
-        class="flex-1 flex flex-col justify-end pointer-events-none"
-      >
-        <div class="fade-in space-y-4 p-4 pt-0">
-          <div
-            class="flex bg-white dark:bg-gray-800 rounded-lg shadow-lg pointer-events-auto"
-          >
-            <button
-              data-view="map"
-              id="hub-tab-map"
-              class="fin-tab flex-1 py-3 text-sm font-bold bg-gray-900 dark:bg-yellow-500 dark:text-black text-white rounded-l-lg"
-            >
-              Mapa
-            </button>
-            <button
-              data-view="list"
-              id="hub-tab-list"
-              class="fin-tab flex-1 py-3 text-sm font-bold text-gray-500 rounded-r-lg"
-            >
-              Lista
-            </button>
-          </div>
+      <h1 class="text-3xl font-black tracking-tight text-white mb-2">
+        Sistema em Manutenção
+      </h1>
+      
+      <div class="h-1 w-24 bg-yellow-500 rounded-full mb-6"></div>
+
+      <p class="text-lg text-gray-300 font-medium leading-relaxed">
+        Estamos realizando atualizações críticas para garantir a proteção dos seus dados.
+      </p>
+
+      <div class="mt-8 bg-gray-800/50 border border-gray-700 rounded-lg p-4 w-full backdrop-blur-sm">
+        <div class="flex items-center justify-center gap-2 text-yellow-400 font-mono text-sm animate-pulse">
+          <i data-lucide="lock" class="w-4 h-4"></i>
+          <span>Aplicando melhorias de segurança...</span>
         </div>
-      </main>
-    </div>
-
-    <div
-      id="hub-view-list"
-      class="fixed bottom-0 left-0 right-0 z-20 h-[60%] bg-gray-100 dark:bg-gray-900 rounded-t-2xl shadow-[0_-10px_30px_rgba(0,0,0,0.2)] p-4 transform translate-y-full transition-transform duration-300 ease-out pointer-events-auto overflow-y-auto"
-    >
-      <div
-        id="list-view-handle"
-        class="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-4 cursor-pointer"
-      ></div>
-      <div id="list-content" class="space-y-2">
-        <p class="text-center text-gray-400 py-8">
-          Buscando motoboys online...
-        </p>
       </div>
-    </div>
 
-    <div
-      id="hub-motoboy-details-modal"
-      class="hidden fixed inset-0 z-[90] bg-black/80 flex items-center justify-center p-4"
-    >
-      <div
-        id="motoboy-details-content"
-        class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl text-center"
-      ></div>
-    </div>
+      <p class="mt-12 text-xs text-gray-500">
+        FreelancerMoto &copy; AppMotoCash
+      </p>
 
-    <!-- Modal para Solicitação de Localização -->
-    <div
-      id="location-permission-modal"
-      class="hidden fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4"
-    >
-      <div
-        class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 text-center shadow-2xl"
-      >
-        <h3 class="text-lg font-bold dark:text-white">Acesso à Localização</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-300 mt-2 mb-6">
-          Para encontrar motoboys perto de você e calcular distâncias,
-          precisamos da sua localização.
-        </p>
-        <button
-          id="request-location-btn"
-          class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700"
-        >
-          Permitir Localização
-        </button>
-      </div>
-    </div>
+    </main>
+
+    <script>
+      // Inicializa os ícones Lucide
+      lucide.createIcons();
+    </script>
   </body>
 </html>
