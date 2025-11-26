@@ -338,7 +338,15 @@ function openBroadcastModal() {
  * @param {string} message - A mensagem da notificação.
  */
 async function sendBroadcastNotification(title, message) {
-  if (allUsersData.length === 0) {
+  // Busca a lista de usuários mais recente para garantir que todos recebam.
+  const usersSnapshot = await db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("users")
+    .get();
+  const allUserDocs = usersSnapshot.docs;
+
+  if (allUserDocs.length === 0) {
     throw new Error("Nenhum usuário encontrado para enviar a notificação.");
   }
 
@@ -353,7 +361,7 @@ async function sendBroadcastNotification(title, message) {
     .doc(appId)
     .collection("users");
 
-  allUsersData.forEach((user) => {
+  allUserDocs.forEach((user) => {
     const notificationRef = usersCollectionRef
       .doc(user.id)
       .collection("notifications")
@@ -430,12 +438,15 @@ async function sendNotificationToUser(userId, title, message, userEmail) {
     .doc(userId)
     .collection("notifications");
 
-  return notificationsRef.add({
+  await notificationsRef.add({
     title,
     message,
     read: false,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
   });
+
+  // Loga a ação do admin
+  logAdminAction("send_notification", userId, userEmail, { message: message });
 }
 
 /**

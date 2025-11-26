@@ -102,15 +102,23 @@ function listenForUserNotifications(uid) {
     .orderBy("createdAt", "desc");
 
   unsubscribeUserNotifications = notificationsRef.onSnapshot((snapshot) => {
+    const unreadCount = snapshot.size;
+    const indicator = document.getElementById("notification-indicator");
+
+    if (indicator) {
+      if (unreadCount > 0) {
+        indicator.textContent = unreadCount;
+        indicator.classList.remove("hidden");
+      } else {
+        indicator.classList.add("hidden");
+      }
+    }
+
     snapshot.docChanges().forEach((change) => {
       if (change.type === "added") {
         const notification = change.doc.data();
-
-        // Mostra a notificação para o usuário
-        showNotification(notification.message, notification.title);
-
-        // Marca a notificação como lida para não mostrar novamente
-        change.doc.ref.update({ read: true });
+        // Não mostra mais o pop-up automaticamente, apenas atualiza o contador.
+        // O usuário verá a notificação na página de notificações.
       }
     });
   });

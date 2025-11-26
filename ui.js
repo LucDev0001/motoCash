@@ -64,6 +64,10 @@ export function router(view) {
   } else if (view === "support") {
     title.innerText = "Suporte e Tutoriais";
     renderSupport(content);
+  } else if (view === "notifications") {
+    title.innerText = "Notificações";
+    // Não precisa de botão ativo na barra de navegação
+    renderNotifications(content);
   }
   setTimeout(() => lucide.createIcons(), 100);
 }
@@ -870,6 +874,87 @@ function renderAbout(c) {
         <button onclick="router('profile')" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg mt-8">Voltar</button>
     </div>`;
   lucide.createIcons();
+}
+
+// --- NOTIFICATIONS PAGE UI ---
+function renderNotifications(c) {
+  c.innerHTML = `<div id="notifications-list" class="space-y-3 fade-in pb-10">
+    <p class="text-center text-gray-400 py-10">Carregando notificações...</p>
+  </div>`;
+
+  const notificationsRef = db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("users")
+    .doc(currentUser.uid)
+    .collection("notifications")
+    .orderBy("createdAt", "desc")
+    .limit(50); // Limita para as 50 mais recentes
+
+  const unsub = notificationsRef.onSnapshot((snapshot) => {
+    const listEl = document.getElementById("notifications-list");
+    if (!listEl) return;
+
+    if (snapshot.empty) {
+      listEl.innerHTML = `<p class="text-center text-gray-400 py-10">Nenhuma notificação encontrada.</p>`;
+      return;
+    }
+
+    const batch = db.batch();
+    let hasUnread = false;
+
+    listEl.innerHTML = snapshot.docs
+      .map((doc) => {
+        const notification = doc.data();
+        const isUnread = !notification.read;
+        if (isUnread) {
+          hasUnread = true;
+          // Adiciona a operação de marcar como lida ao batch
+          batch.update(doc.ref, { read: true });
+        }
+
+        const date = notification.createdAt
+          ? new Date(notification.createdAt.seconds * 1000).toLocaleString(
+              "pt-BR"
+            )
+          : "";
+
+        return `
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border-l-4 ${
+          isUnread
+            ? "border-yellow-500"
+            : "border-transparent dark:border-gray-700"
+        }">
+          <div class="flex justify-between items-start">
+            <h4 class="font-bold text-gray-800 dark:text-gray-100">${
+              notification.title
+            }</h4>
+            ${
+              isUnread
+                ? '<div class="w-2 h-2 bg-yellow-500 rounded-full shrink-0 mt-1.5"></div>'
+                : ""
+            }
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">${
+            notification.message
+          }</p>
+          <p class="text-xs text-gray-400 dark:text-gray-500 text-right mt-3">${date}</p>
+        </div>
+      `;
+      })
+      .join("");
+
+    // Se houver notificações não lidas, executa o batch para marcá-las como lidas
+    if (hasUnread) {
+      batch
+        .commit()
+        .catch((err) =>
+          console.error("Erro ao marcar notificações como lidas:", err)
+        );
+    }
+  });
+
+  unsubscribeListeners.push(unsub);
 }
 
 // --- PRIVACY POLICY UI ---

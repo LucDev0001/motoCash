@@ -369,6 +369,31 @@
                 <!-- Conteúdo dinâmico (Suspender/Reativar) será injetado aqui -->
               </div>
             </div>
+
+            <!-- Seção de Comunicação -->
+            <div
+              id="communication-section"
+              class="mt-8 p-6 bg-white rounded-lg shadow-md"
+            >
+              <h3 class="font-bold text-lg text-gray-800">Comunicação</h3>
+              <div
+                class="mt-4 flex flex-col md:flex-row justify-between items-center gap-4"
+              >
+                <div>
+                  <h4 class="font-bold text-gray-800">Enviar Notificação</h4>
+                  <p class="text-sm text-gray-600 mt-1">
+                    Envie uma mensagem que aparecerá como um pop-up para o
+                    usuário no app.
+                  </p>
+                </div>
+                <button
+                  id="open-notification-modal-btn"
+                  class="bg-blue-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors shrink-0"
+                >
+                  Enviar Notificação
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- ======================= VIEW: RELATÓRIOS ======================= -->
@@ -402,31 +427,6 @@
                 <div class="relative h-80 mt-4">
                   <canvas id="chart-users-by-city"></canvas>
                 </div>
-              </div>
-            </div>
-
-            <!-- Seção de Comunicação -->
-            <div
-              id="communication-section"
-              class="mt-8 p-6 bg-white rounded-lg shadow-md"
-            >
-              <h3 class="font-bold text-lg text-gray-800">Comunicação</h3>
-              <div
-                class="mt-4 flex flex-col md:flex-row justify-between items-center gap-4"
-              >
-                <div>
-                  <h4 class="font-bold text-gray-800">Enviar Notificação</h4>
-                  <p class="text-sm text-gray-600 mt-1">
-                    Envie uma mensagem que aparecerá como um pop-up para o
-                    usuário no app.
-                  </p>
-                </div>
-                <button
-                  id="open-notification-modal-btn"
-                  class="bg-blue-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors shrink-0"
-                >
-                  Enviar Notificação
-                </button>
               </div>
             </div>
           </div>

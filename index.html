@@ -690,6 +690,16 @@
           <h1 id="page-title" class="text-xl font-bold flex items-center gap-2">
             Meu Painel
           </h1>
+          <!-- Ícone de Notificações -->
+          <button onclick="router('notifications')" class="relative">
+            <i data-lucide="bell" class="w-6 h-6 text-white"></i>
+            <div
+              id="notification-indicator"
+              class="hidden absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 text-black text-[10px] font-bold rounded-full flex items-center justify-center"
+            >
+              0
+            </div>
+          </button>
           <!-- Toggle Online/Offline -->
           <div class="hidden items-center gap-2">
             <span id="user-status-text" class="text-xs font-bold text-gray-400"
