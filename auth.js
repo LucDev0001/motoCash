@@ -27,6 +27,9 @@ export function initAuth() {
         .collection("users")
         .doc(user.uid);
 
+      // Inicia o listener de notificações assim que o usuário é autenticado.
+      listenForUserNotifications(user.uid);
+
       userRef.onSnapshot((doc) => {
         const userData = doc.data();
 
@@ -60,8 +63,6 @@ export function initAuth() {
           text.classList.toggle("text-green-500", isOnline);
           text.classList.toggle("text-gray-400", !isOnline);
         }
-
-        listenForUserNotifications(user.uid);
       });
 
       // Verifica se o e-mail foi verificado (apenas para contas de e-mail/senha)
@@ -103,12 +104,22 @@ function listenForUserNotifications(uid) {
 
   unsubscribeUserNotifications = notificationsRef.onSnapshot((snapshot) => {
     const unreadCount = snapshot.size;
+    const previousUnreadCount = parseInt(indicator.textContent) || 0;
     const indicator = document.getElementById("notification-indicator");
 
     if (indicator) {
       if (unreadCount > 0) {
         indicator.textContent = unreadCount;
         indicator.classList.remove("hidden");
+        // Toca o som apenas se o número de notificações não lidas aumentou
+        if (unreadCount > previousUnreadCount) {
+          const audio = new Audio("./assets/notification.mp3");
+          audio
+            .play()
+            .catch((e) =>
+              console.warn("Não foi possível tocar o som de notificação:", e)
+            );
+        }
       } else {
         indicator.classList.add("hidden");
       }

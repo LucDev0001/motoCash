@@ -1,5 +1,4 @@
-const CACHE_NAME =
-  "motomanager-v29.1.36; // Versão incrementada para forçar a atualização do cache";
+const CACHE_NAME = "motomanager-v29.1.37"; // Versão incrementada para forçar a atualização do cache
 
 // Lista de arquivos essenciais para o App Shell.
 const assetsToCache = [
@@ -15,6 +14,7 @@ const assetsToCache = [
   "./freelancermoto.js",
   "./Icon-192.png",
   "./Icon-512.png",
+  "./assets/notification.mp3",
   // Os arquivos de CDN (Tailwind, Leaflet, Firebase, etc.)
   // e imagens de screenshots/atalhos foram removidos.
   // O cache do navegador é mais eficiente para eles e isso evita a falha do Service Worker.
