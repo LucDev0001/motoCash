@@ -14,29 +14,26 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-// Inicializa os serviços do Firebase
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-// Tenta habilitar a persistência offline com a sintaxe mais moderna para o SDK compatível.
-// Isso resolve o aviso "enableMultiTabIndexedDbPersistence() will be deprecated".
+let db;
 try {
-  db.settings({
-    cache: new firebase.firestore.PersistentCacheSettings({
-      synchronizeTabs: true,
-    }),
+  // Inicializa o Firestore primeiro
+  db = firebase.firestore();
+  // Aplica as configurações
+  firebase.firestore().settings({
+    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
+    experimentalForceLongPolling: true, // Ajuda a evitar alguns avisos no console
   });
-  console.log("Persistência offline multi-tab configurada com sucesso.");
+  // Habilita a persistência
+  db.enablePersistence({ synchronizeTabs: true });
 } catch (err) {
-  if (err.code == "failed-precondition") {
-    console.warn(
-      "Persistência offline falhou: múltiplas abas abertas. Feche outras abas e recarregue."
-    );
-  } else if (err.code == "unimplemented") {
-    console.warn(
-      "Persistência offline não suportada neste navegador. Os dados não serão salvos offline."
-    );
-  }
+  console.error("Erro ao habilitar a persistência do Firestore:", err.code);
+  db = firebase.firestore(); // Fallback para inicialização sem persistência
+}
+
+let auth;
+// Inicializa o auth apenas se a função existir, evitando erros em páginas que não o carregam.
+if (typeof firebase.auth === "function") {
+  auth = firebase.auth();
 }
 
 export { db };

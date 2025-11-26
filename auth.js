@@ -15,8 +15,28 @@ export function initAuth() {
       mainApp.classList.add("flex");
       router("dashboard");
 
-      // Bloco de sincronização do status online/offline desativado temporariamente
-      // pois a funcionalidade de Freelancer/Hub está em manutenção.
+      // Sincroniza o estado do toggle Online/Offline com o Firestore
+      const userRef = db
+        .collection("artifacts")
+        .doc(appId)
+        .collection("users")
+        .doc(user.uid);
+
+      userRef.get().then((doc) => {
+        const isOnline = doc.data()?.status?.isOnline || false;
+        const toggle = document.getElementById("user-status-toggle");
+        const dot = document.getElementById("user-status-toggle-dot");
+        const text = document.getElementById("user-status-text");
+
+        if (toggle && dot && text) {
+          toggle.classList.toggle("bg-green-600", isOnline);
+          toggle.classList.toggle("bg-gray-700", !isOnline);
+          dot.classList.toggle("translate-x-6", isOnline);
+          text.textContent = isOnline ? "ONLINE" : "OFFLINE";
+          text.classList.toggle("text-green-500", isOnline);
+          text.classList.toggle("text-gray-400", !isOnline);
+        }
+      });
 
       // Verifica se o e-mail foi verificado (apenas para contas de e-mail/senha)
       if (

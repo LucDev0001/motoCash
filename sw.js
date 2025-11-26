@@ -1,4 +1,4 @@
-const CACHE_NAME = "motomanager-v30.0.2"; // Versão incrementada para a nova estratégia
+const CACHE_NAME = "motomanager-v29.1.28"; // Versão incrementada para forçar a atualização
 
 // Lista de arquivos essenciais para o App Shell.
 const assetsToCache = [
@@ -14,13 +14,10 @@ const assetsToCache = [
   "./freelancermoto.js",
   "./Icon-192.png",
   "./Icon-512.png",
-  // Adicionando CDNs para cache e melhor performance offline
-  "https://cdn.tailwindcss.com/3.4.3",
-  "https://unpkg.com/lucide@0.378.0",
-  "https://cdn.jsdelivr.net/npm/chart.js",
+  // Os arquivos de CDN (Tailwind, Leaflet, Firebase, etc.)
+  // e imagens de screenshots/atalhos foram removidos.
+  // O cache do navegador é mais eficiente para eles e isso evita a falha do Service Worker.
 ];
-
-const FIREBASE_HOST = "firestore.googleapis.com";
 
 // Evento de Instalação: Salva os assets em cache.
 self.addEventListener("install", (event) => {
@@ -30,9 +27,6 @@ self.addEventListener("install", (event) => {
       .open(CACHE_NAME)
       .then((cache) => {
         console.log("[Service Worker] Adicionando assets ao cache");
-        // Usamos `add` em vez de `addAll` para alguns recursos de CDN
-        // para evitar que a falha de um único recurso quebre a instalação.
-        // No entanto, para o App Shell, `addAll` é bom porque é atômico.
         return cache.addAll(assetsToCache);
       })
       .catch((err) => {
@@ -61,50 +55,16 @@ self.addEventListener("activate", (event) => {
 
 // Evento de Fetch: Intercepta requisições e serve do cache se disponível.
 self.addEventListener("fetch", (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Ignora requisições que não são GET e requisições para a API do Firebase.
-  if (request.method !== "GET" || url.hostname === FIREBASE_HOST) {
+  // Ignora requisições que não são GET (ex: POST para o Firebase)
+  if (event.request.method !== "GET") {
     return;
   }
 
-  // Estratégia: Stale-While-Revalidate para recursos locais (App Shell)
-  if (url.origin === self.location.origin) {
-    event.respondWith(
-      caches.open(CACHE_NAME).then((cache) => {
-        return cache.match(request).then((cachedResponse) => {
-          const fetchPromise = fetch(request).then((networkResponse) => {
-            // Se a busca na rede for bem-sucedida, atualiza o cache
-            cache.put(request, networkResponse.clone());
-            return networkResponse;
-          });
-
-          // Retorna a resposta do cache imediatamente (se houver),
-          // ou espera a resposta da rede.
-          return cachedResponse || fetchPromise;
-        });
-      })
-    );
-    return;
-  }
-
-  // Estratégia: Cache First, then Network (para CDNs e outros recursos de terceiros)
   event.respondWith(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.match(request).then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        return fetch(request).then((networkResponse) => {
-          // Se a busca for bem-sucedida, clona e armazena no cache para uso futuro
-          if (networkResponse.ok) {
-            cache.put(request, networkResponse.clone());
-          }
-          return networkResponse;
-        });
-      });
+    caches.match(event.request).then((response) => {
+      // Se encontrar no cache, retorna a resposta do cache.
+      // Senão, busca na rede.
+      return response || fetch(event.request);
     })
   );
 });
