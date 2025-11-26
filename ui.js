@@ -1059,8 +1059,15 @@ export function showVerificationBanner() {
   if (banner) banner.classList.remove("hidden");
 }
 
+export function showLoginError(msg) {
+  document.getElementById("login-error-msg").innerText = msg;
+  const errorBox = document.getElementById("login-error-box");
+  if (errorBox) errorBox.classList.remove("hidden");
+}
+
 // --- NOTIFICATION UI ---
 export function showNotification(message, title = "Aviso") {
+  // Já era exportada, mas confirmando
   const modal = document.getElementById("notification-modal");
   const titleEl = modal.querySelector("#notification-title");
   const messageEl = modal.querySelector("#notification-message");

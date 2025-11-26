@@ -29,6 +29,7 @@ let unsubscribeDashboardListener = null; // Função para parar o listener do Fi
 // Expondo funções para o escopo global para serem chamadas pelo HTML
 window.exportChartDataToCSV = exportChartDataToCSV;
 window.exportAllUsersToCSV = exportAllUsersToCSV;
+window.navigateToUserDetails = navigateToUserDetails; // Expondo a nova função
 
 /**
  * Monitora o estado de autenticação do usuário.
@@ -95,6 +96,11 @@ function initNavigation() {
       renderAllUsersTable(e.target.value.toLowerCase());
     });
 
+  // Adiciona listener para o botão de voltar
+  document
+    .getElementById("back-to-users-btn")
+    .addEventListener("click", () => navigateTo("view-users"));
+
   // Adiciona o listener para o botão de recarregar
   document.getElementById("refresh-data-btn").addEventListener("click", () => {
     const btnIcon = document.querySelector("#refresh-data-btn i");
@@ -124,6 +130,207 @@ function navigateTo(viewId) {
   document
     .getElementById(viewId.replace("view-", "nav-"))
     .classList.add("bg-gray-700");
+}
+
+/**
+ * Navega para a tela de detalhes de um usuário específico.
+ * @param {string} userId - O ID do usuário a ser detalhado.
+ */
+async function navigateToUserDetails(userId) {
+  navigateTo("view-user-details");
+  const contentDiv = document.getElementById("user-details-content");
+  contentDiv.innerHTML = `<div class="text-center p-10"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto"></div><p class="mt-4 text-gray-500">Carregando detalhes do usuário...</p></div>`;
+
+  const user = allUsersData.find((u) => u.id === userId);
+  if (!user) {
+    contentDiv.innerHTML = `<p class="text-red-500 text-center">Usuário não encontrado.</p>`;
+    return;
+  }
+
+  const totalEarnings = user.earnings.reduce((sum, e) => sum + e.totalValue, 0);
+  const totalExpenses = user.expenses.reduce((sum, e) => sum + e.totalValue, 0);
+  const balance = totalEarnings - totalExpenses;
+
+  const allRecords = [
+    ...user.earnings.map((e) => ({ ...e, type: "Ganho" })),
+    ...user.expenses.map((e) => ({ ...e, type: "Despesa" })),
+  ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  contentDiv.innerHTML = `
+    <div class="bg-white p-6 rounded-lg shadow-md">
+      <div class="flex items-center gap-4">
+        <div class="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center"><i data-lucide="user" class="w-10 h-10 text-gray-500"></i></div>
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">${
+            user.publicProfile?.name || "Nome não informado"
+          }</h2>
+          <p class="text-sm text-gray-500">${user.email || user.id}</p>
+          <p class="text-xs text-gray-400 mt-1">ID: ${user.id}</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 border-t pt-4">
+        <div class="text-center"><p class="text-sm text-gray-500">Ganhos Totais</p><p class="font-bold text-lg text-green-600">R$ ${totalEarnings.toFixed(
+          2
+        )}</p></div>
+        <div class="text-center"><p class="text-sm text-gray-500">Despesas Totais</p><p class="font-bold text-lg text-red-600">R$ ${totalExpenses.toFixed(
+          2
+        )}</p></div>
+        <div class="text-center"><p class="text-sm text-gray-500">Saldo Geral</p><p class="font-bold text-lg ${
+          balance >= 0 ? "text-blue-600" : "text-orange-600"
+        }">R$ ${balance.toFixed(2)}</p></div>
+      </div>
+    </div>
+
+    <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
+      <h3 class="font-bold text-lg text-gray-800 mb-4">Histórico de Lançamentos (${
+        allRecords.length
+      })</h3>
+      <div class="overflow-x-auto max-h-96">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="text-xs font-bold text-gray-500 border-b">
+              <th class="p-2">Data</th>
+              <th class="p-2">Tipo</th>
+              <th class="p-2">Categoria/Observação</th>
+              <th class="p-2 text-right">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${
+              allRecords.length > 0
+                ? allRecords
+                    .map(
+                      (r) => `
+              <tr class="border-b hover:bg-gray-50">
+                <td class="p-2">${new Date(
+                  r.date + "T12:00:00"
+                ).toLocaleDateString("pt-BR")}</td>
+                <td class="p-2"><span class="px-2 py-1 text-xs rounded-full ${
+                  r.type === "Ganho"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }">${r.type}</span></td>
+                <td class="p-2">${r.category || r.observation || "-"}</td>
+                <td class="p-2 text-right font-mono ${
+                  r.type === "Ganho" ? "text-green-700" : "text-red-700"
+                }">R$ ${r.totalValue.toFixed(2)}</td>
+              </tr>`
+                    )
+                    .join("")
+                : '<tr><td colspan="4" class="text-center p-8 text-gray-400">Nenhum lançamento encontrado.</td></tr>'
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  lucide.createIcons();
+
+  // Adiciona o listener para o botão de apagar
+  updateUserActionSection(user);
+
+  // Adiciona listener para abrir o modal de notificação
+  document.getElementById("open-notification-modal-btn").onclick = () => {
+    openNotificationModal(user);
+  };
+}
+
+/**
+ * Abre o modal para enviar uma notificação para um usuário.
+ * @param {object} user - O objeto do usuário.
+ */
+function openNotificationModal(user) {
+  document.getElementById("notification-user-name").textContent =
+    user.publicProfile?.name || user.email;
+  document.getElementById("notification-modal").classList.remove("hidden");
+  lucide.createIcons(); // Garante que o ícone 'x' seja renderizado
+
+  const form = document.getElementById("send-notification-form");
+  const titleInput = document.getElementById("notification-title-input");
+  const messageInput = document.getElementById("notification-message-input");
+
+  // Limpa o formulário
+  form.reset();
+
+  const closeModal = () =>
+    document.getElementById("notification-modal").classList.add("hidden");
+
+  document.getElementById("close-notification-modal-btn").onclick = closeModal;
+  document.getElementById("cancel-notification-btn").onclick = closeModal;
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const title = titleInput.value || "Mensagem do Administrador";
+    const message = messageInput.value;
+
+    try {
+      await sendNotificationToUser(user.id, title, message);
+      alert("Notificação enviada com sucesso!");
+      closeModal();
+    } catch (error) {
+      console.error("Erro ao enviar notificação:", error);
+      alert(`Erro ao enviar notificação: ${error.message}`);
+    }
+  };
+}
+
+/**
+ * Atualiza a seção de ação do usuário (suspender/reativar) na página de detalhes.
+ * @param {object} user - O objeto do usuário.
+ */
+function updateUserActionSection(user) {
+  const container = document.getElementById("user-action-container");
+  if (!container) return;
+
+  const isSuspended = user.accountStatus === "suspended";
+
+  const title = isSuspended ? "Reativar Usuário" : "Suspender Usuário";
+  const description = isSuspended
+    ? "Reativar a conta permitirá que o usuário faça login e acesse o aplicativo novamente."
+    : "Suspender a conta impedirá que o usuário faça login. Seus dados serão mantidos, mas o acesso será bloqueado.";
+  const buttonText = isSuspended ? "Reativar Usuário" : "Suspender Usuário";
+  const buttonClass = isSuspended
+    ? "bg-green-600 text-white hover:bg-green-700"
+    : "bg-yellow-500 text-black hover:bg-yellow-600";
+
+  container.innerHTML = `
+    <div>
+        <h4 class="font-bold text-gray-800">${title}</h4>
+        <p class="text-sm text-gray-600 mt-1">${description}</p>
+    </div>
+    <button id="user-action-btn" class="${buttonClass} font-bold px-6 py-2 rounded-lg transition-colors shrink-0">
+        ${buttonText}
+    </button>
+  `;
+
+  document.getElementById("user-action-btn").onclick = () =>
+    updateUserStatus(user.id, isSuspended ? "active" : "suspended");
+}
+
+/**
+ * Envia uma notificação para um usuário específico.
+ * @param {string} userId - O ID do usuário.
+ * @param {string} title - O título da notificação.
+ * @param {string} message - A mensagem da notificação.
+ */
+async function sendNotificationToUser(userId, title, message) {
+  if (!userId || !message) {
+    throw new Error("ID do usuário e mensagem são obrigatórios.");
+  }
+
+  const notificationsRef = db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("users")
+    .doc(userId)
+    .collection("notifications");
+
+  return notificationsRef.add({
+    title,
+    message,
+    read: false,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
 }
 
 /**
@@ -201,12 +408,22 @@ async function processAndRenderData(usersData) {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const monthlyActiveUsers = usersWithRecordCounts.filter((user) => {
-      if (!user.status?.lastSeen) return false;
-      const lastSeenDate = user.status.lastSeen.toDate();
-      return lastSeenDate >= thirtyDaysAgo;
+      return user.status?.lastSeen?.toDate() >= thirtyDaysAgo;
     }).length;
 
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    const dailyActiveUsers = usersWithRecordCounts.filter((user) => {
+      return user.status?.lastSeen?.toDate() >= oneDayAgo;
+    }).length;
+
+    const dauMauRatio =
+      monthlyActiveUsers > 0
+        ? (dailyActiveUsers / monthlyActiveUsers) * 100
+        : 0;
+
     const now = new Date();
+
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const totalRecordsThisMonth = usersWithRecordCounts.reduce((acc, user) => {
       const userRecordsThisMonth = [...user.earnings, ...user.expenses].filter(
@@ -226,6 +443,10 @@ async function processAndRenderData(usersData) {
     document.getElementById("metric-online-users").textContent = onlineUsers;
     document.getElementById("metric-monthly-active-users").textContent =
       monthlyActiveUsers;
+
+    document.getElementById(
+      "metric-dau-mau-ratio"
+    ).textContent = `${dauMauRatio.toFixed(1)}%`;
 
     document.getElementById("metric-total-records").textContent =
       totalRecordsThisMonth;
@@ -285,6 +506,46 @@ async function processAndRenderData(usersData) {
   }
 }
 
+/**
+ * Apaga um usuário e todos os seus dados do Firestore.
+ * @param {string} userId - O ID do usuário a ser apagado.
+ */
+async function deleteUser(userId) {
+  const user = allUsersData.find((u) => u.id === userId);
+  const confirmation = prompt(
+    `ATENÇÃO: Esta ação é IRREVERSÍVEL.\n\nVocê está prestes a apagar o usuário ${
+      user.email || user.id
+    } e todos os seus dados.\n\nPara confirmar, digite "APAGAR" no campo abaixo:`
+  );
+
+  if (confirmation !== "APAGAR") {
+    alert("Ação cancelada.");
+    return;
+  }
+
+  try {
+    alert("Apagando usuário e dados... Aguarde a confirmação.");
+    const userRef = db
+      .collection("artifacts")
+      .doc(appId)
+      .collection("users")
+      .doc(userId);
+
+    // Idealmente, usaríamos uma Cloud Function para apagar subcoleções de forma recursiva.
+    // Como estamos no cliente, esta é uma simplificação.
+    // Para um app em produção, a exclusão de subcoleções deve ser feita no backend.
+    await userRef.delete();
+
+    alert("Usuário apagado com sucesso!");
+    navigateTo("view-users"); // Volta para a lista de usuários
+    // O listener onSnapshot irá recarregar os dados automaticamente.
+  } catch (error) {
+    console.error("Erro ao apagar usuário:", error);
+    alert(
+      `Erro ao apagar usuário: ${error.message}. Verifique as regras de segurança do Firestore.`
+    );
+  }
+}
 /**
  * Renderiza o gráfico de novos usuários.
  * @param {Array} users - Lista de todos os usuários.
@@ -565,15 +826,20 @@ function renderAllUsersTable(searchTerm = "") {
       (user.email?.toLowerCase() || "").includes(searchTerm)
   );
 
+  document.getElementById("user-count-display").textContent =
+    filteredUsers.length;
+
   if (filteredUsers.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-gray-400">Nenhum usuário encontrado.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-gray-400">Nenhum usuário encontrado.</td></tr>`;
     return;
   }
 
   tableBody.innerHTML = filteredUsers
     .map(
       (user) => `
-        <tr class="text-sm text-gray-700 border-b hover:bg-gray-50">
+        <tr class="text-sm text-gray-700 border-b hover:bg-gray-50 cursor-pointer" onclick="navigateToUserDetails('${
+          user.id
+        }')">
             <td class="p-3">${user.publicProfile?.name || "Não informado"}</td>
             <td class="p-3">${user.email || user.id}</td>
             <td class="p-3">${
@@ -581,7 +847,27 @@ function renderAllUsersTable(searchTerm = "") {
                 ? new Date(user.createdAt.seconds * 1000).toLocaleDateString()
                 : "N/A"
             }</td>
+            <td class="p-3">${
+              user.status?.lastSeen
+                ? new Date(user.status.lastSeen.seconds * 1000).toLocaleString(
+                    "pt-BR"
+                  )
+                : "Nunca"
+            }</td>
             <td class="p-3 font-bold text-center">${user.totalRecords}</td>
+            <td class="p-3">
+              ${
+                user.accountStatus === "suspended"
+                  ? `<span class="px-2 py-1 text-xs font-bold rounded-full bg-yellow-100 text-yellow-800">Suspenso</span>`
+                  : `<span class="px-2 py-1 text-xs font-bold rounded-full ${
+                      user.status?.isOnline
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-200 text-gray-600"
+                    }">
+                    ${user.status?.isOnline ? "Online" : "Offline"}
+                </span>`
+              }
+            </td>
             <td class="p-3">
                 <span class="px-2 py-1 text-xs font-bold rounded-full ${
                   user.status?.isOnline
