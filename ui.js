@@ -99,7 +99,7 @@ function renderDashboard(c) {
             </div>
             <div id="goal-progress-container" class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 hidden">
                 <div class="flex justify-between items-center mb-1">
-                    <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm">Progresso da Meta Mensal</h3><span id="goal-percentage" class="text-sm font-bold text-green-600 dark:text-green-400">0%</span>
+                    <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm">Progresso da Meta Semanal</h3><span id="goal-percentage" class="text-sm font-bold text-green-600 dark:text-green-400">0%</span>
                 </div>
                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5"><div id="goal-progress-bar" class="bg-green-600 h-2.5 rounded-full" style="width: 0%"></div></div>
                 <div id="goal-values" class="text-xs text-gray-500 dark:text-gray-400 text-right mt-1">R$ 0,00 / R$ 0,00</div>
@@ -213,7 +213,7 @@ export function updateDashboardUI(stats, allItems, lineChartData, monthlyGoal) {
     "exp-cat-outros"
   ).innerText = `R$ ${expCategories.outros.toFixed(2)}`;
 
-  // Meta Mensal
+  // Meta Semanal
   const goalContainer = document.getElementById("goal-progress-container");
   if (monthlyGoal && monthlyGoal > 0) {
     goalContainer.classList.remove("hidden");
@@ -986,7 +986,7 @@ function renderSupport(c) {
                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">No Painel, role para baixo até a lista de 'Histórico'. Cada lançamento tem dois botões: um lápis (para editar) e uma lixeira (para apagar). Clique no botão desejado para realizar a ação.</p>
             </div>
             <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-                <h3 class="font-bold text-gray-900 dark:text-white">Como definir uma meta mensal?</h3>
+                <h3 class="font-bold text-gray-900 dark:text-white">Como definir uma Meta Semanal?</h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Vá para a tela de 'Perfil', encontre a seção 'Meta de Ganhos Mensal', digite o valor desejado e clique em 'Salvar Meta'. O progresso aparecerá no seu Painel quando o filtro 'Este Mês' estiver ativo.</p>
             </div>
             <div class="support-article bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">

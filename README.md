@@ -10,7 +10,7 @@ O MotoManager Pro é um aplicativo web completo e intuitivo para entregadores e 
 - ✅ **Dashboard Inteligente:** Visualize saldo (ganhos - despesas), totais e resumos detalhados por categoria.
 - ✅ **Gráfico de Evolução:** Acompanhe a evolução do seu saldo ao longo do tempo com um gráfico de linhas dinâmico.
 - ✅ **Metas Financeiras:** Defina uma meta de ganho mensal e acompanhe seu progresso com uma barra de progresso.
-- ✅ **Notificações de Conquista:** Seja parabenizado ao atingir sua meta mensal.
+- ✅ **Notificações de Conquista:** Seja parabenizado ao atingir sua Meta Semanal.
 - ✅ **Login Seguro e Completo:**
   - Cadastro e login com E-mail/Senha ou como Visitante.
   - Verificação de e-mail para novos usuários.

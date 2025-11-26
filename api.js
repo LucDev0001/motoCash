@@ -142,7 +142,7 @@ export function saveMonthlyGoal() {
     .doc(currentUser.uid)
     .set({ monthlyGoal: goalValue }, { merge: true }) // Usar set com merge para criar ou atualizar
     .then(() => {
-      showNotification("Meta mensal salva com sucesso!", "Sucesso");
+      showNotification("Meta Semanal salva com sucesso!", "Sucesso");
     })
     .catch((e) =>
       showNotification(`Erro ao salvar meta: ${e.message}`, "Erro")
