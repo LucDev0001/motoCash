@@ -18,6 +18,9 @@ export function initAuth() {
       loginScreen.classList.add("hidden");
       mainApp.classList.remove("hidden");
       mainApp.classList.add("flex");
+
+      unlockAudio(); // **NOVO: Tenta "desbloquear" o áudio para futuras notificações.**
+
       router("dashboard");
 
       // Sincroniza o estado do toggle Online/Offline com o Firestore
@@ -79,6 +82,24 @@ export function initAuth() {
       mainApp.classList.remove("flex");
     }
   });
+}
+
+let audioUnlocked = false;
+/**
+ * Toca um som silencioso após a primeira interação do usuário para "desbloquear"
+ * a permissão de áudio do navegador. Isso permite que as notificações futuras
+ * consigam tocar som.
+ */
+function unlockAudio() {
+  if (audioUnlocked) return;
+
+  const audio = new Audio("./assets/notification.mp3");
+  audio.volume = 0.01; // Volume muito baixo, quase inaudível
+  audio.play().catch(() => {
+    // A primeira tentativa pode falhar, mas prepara o terreno.
+  });
+
+  audioUnlocked = true;
 }
 
 let unsubscribeUserNotifications = null;
