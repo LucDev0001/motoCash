@@ -618,27 +618,30 @@ async function renderLocationReports(users) {
   // Para evitar sobrecarregar a API, podemos fazer cache das localizações
   const cityCounts = {};
 
-  // Usamos Promise.all para fazer as buscas de geolocalização em paralelo
-  await Promise.all(
-    usersWithLocation.map(async (user) => {
-      try {
-        // API gratuita de reverse geocoding. Cuidado com limites de uso para apps grandes.
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${user.status.location.latitude}&lon=${user.status.location.longitude}`
-        );
-        if (!response.ok) return;
-
-        const data = await response.json();
-        const city = data.address?.city || data.address?.town || "Desconhecida";
-
-        if (city !== "Desconhecida") {
-          cityCounts[city] = (cityCounts[city] || 0) + 1;
+  // Processa as requisições sequencialmente para não sobrecarregar a API
+  for (const user of usersWithLocation) {
+    try {
+      // API gratuita de reverse geocoding. Cuidado com limites de uso para apps grandes.
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${user.status.location.latitude}&lon=${user.status.location.longitude}`,
+        {
+          headers: {
+            "User-Agent": "AppMotoCashAdmin/1.0", // Política da Nominatim exige um User-Agent
+          },
         }
-      } catch (error) {
-        console.warn("Erro no reverse geocoding:", error);
+      );
+      if (!response.ok) continue; // Pula para o próximo se a resposta não for OK
+
+      const data = await response.json();
+      const city = data.address?.city || data.address?.town || "Desconhecida";
+
+      if (city !== "Desconhecida") {
+        cityCounts[city] = (cityCounts[city] || 0) + 1;
       }
-    })
-  );
+    } catch (error) {
+      console.warn("Erro no reverse geocoding:", error);
+    }
+  }
 
   // Ordena as cidades por contagem de usuários e pega o top 5
   const sortedCities = Object.entries(cityCounts).sort(([, a], [, b]) => b - a);
@@ -867,15 +870,6 @@ function renderAllUsersTable(searchTerm = "") {
                     ${user.status?.isOnline ? "Online" : "Offline"}
                 </span>`
               }
-            </td>
-            <td class="p-3">
-                <span class="px-2 py-1 text-xs font-bold rounded-full ${
-                  user.status?.isOnline
-                    ? "bg-green-100 text-green-700"
-                    : "bg-gray-200 text-gray-600"
-                }">
-                    ${user.status?.isOnline ? "Online" : "Offline"}
-                </span>
             </td>
         </tr>
     `

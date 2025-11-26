@@ -1,4 +1,4 @@
-const CACHE_NAME = "motomanager-v29.1.31"; // Versão incrementada para forçar a atualização
+const CACHE_NAME = "motomanager-v29.1.32; // Versão incrementada para forçar a atualização
 
 // Lista de arquivos essenciais para o App Shell.
 const assetsToCache = [
@@ -55,15 +55,21 @@ self.addEventListener("activate", (event) => {
 
 // Evento de Fetch: Intercepta requisições e serve do cache se disponível.
 self.addEventListener("fetch", (event) => {
-  // Ignora requisições que não são GET (ex: POST para o Firebase)
-  if (event.request.method !== "GET") {
+  const requestUrl = new URL(event.request.url);
+
+  // Ignora requisições que não são GET, ou que são para domínios externos (APIs, etc.)
+  // ou para o Firebase (para garantir dados em tempo real).
+  if (
+    event.request.method !== "GET" ||
+    requestUrl.origin !== self.location.origin ||
+    requestUrl.hostname.includes("firebase")
+  ) {
     return;
   }
 
   event.respondWith(
     caches.match(event.request).then((response) => {
-      // Se encontrar no cache, retorna a resposta do cache.
-      // Senão, busca na rede.
+      // Se encontrar no cache, retorna a resposta do cache. Senão, busca na rede.
       return response || fetch(event.request);
     })
   );
