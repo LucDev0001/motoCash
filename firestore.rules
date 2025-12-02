@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // A coleção 'artifacts' é um container, não deve ser acessada diretamente.
+    match /artifacts/{appId} {
+
+      // Usuários só podem ler e escrever em seu próprio documento.
+      match /users/{userId} {
+        allow read, update: if request.auth.uid == userId;
+        // Ninguém pode criar ou apagar o documento de usuário diretamente.
+        allow create, delete: if false;
+      }
+
+      // Usuários só podem ler e escrever em suas próprias subcoleções.
+      match /users/{userId}/{collection}/{docId} {
+        allow read, write, delete: if request.auth.uid == userId;
+      }
+
+      // Coleções públicas como 'marketplace' e 'jobs'
+      match /public/data/{collection}/{docId} {
+        // Qualquer usuário logado pode ler.
+        allow read: if request.auth != null;
+        // Apenas o criador do documento pode atualizá-lo ou apagá-lo.
+        allow update, delete: if request.auth.uid == resource.data.userId;
+        // Qualquer usuário logado pode criar.
+        allow create: if request.auth != null;
+      }
+    }
+  }
+}

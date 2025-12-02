@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ajuda - AppMotoCash</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
+      <!-- Tela Principal da Ajuda -->
+      <div id="help-main-view">
+        <header class="text-center py-8">
+          <h1 class="text-4xl font-bold text-gray-800 dark:text-white">
+            Central de Ajuda
+          </h1>
+          <p class="text-lg text-gray-500 dark:text-gray-400 mt-2">
+            Como podemos ajudar?
+          </p>
+          <div class="relative mt-6 max-w-lg mx-auto">
+            <input
+              type="text"
+              id="help-search-input"
+              placeholder="Busque por 'senha', 'vaga', 'pagamento'..."
+              class="w-full p-4 pl-12 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm focus:ring-2 focus:ring-yellow-500 focus:outline-none dark:bg-gray-800"
+            />
+            <i
+              data-lucide="search"
+              class="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400"
+            ></i>
+          </div>
+        </header>
+
+        <!-- Resultados da Busca -->
+        <div id="search-results-container" class="hidden mb-8">
+          <button
+            id="back-to-categories-btn"
+            class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4"
+          >
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar para
+            Categorias
+          </button>
+          <h2
+            class="text-2xl font-bold text-gray-800 dark:text-white mb-4"
+            id="search-results-title"
+          >
+            Resultados da Busca
+          </h2>
+          <div id="search-results" class="space-y-2"></div>
+        </div>
+
+        <!-- Navegação por Categorias -->
+        <div id="categories-container">
+          <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+            Navegue por Categorias
+          </h2>
+          <div
+            class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+            id="categories-grid"
+          >
+            <!-- Categorias serão injetadas aqui pelo JS -->
+          </div>
+        </div>
+
+        <!-- Contato -->
+        <div
+          class="mt-12 text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md"
+        >
+          <h3 class="text-xl font-bold text-gray-800 dark:text-white">
+            Ainda precisa de ajuda?
+          </h3>
+          <p class="text-gray-500 dark:text-gray-400 mt-2 mb-4">
+            Nossa equipe de suporte está pronta para te ajudar.
+          </p>
+          <a
+            href="mailto:suporte@appmotocash.com"
+            class="inline-block bg-yellow-500 text-black font-bold px-8 py-3 rounded-lg hover:bg-yellow-400 transition-colors"
+            >Fale Conosco</a
+          >
+        </div>
+      </div>
+
+      <!-- Tela de Visualização do Artigo -->
+      <div id="help-article-view" class="hidden">
+        <button
+          id="back-to-help-btn"
+          class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4"
+        >
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          Voltar
+        </button>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 md:p-8">
+          <div id="article-content" class="prose dark:prose-invert max-w-none">
+            <!-- Conteúdo do artigo será injetado aqui -->
+          </div>
+          <div
+            class="border-t dark:border-gray-700 mt-8 pt-6 text-center"
+            id="article-feedback"
+          >
+            <!-- Feedback será injetado aqui -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Rodapé -->
+      <footer class="text-center mt-12 text-xs text-gray-400 space-x-4">
+        <a
+          href="termos_de_uso.html"
+          class="hover:underline"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Termos de Uso</a
+        >
+        <span>&bull;</span>
+        <a
+          href="politicas_e_privacidade.html"
+          class="hover:underline"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Política de Privacidade</a
+        >
+        <p class="mt-2">AppMotoCash v1.3.0 &copy; 2025</p>
+      </footer>
+    </div>
+
+    <script>
+      // --- Banco de Dados de Artigos ---
+      const helpArticles = {
+        "primeiros-passos": {
+          name: "Primeiros Passos",
+          icon: "rocket",
+          color: "text-green-500",
+          articles: [
+            {
+              id: "cadastro",
+              question: "Como me cadastrar no AppMotoCash?",
+              answer: `
+                <p>É muito simples! Siga os passos:</p>
+                <ol>
+                  <li>Na tela inicial, clique no botão <strong>"Cadastrar"</strong>.</li>
+                  <li>Preencha seu e-mail e crie uma senha segura (mínimo 6 caracteres).</li>
+                  <li>Marque a caixa para aceitar os Termos de Uso e a Política de Privacidade.</li>
+                  <li>Clique em "Cadastrar" novamente.</li>
+                  <li>Você receberá um e-mail de verificação. Clique no link do e-mail para ativar sua conta.</li>
+                </ol>
+              `,
+            },
+            {
+              id: "completar-perfil",
+              question:
+                "Por que preciso completar meu perfil para ficar online?",
+              answer: `
+                <p>Completar seu perfil público é um passo de segurança essencial. As empresas precisam saber quem estão contratando. As informações necessárias são:</p>
+                <ul>
+                  <li><strong>Seu Nome Completo:</strong> Para identificação.</li>
+                  <li><strong>Dados da Moto (Marca, Modelo, Ano, Cor, Placa, RENAVAM):</strong> Para segurança e identificação do veículo.</li>
+                  <li><strong>WhatsApp:</strong> Para que a empresa possa entrar em contato após você aceitar uma vaga.</li>
+                </ul>
+                <p>Esses dados só são compartilhados com a empresa <strong>após</strong> você aceitar uma vaga, garantindo sua privacidade.</p>
+              `,
+            },
+          ],
+        },
+        conta: {
+          name: "Minha Conta",
+          icon: "user-cog",
+          color: "text-blue-500",
+          articles: [
+            {
+              id: "resetar-senha",
+              question: "Esqueci minha senha, como posso recuperá-la?",
+              answer: `
+                <p>Na tela de login, siga estes passos:</p>
+                <ol>
+                  <li>Digite o seu e-mail no campo correspondente.</li>
+                  <li>Clique no link <strong>"Esqueceu a senha?"</strong>.</li>
+                  <li>Um e-mail com instruções para criar uma nova senha será enviado para você. Verifique sua caixa de entrada e a pasta de spam.</li>
+                </ol>
+              `,
+            },
+            {
+              id: "apagar-conta",
+              question: "Como posso apagar minha conta permanentemente?",
+              answer: `
+                <p class="text-red-500 font-bold">Atenção: Esta ação é irreversível e todos os seus dados serão perdidos.</p>
+                <ol>
+                  <li>Vá para a tela de <strong>"Perfil"</strong>.</li>
+                  <li>Role até o final e clique no botão vermelho <strong>"Apagar Conta Permanentemente"</strong>.</li>
+                  <li>Uma janela de confirmação aparecerá. Você precisará digitar a palavra "APAGAR" para confirmar a exclusão.</li>
+                </ol>
+              `,
+            },
+          ],
+        },
+        financeiro: {
+          name: "Financeiro",
+          icon: "dollar-sign",
+          color: "text-purple-500",
+          articles: [
+            {
+              id: "add-ganho",
+              question: "Como adiciono um novo ganho?",
+              answer: `
+                <p>Clique no grande botão amarelo com o sinal de <strong>"+"</strong> na barra de navegação. Na tela que abrir, a aba "Ganho" já estará selecionada. Preencha os detalhes do seu trabalho (data, tipo, valor) e clique em "Salvar Ganho".</p>
+              `,
+            },
+            {
+              id: "add-despesa",
+              question: "Como registro uma despesa?",
+              answer: `
+                <p>Clique no botão <strong>"+"</strong>. Na tela de "Adicionar", clique na aba "Despesa". Selecione a data, a categoria (ex: Combustível), o valor e clique em "Salvar Despesa".</p>
+              `,
+            },
+          ],
+        },
+        hub: {
+          name: "Hub de Entregas",
+          icon: "briefcase",
+          color: "text-orange-500",
+          articles: [
+            {
+              id: "aceitar-vaga",
+              question: "Como aceito uma vaga de freelancer?",
+              answer: `
+                <p>Vá para a aba <strong>"Hub"</strong>. Você verá uma lista de vagas disponíveis. Leia os detalhes de cada uma (endereço, pagamento, etc.). Quando encontrar uma que te interessa, clique no botão verde <strong>"Aceitar Vaga"</strong>. A vaga irá para sua lista de "Vagas Aceitas" e você poderá iniciar a negociação com a empresa.</p>
+              `,
+            },
+          ],
+        },
+      };
+
+      // --- Lógica da Página de Ajuda ---
+      document.addEventListener("DOMContentLoaded", () => {
+        const searchInput = document.getElementById("help-search-input");
+        const categoriesGrid = document.getElementById("categories-grid");
+        const mainView = document.getElementById("help-main-view");
+        const articleView = document.getElementById("help-article-view");
+        const backBtn = document.getElementById("back-to-help-btn");
+        const backToCategoriesBtn = document.getElementById(
+          "back-to-categories-btn"
+        );
+
+        // Renderiza as categorias
+        Object.keys(helpArticles).forEach((key) => {
+          const category = helpArticles[key];
+          const categoryEl = document.createElement("div");
+          categoryEl.className =
+            "bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center cursor-pointer hover:shadow-xl transition-shadow";
+          categoryEl.innerHTML = `
+            <i data-lucide="${category.icon}" class="w-10 h-10 ${category.color} mx-auto mb-3"></i>
+            <h3 class="font-bold text-gray-800 dark:text-white">${category.name}</h3>
+          `;
+          categoryEl.onclick = () => showCategory(key);
+          categoriesGrid.appendChild(categoryEl);
+        });
+
+        // Lógica da busca
+        searchInput.addEventListener("keyup", (e) => {
+          const term = e.target.value.toLowerCase();
+          const resultsContainer = document.getElementById(
+            "search-results-container"
+          );
+          const resultsDiv = document.getElementById("search-results");
+          const categoriesContainer = document.getElementById(
+            "categories-container"
+          );
+
+          if (term.length < 3) {
+            resultsContainer.classList.add("hidden");
+            categoriesContainer.classList.remove("hidden");
+            return;
+          }
+
+          let resultsHTML = "";
+          let count = 0;
+          Object.keys(helpArticles).forEach((catKey) => {
+            helpArticles[catKey].articles.forEach((article) => {
+              if (
+                article.question.toLowerCase().includes(term) ||
+                article.answer.toLowerCase().includes(term)
+              ) {
+                resultsHTML += `<a href="#" onclick="event.preventDefault(); showArticle('${catKey}', '${article.id}')" class="block p-3 bg-white dark:bg-gray-800 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">${article.question}</a>`;
+                count++;
+              }
+            });
+          });
+
+          if (count > 0) {
+            document.getElementById(
+              "search-results-title"
+            ).innerText = `Resultados da Busca (${count})`;
+            resultsDiv.innerHTML = resultsHTML;
+          } else {
+            document.getElementById("search-results-title").innerText =
+              "Nenhum resultado encontrado";
+            resultsDiv.innerHTML = "";
+          }
+
+          resultsContainer.classList.remove("hidden");
+          categoriesContainer.classList.add("hidden");
+        });
+
+        // Botão de voltar
+        backBtn.onclick = () => {
+          articleView.classList.add("hidden");
+          mainView.classList.remove("hidden");
+        };
+
+        // Botão de voltar para as categorias
+        backToCategoriesBtn.onclick = () => {
+          document
+            .getElementById("search-results-container")
+            .classList.add("hidden");
+          document
+            .getElementById("categories-container")
+            .classList.remove("hidden");
+          searchInput.value = ""; // Limpa a busca
+        };
+
+        // Função para mostrar uma categoria
+        window.showCategory = (key) => {
+          const category = helpArticles[key];
+          const resultsContainer = document.getElementById(
+            "search-results-container"
+          );
+          const resultsDiv = document.getElementById("search-results");
+          const categoriesContainer = document.getElementById(
+            "categories-container"
+          );
+
+          let resultsHTML = category.articles
+            .map(
+              (article) =>
+                `<a href="#" onclick="event.preventDefault(); showArticle('${key}', '${article.id}')" class="block p-3 bg-white dark:bg-gray-800 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">${article.question}</a>`
+            )
+            .join("");
+
+          document.getElementById(
+            "search-results-title"
+          ).innerText = `Categoria: ${category.name}`;
+          resultsDiv.innerHTML = resultsHTML;
+          resultsContainer.classList.remove("hidden");
+          categoriesContainer.classList.add("hidden");
+        };
+
+        // Função para mostrar um artigo
+        window.showArticle = (catKey, articleId) => {
+          const article = helpArticles[catKey].articles.find(
+            (a) => a.id === articleId
+          );
+          if (!article) return;
+
+          document.getElementById("article-content").innerHTML = `
+            <h1 class="text-3xl font-bold mb-4">${article.question}</h1>
+            <div class="space-y-4">${article.answer}</div>
+          `;
+          document.getElementById("article-feedback").innerHTML = `
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Este artigo foi útil?</p>
+            <div class="flex justify-center gap-3">
+              <button class="px-6 py-2 border border-green-500 text-green-600 rounded-full hover:bg-green-50">Sim</button>
+              <button class="px-6 py-2 border border-red-500 text-red-600 rounded-full hover:bg-red-50">Não</button>
+            </div>
+          `;
+
+          mainView.classList.add("hidden");
+          articleView.classList.remove("hidden");
+          window.scrollTo(0, 0);
+        };
+
+        lucide.createIcons();
+      });
+    </script>
+  </body>
+</html>

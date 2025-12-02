@@ -1,0 +1,88 @@
+<!-- MODAL DE REGISTRO DE SERVIÇO DE MANUTENÇÃO -->
+<div
+  id="service-record-modal"
+  class="absolute inset-0 z-[90] bg-black/80 flex items-center justify-center transition-opacity p-4"
+>
+  <div
+    class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl"
+  >
+    <div class="flex justify-between items-center mb-4">
+      <h3
+        id="service-record-title"
+        class="text-lg font-bold text-gray-800 dark:text-gray-100"
+      >
+        Registrar Serviço
+      </h3>
+      <button class="text-gray-500 dark:text-gray-400 close-modal-btn">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <form id="service-record-form" class="space-y-3">
+      <input type="hidden" id="service-item-id" />
+      <div>
+        <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+          >Data do Serviço</label
+        >
+        <input
+          required
+          type="date"
+          id="service-date"
+          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded mt-1"
+        />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+            >Km do Serviço</label
+          >
+          <input
+            required
+            type="number"
+            id="service-km"
+            placeholder="Ex: 26000"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded mt-1"
+          />
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+            >Custo (R$)</label
+          >
+          <input
+            required
+            type="number"
+            step="0.01"
+            id="service-cost"
+            placeholder="Ex: 50.00"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded mt-1"
+          />
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+          >Local (Opcional)</label
+        >
+        <input
+          id="service-location"
+          placeholder="Ex: Oficina do Zé"
+          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded mt-1"
+        />
+      </div>
+      <div>
+        <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+          >Observações (Opcional)</label
+        >
+        <textarea
+          id="service-notes"
+          placeholder="Ex: Troquei também o filtro de ar"
+          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded mt-1 h-20"
+        ></textarea>
+      </div>
+      <button
+        type="submit"
+        class="w-full bg-green-600 text-white font-bold py-3 rounded-lg mt-2"
+      >
+        Salvar Serviço
+      </button>
+    </form>
+  </div>
+</div>

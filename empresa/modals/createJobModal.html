@@ -1,0 +1,96 @@
+<!-- MODAL PARA CRIAR VAGA -->
+<div
+  id="create-job-modal"
+  class="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4"
+>
+  <div
+    class="bg-white dark:bg-gray-800 w-full max-w-lg rounded-xl p-6 shadow-2xl modal-enter"
+  >
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">
+        Publicar Nova Vaga
+      </h3>
+      <button class="text-gray-500 dark:text-gray-400 close-company-modal-btn">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <form id="create-job-form" class="space-y-4">
+      <div>
+        <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+          >Título da Vaga</label
+        >
+        <input
+          required
+          id="job-title"
+          placeholder="Ex: Entregador para Pizzaria Noturna"
+          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded mt-1"
+        />
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+            >Pagamento</label
+          >
+          <input
+            required
+            id="job-payment"
+            placeholder="Ex: R$ 100/diária + taxas"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded mt-1"
+          />
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label
+              for="job-start-time"
+              class="text-xs font-bold text-gray-500 dark:text-gray-400"
+              >Início</label
+            >
+            <input
+              type="time"
+              id="job-start-time"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded mt-1"
+            />
+          </div>
+          <div>
+            <label
+              for="job-end-time"
+              class="text-xs font-bold text-gray-500 dark:text-gray-400"
+              >Fim</label
+            >
+            <input
+              type="time"
+              id="job-end-time"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded mt-1"
+            />
+          </div>
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+          >Descrição</label
+        >
+        <textarea
+          required
+          id="job-description"
+          placeholder="Detalhes da vaga, requisitos, etc."
+          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded mt-1 h-24"
+        ></textarea>
+      </div>
+      <div class="flex justify-end gap-4 pt-4">
+        <button
+          type="button"
+          class="close-company-modal-btn bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold px-6 py-2 rounded-lg"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="bg-blue-600 text-white font-bold px-6 py-2 rounded-lg flex items-center gap-2"
+        >
+          <i data-lucide="send" class="w-5 h-5"></i>
+          <span>Publicar Vaga</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

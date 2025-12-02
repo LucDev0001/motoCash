@@ -1,0 +1,71 @@
+<div class="fade-in h-full flex flex-col">
+  <div
+    id="job-details-chat"
+    class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-4 shrink-0 flex justify-between items-center"
+  >
+    <div id="chat-header-details-motoboy">
+      <p class="text-center text-gray-400">Carregando detalhes da vaga...</p>
+    </div>
+    <!-- Botões de Ação e Segurança -->
+    <div class="flex items-center gap-2">
+      <button
+        id="view-company-profile-btn"
+        class="p-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
+        title="Ver Perfil da Empresa"
+      >
+        <i data-lucide="building-2" class="w-5 h-5"></i>
+      </button>
+      <div class="relative" id="security-options-menu-motoboy">
+        <button
+          onclick="this.nextElementSibling.classList.toggle('hidden')"
+          class="p-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
+          title="Opções de Segurança"
+        >
+          <i data-lucide="shield" class="w-5 h-5"></i>
+        </button>
+        <div
+          class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-xl z-20 border dark:border-gray-700"
+        >
+          <a
+            href="#"
+            id="report-company-btn"
+            class="block px-4 py-2 text-sm text-yellow-600 dark:text-yellow-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >Denunciar Empresa</a
+          >
+          <a
+            href="#"
+            id="block-company-btn"
+            class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >Bloquear Empresa</a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    id="chat-messages"
+    class="flex-1 overflow-y-auto space-y-3 p-2 bg-gray-200 dark:bg-gray-950 rounded-t-lg"
+  >
+    <!-- As mensagens serão injetadas aqui pelo JavaScript -->
+  </div>
+  <div
+    id="typing-indicator-motoboy"
+    class="h-6 px-4 text-xs text-gray-500 italic"
+  ></div>
+  <div class="p-2 bg-white dark:bg-gray-800 rounded-b-lg shrink-0">
+    <form id="chat-form" class="flex gap-2">
+      <input
+        id="chat-input"
+        required
+        placeholder="Digite sua mensagem..."
+        class="flex-1 p-3 bg-gray-100 dark:bg-gray-700 rounded-full outline-none"
+      />
+      <button
+        type="submit"
+        class="bg-yellow-500 text-black w-12 h-12 rounded-full flex items-center justify-center"
+      >
+        <i data-lucide="send"></i>
+      </button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,160 @@
+<div class="fade-in space-y-6">
+  <!-- Cabeçalho do Perfil -->
+  <div class="flex items-center gap-4">
+    <div
+      class="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center shadow-md"
+    >
+      <i data-lucide="user" class="w-10 h-10 text-gray-400"></i>
+    </div>
+    <div>
+      <h2
+        id="profile-name-display"
+        class="text-2xl font-bold dark:text-gray-200"
+      >
+        Carregando...
+      </h2>
+      <p id="profile-uid-display" class="text-gray-400 text-sm">ID:</p>
+    </div>
+  </div>
+
+  <!-- Estatísticas Rápidas -->
+  <div class="grid grid-cols-3 gap-3 text-center">
+    <div class="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm">
+      <p class="text-xs text-gray-400">Ganhos (Mês)</p>
+      <p id="stats-earnings" class="font-bold text-lg text-green-600">
+        R$ 0,00
+      </p>
+    </div>
+    <div class="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm">
+      <p class="text-xs text-gray-400">Corridas</p>
+      <p id="stats-jobs" class="font-bold text-lg">0</p>
+    </div>
+    <div class="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm">
+      <p class="text-xs text-gray-400">Avaliação</p>
+      <p id="stats-rating" class="font-bold text-lg text-yellow-500">N/A</p>
+    </div>
+  </div>
+
+  <!-- Menu de Ações -->
+  <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
+    <div class="grid grid-cols-4 gap-4 text-center">
+      <button
+        id="accepted-jobs-btn"
+        class="flex flex-col items-center gap-1 text-gray-600 dark:text-gray-300"
+      >
+        <div
+          class="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center"
+        >
+          <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
+        </div>
+        <span class="text-xs">Aceitas</span>
+      </button>
+      <button
+        id="history-jobs-btn"
+        class="flex flex-col items-center gap-1 text-gray-600 dark:text-gray-300"
+      >
+        <div
+          class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center"
+        >
+          <i data-lucide="history" class="w-6 h-6 text-gray-500"></i>
+        </div>
+        <span class="text-xs">Histórico</span>
+      </button>
+      <button
+        id="achievements-btn"
+        class="flex flex-col items-center gap-1 text-gray-600 dark:text-gray-300"
+      >
+        <div
+          class="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center"
+        >
+          <i data-lucide="award" class="w-6 h-6 text-purple-600"></i>
+        </div>
+        <span class="text-xs">Conquistas</span>
+      </button>
+      <button
+        id="market-btn"
+        class="flex flex-col items-center gap-1 text-gray-600 dark:text-gray-300"
+      >
+        <div
+          class="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/50 rounded-full flex items-center justify-center"
+        >
+          <i data-lucide="shopping-bag" class="w-6 h-6 text-cyan-600"></i>
+        </div>
+        <span class="text-xs">Loja</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Configurações e Ferramentas -->
+  <div class="bg-white dark:bg-gray-800 p-2 rounded-xl shadow-sm">
+    <div class="space-y-1">
+      <button
+        id="edit-public-profile-btn"
+        class="w-full text-left flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50"
+      >
+        <i data-lucide="user-cog" class="w-5 h-5 text-gray-500"></i>
+        <span class="font-medium">Editar Perfil e Moto</span>
+      </button>
+      <button
+        id="enable-notifications-btn"
+        class="w-full text-left flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50"
+      >
+        <i data-lucide="bell-ring" class="w-5 h-5 text-gray-500"></i>
+        <span class="font-medium">Ativar Lembretes</span>
+      </button>
+      <div
+        class="w-full flex items-center justify-between gap-4 p-3 rounded-lg"
+      >
+        <div class="flex items-center gap-4">
+          <i data-lucide="moon" class="w-5 h-5 text-gray-500"></i>
+          <span class="font-medium">Tema Escuro</span>
+        </div>
+        <button
+          id="theme-toggle"
+          class="w-12 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
+        >
+          <div
+            id="theme-toggle-dot"
+            class="w-4 h-4 bg-white rounded-full shadow-md transform duration-300 ease-in-out"
+          ></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backup e Sobre -->
+  <div class="bg-white dark:bg-gray-800 p-2 rounded-xl shadow-sm">
+    <div class="space-y-1">
+      <button
+        id="backup-btn"
+        class="w-full text-left flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50"
+      >
+        <i data-lucide="download" class="w-5 h-5 text-gray-500"></i>
+        <span class="font-medium">Fazer Backup dos Dados</span>
+      </button>
+      <button
+        id="about-btn"
+        class="w-full text-left flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50"
+      >
+        <i data-lucide="info" class="w-5 h-5 text-gray-500"></i>
+        <span class="font-medium">Sobre o App</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Sair e Apagar Conta -->
+  <div class="space-y-2 pt-4">
+    <button
+      id="logout-btn"
+      class="w-full flex justify-center gap-2 text-gray-500 dark:text-gray-400 font-bold p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+    >
+      <i data-lucide="log-out" class="w-5 h-5"></i> Sair
+    </button>
+    <button
+      id="delete-account-btn"
+      class="w-full flex justify-center gap-2 text-red-600 font-bold p-3 mt-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/50"
+    >
+      <i data-lucide="trash-2" class="w-5 h-5"></i> Apagar Conta
+    </button>
+  </div>
+</div>

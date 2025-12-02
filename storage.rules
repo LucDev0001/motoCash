@@ -1,0 +1,11 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Permite que um usuário faça upload de um arquivo na sua própria pasta,
+    // se o arquivo for uma imagem e tiver menos de 5MB.
+    match /user_uploads/{userId}/{fileName} {
+      allow read: if true; // Qualquer um pode ver as imagens (se for o desejado)
+      allow write: if request.auth.uid == userId && request.resource.size < 5 * 1024 * 1024 && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

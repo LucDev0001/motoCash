@@ -1,0 +1,303 @@
+<div class="space-y-4 fade-in pb-10">
+  <div class="flex flex-col space-y-2">
+    <div
+      class="flex bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm overflow-x-auto"
+    >
+      <button
+        id="filter-day"
+        class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap"
+      >
+        Hoje
+      </button>
+      <button
+        id="filter-week"
+        class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded bg-gray-900 dark:bg-yellow-500 dark:text-black text-white whitespace-nowrap"
+      >
+        Esta Semana
+      </button>
+      <button
+        id="filter-last-week"
+        class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap"
+      >
+        Semana Passada
+      </button>
+      <button
+        id="filter-month"
+        class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap"
+      >
+        Este Mês
+      </button>
+      <button
+        id="filter-last-month"
+        class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap"
+      >
+        Mês Passado
+      </button>
+      <button
+        id="filter-custom"
+        class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded text-gray-500 whitespace-nowrap border-l border-gray-100"
+      >
+        Personalizado
+      </button>
+    </div>
+    <div
+      id="custom-date-picker"
+      class="hidden bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex gap-2 items-end"
+    >
+      <div class="flex-1">
+        <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400"
+          >Início</label
+        >
+        <input
+          type="date"
+          id="custom-start"
+          class="w-full p-1 border dark:bg-gray-700 dark:border-gray-600 rounded text-sm"
+        />
+      </div>
+      <div class="flex-1">
+        <label class="text-[10px] font-bold text-gray-500 dark:text-gray-400"
+          >Fim</label
+        >
+        <input
+          type="date"
+          id="custom-end"
+          class="w-full p-1 border dark:bg-gray-700 dark:border-gray-600 rounded text-sm"
+        />
+      </div>
+      <button
+        id="apply-custom-filter-btn"
+        class="bg-gray-900 dark:bg-yellow-500 dark:text-black text-white p-2 rounded hover:bg-gray-700 h-8 flex items-center"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+  <div
+    class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col relative overflow-hidden"
+  >
+    <button
+      id="open-share-modal-btn"
+      class="absolute top-4 right-4 text-green-600 bg-green-50 dark:bg-green-900/50 dark:text-green-400 p-2 rounded-full z-10"
+    >
+      <i data-lucide="share-2" class="w-5 h-5"></i>
+    </button>
+    <div class="text-center">
+      <h2
+        class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider mb-1"
+        id="period-label"
+      >
+        Esta Semana
+      </h2>
+      <p
+        class="text-4xl font-bold text-gray-900 dark:text-white"
+        id="balance-value"
+      >
+        R$ 0.00
+      </p>
+      <p class="text-sm text-green-600 mt-1 font-semibold" id="balance-label">
+        Saldo no período
+      </p>
+    </div>
+  </div>
+  <div class="grid grid-cols-2 gap-4">
+    <div
+      class="bg-green-50 dark:bg-green-900/50 border border-green-200 dark:border-green-800 p-4 rounded-xl shadow-sm text-center"
+    >
+      <p class="text-xs text-green-800 dark:text-green-300 font-bold uppercase">
+        Ganhos
+      </p>
+      <p
+        class="text-2xl font-bold text-green-700 dark:text-green-400"
+        id="total-earnings"
+      >
+        R$ 0.00
+      </p>
+    </div>
+    <div
+      class="bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 p-4 rounded-xl shadow-sm text-center"
+    >
+      <p class="text-xs text-red-800 dark:text-red-300 font-bold uppercase">
+        Despesas
+      </p>
+      <p
+        class="text-2xl font-bold text-red-700 dark:text-red-400"
+        id="total-expenses"
+      >
+        R$ 0.00
+      </p>
+    </div>
+  </div>
+  <div
+    id="goal-progress-container"
+    class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 hidden"
+  >
+    <div class="flex justify-between items-center mb-1">
+      <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm">
+        Progresso da Meta Semanal
+      </h3>
+      <span
+        id="goal-percentage"
+        class="text-sm font-bold text-green-600 dark:text-green-400"
+        >0%</span
+      >
+    </div>
+    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+      <div
+        id="goal-progress-bar"
+        class="bg-green-600 h-2.5 rounded-full"
+        style="width: 0%"
+      ></div>
+    </div>
+    <div
+      id="goal-values"
+      class="text-xs text-gray-500 dark:text-gray-400 text-right mt-1"
+    >
+      R$ 0,00 / R$ 0,00
+    </div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 flex flex-col">
+      <h3 class="font-bold text-gray-800 dark:text-gray-200 mb-2 text-sm">
+        Resumo de Ganhos
+      </h3>
+      <div
+        class="w-full border-t border-gray-100 dark:border-gray-700 mb-2"
+      ></div>
+      <div class="grid grid-cols-3 gap-2">
+        <div
+          class="bg-red-50 dark:bg-red-900/50 p-2 rounded-lg border border-red-100 dark:border-red-800 flex flex-col justify-between h-24"
+        >
+          <p
+            class="text-[10px] font-bold text-red-500 dark:text-red-400 uppercase border-b border-red-200 dark:border-red-700 pb-1 mb-1"
+          >
+            Loja Fixa
+          </p>
+          <div class="flex flex-col gap-0.5">
+            <div
+              class="flex justify-between text-[9px] text-gray-600 dark:text-gray-400"
+            >
+              <span>Diárias:</span
+              ><span class="font-bold" id="lbl-loja-daily">R$0</span>
+            </div>
+            <div
+              class="flex justify-between text-[9px] text-gray-600 dark:text-gray-400"
+            >
+              <span>Entregas:</span
+              ><span class="font-bold" id="lbl-loja-qtd">0</span>
+            </div>
+          </div>
+          <p
+            class="text-xs font-bold text-gray-900 dark:text-gray-200 text-right mt-1"
+            id="lbl-loja-total"
+          >
+            R$ 0
+          </p>
+        </div>
+        <div
+          class="bg-blue-50 dark:bg-blue-900/50 p-2 rounded-lg border border-blue-100 dark:border-blue-800 flex flex-col justify-between h-24"
+        >
+          <p
+            class="text-[10px] font-bold text-blue-500 dark:text-blue-400 uppercase border-b border-blue-200 dark:border-blue-700 pb-1 mb-1"
+          >
+            Uber/99
+          </p>
+          <div class="flex flex-col gap-0.5 mt-2">
+            <div
+              class="flex justify-between text-[9px] text-gray-600 dark:text-gray-400"
+            >
+              <span>Corridas:</span
+              ><span class="font-bold" id="lbl-pass-qtd">0</span>
+            </div>
+          </div>
+          <p
+            class="text-xs font-bold text-gray-900 dark:text-gray-200 text-right mt-auto"
+            id="lbl-pass-total"
+          >
+            R$ 0
+          </p>
+        </div>
+        <div
+          class="bg-yellow-50 dark:bg-yellow-900/50 p-2 rounded-lg border border-yellow-100 dark:border-yellow-800 flex flex-col justify-between h-24"
+        >
+          <p
+            class="text-[10px] font-bold text-yellow-600 dark:text-yellow-400 uppercase border-b border-yellow-200 dark:border-yellow-700 pb-1 mb-1"
+          >
+            iFood
+          </p>
+          <div class="flex flex-col gap-0.5 mt-2">
+            <div
+              class="flex justify-between text-[9px] text-gray-600 dark:text-gray-400"
+            >
+              <span>Entregas:</span
+              ><span class="font-bold" id="lbl-deliv-qtd">0</span>
+            </div>
+          </div>
+          <p
+            class="text-xs font-bold text-gray-900 dark:text-gray-200 text-right mt-auto"
+            id="lbl-deliv-total"
+          >
+            R$ 0
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 flex flex-col">
+      <h3 class="font-bold text-gray-800 dark:text-gray-200 mb-2 text-sm">
+        Resumo de Despesas
+      </h3>
+      <div
+        class="w-full border-t border-gray-100 dark:border-gray-700 mb-2"
+      ></div>
+      <div class="space-y-1 text-xs">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 dark:text-gray-400">Combustível</span
+          ><span
+            class="font-bold text-gray-800 dark:text-gray-200"
+            id="exp-cat-combustivel"
+            >R$ 0.00</span
+          >
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 dark:text-gray-400">Manutenção</span
+          ><span
+            class="font-bold text-gray-800 dark:text-gray-200"
+            id="exp-cat-manutencao"
+            >R$ 0.00</span
+          >
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 dark:text-gray-400">Peças/Acessórios</span
+          ><span
+            class="font-bold text-gray-800 dark:text-gray-200"
+            id="exp-cat-pecas"
+            >R$ 0.00</span
+          >
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 dark:text-gray-400">Alimentação</span
+          ><span
+            class="font-bold text-gray-800 dark:text-gray-200"
+            id="exp-cat-alimentacao"
+            >R$ 0.00</span
+          >
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 dark:text-gray-400">Outros</span
+          ><span
+            class="font-bold text-gray-800 dark:text-gray-200"
+            id="exp-cat-outros"
+            >R$ 0.00</span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 h-64 flex justify-center items-center relative"
+  >
+    <canvas id="lineChart"></canvas>
+  </div>
+  <div class="space-y-2" id="history-list">
+    <p class="text-center text-gray-400 py-4">Carregando...</p>
+  </div>
+</div>

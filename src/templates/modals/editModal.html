@@ -1,0 +1,176 @@
+<!-- MODAL DE EDIÇÃO -->
+<div
+  id="edit-modal"
+  class="absolute inset-0 z-[80] bg-black/80 flex items-center justify-center transition-opacity p-4"
+>
+  <div
+    class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl"
+  >
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">
+        Editar Lançamento
+      </h3>
+      <button class="text-gray-500 dark:text-gray-400 close-modal-btn">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <form onsubmit="API.saveEdit(event)" class="space-y-3">
+      <input type="hidden" id="edit-id" />
+      <input type="hidden" id="edit-type" />
+      <input type="hidden" id="edit-category" />
+      <!-- Usado apenas para ganhos -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+            >Data</label
+          ><input
+            type="date"
+            id="edit-date"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"
+          />
+        </div>
+        <div id="edit-shift-container">
+          <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+            >Turno</label
+          >
+          <select
+            id="edit-shift"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"
+          >
+            <option value="dia">Dia</option>
+            <option value="noite">Noite</option>
+          </select>
+        </div>
+      </div>
+      <!-- Campos para Ganhos -->
+      <div id="edit-fields-app">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+              >Qtd</label
+            ><input
+              type="number"
+              id="edit-count"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200"
+            />
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+              >Total (R$)</label
+            ><input
+              type="number"
+              step="0.01"
+              id="edit-total"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 font-bold"
+            />
+          </div>
+        </div>
+      </div>
+      <div id="edit-fields-loja" class="hidden space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+              >Diária</label
+            ><input
+              type="number"
+              step="0.01"
+              id="edit-daily"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+            />
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+              >Qtd</label
+            ><input
+              type="number"
+              id="edit-loja-count"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+              >Taxa</label
+            ><input
+              type="number"
+              step="0.01"
+              id="edit-fee"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+            />
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+              >Extra</label
+            ><input
+              type="number"
+              step="0.01"
+              id="edit-extra"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+            />
+          </div>
+        </div>
+      </div>
+      <!-- Campos para Despesas -->
+      <div id="edit-fields-expense" class="hidden space-y-3">
+        <div>
+          <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+            >Categoria</label
+          >
+          <select
+            id="edit-exp-category"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"
+          >
+            <option value="combustivel">Combustível</option>
+            <option value="manutencao">Manutenção</option>
+            <option value="pecas">Peças e Acessórios</option>
+            <option value="documentacao">Documentação</option>
+            <option value="alimentacao">Alimentação</option>
+            <option value="outros">Outros</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+            >Valor (R$)</label
+          >
+          <input
+            required
+            type="text"
+            step="0.01"
+            id="edit-exp-total"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 font-semibold"
+            placeholder="0.00"
+          />
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+            >Observação (Opcional)</label
+          >
+          <textarea
+            id="edit-exp-desc"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200"
+            placeholder="Ex: Troca de óleo"
+          ></textarea>
+        </div>
+      </div>
+      <!-- Campo de Observação para Ganhos -->
+      <div id="edit-observation-container">
+        <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+          >Observação (Opcional)</label
+        >
+        <textarea
+          id="edit-observation"
+          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200"
+          placeholder="Ex: Corrida com valor dinâmico"
+        ></textarea>
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-gray-900 text-white font-bold py-3 rounded-lg mt-2"
+      >
+        Salvar
+      </button>
+    </form>
+  </div>
+</div>

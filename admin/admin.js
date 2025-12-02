@@ -23,13 +23,26 @@ const loginForm = document.getElementById("login-form");
 const loginError = document.getElementById("login-error");
 const logoutBtn = document.getElementById("logout-btn");
 let allUsersData = []; // Cache para todos os dados de usuários
+let allCompaniesData = []; // Cache para todos os dados de empresas
 let heatmap = null; // Variável global para o mapa
 let unsubscribeDashboardListener = null; // Função para parar o listener do Firestore
+let unsubscribeCompaniesListener = null; // Função para parar o listener de empresas
+let currentEditingUserId = null; // Variável global para o ID do usuário atualmente em edição/visualização
+let unsubscribePendingCompaniesListener = null; // Listener para aprovações
+
+let currentDisplayedUserDetailsId = null; // ID do usuário atualmente exibido nos detalhes
 
 // Expondo funções para o escopo global para serem chamadas pelo HTML
 window.exportChartDataToCSV = exportChartDataToCSV;
 window.exportAllUsersToCSV = exportAllUsersToCSV;
 window.navigateToUserDetails = navigateToUserDetails; // Expondo a nova função
+window.openUserFormModal = openUserFormModal; // Expondo a nova função
+window.approveCompany = approveCompany; // Expondo a função de aprovar
+window.reproveCompany = reproveCompany; // Expondo a função de reprovar
+window.copyToClipboard = copyToClipboard; // Expondo a função de copiar
+window.deleteUser = deleteUser; // Expondo a função de apagar.
+
+window.renderConversationDetails = renderConversationDetails;
 
 /**
  * Monitora o estado de autenticação do usuário.
@@ -89,6 +102,15 @@ function initNavigation() {
     });
   });
 
+  document.getElementById("nav-approvals").addEventListener("click", (e) => {
+    navigateTo("view-approvals");
+  });
+
+  // Adiciona listener para a nova tela de Configurações
+  document.getElementById("nav-settings").addEventListener("click", (e) => {
+    navigateTo("view-settings");
+  });
+
   // Adiciona o listener para a busca de usuários
   document
     .getElementById("user-search-input")
@@ -102,18 +124,47 @@ function initNavigation() {
     .addEventListener("click", () => navigateTo("view-users"));
 
   // Adiciona o listener para o botão de recarregar
-  document.getElementById("refresh-data-btn").addEventListener("click", () => {
-    const btnIcon = document.querySelector("#refresh-data-btn i");
-    if (!btnIcon) return;
-    btnIcon.classList.add("animate-spin");
-    // A função processAndRenderData agora é chamada pelo listener, que vai recarregar tudo.
-    // A animação será removida dentro da própria função.
-  });
+  document
+    .getElementById("refresh-dashboard-btn")
+    .addEventListener("click", () => {
+      const btnIcon = document.querySelector("#refresh-dashboard-btn i");
+      if (!btnIcon) return;
+      btnIcon.classList.add("animate-spin");
+      // A função processAndRenderData agora é chamada pelo listener, que vai recarregar tudo.
+      // A animação será removida dentro da própria função.
+    });
 
-  // Adiciona listener para o botão de broadcast
-  const broadcastBtn = document.getElementById("open-broadcast-modal-btn");
-  if (broadcastBtn) {
-    broadcastBtn.onclick = () => openBroadcastModal();
+  // Event listeners para os botões de editar e apagar na view de detalhes do usuário
+  document
+    .getElementById("edit-user-details-btn")
+    .addEventListener("click", () => {
+      if (currentDisplayedUserDetailsId) {
+        openUserFormModal(currentDisplayedUserDetailsId);
+      } else {
+        alert("Nenhum usuário selecionado para edição.");
+      }
+    });
+
+  document
+    .getElementById("delete-user-details-btn")
+    .addEventListener("click", () => {
+      if (currentDisplayedUserDetailsId) {
+        deleteUser(currentDisplayedUserDetailsId);
+      } else {
+        alert("Nenhum usuário selecionado para apagar.");
+      }
+    });
+
+  // Adiciona listener apenas se o botão existir
+  const dossierBtn = document.getElementById("generate-dossier-btn");
+  if (dossierBtn) {
+    dossierBtn.addEventListener("click", () => {
+      if (currentDisplayedUserDetailsId) {
+        generateDossier(currentDisplayedUserDetailsId);
+      } else {
+        alert("Nenhum usuário selecionado para gerar dossiê.");
+      }
+    });
   }
 }
 
@@ -138,6 +189,33 @@ function navigateTo(viewId) {
   if (navLink) {
     navLink.classList.add("bg-gray-700");
   }
+
+  // --- Funções específicas de inicialização para cada view ---
+  if (viewId === "view-companies") {
+    listenForCompaniesUpdates();
+  }
+  if (viewId === "view-approvals") {
+    listenForPendingCompanies();
+  }
+  if (viewId === "view-chat") {
+    // Garante que a view principal de lista seja mostrada ao navegar para a aba
+    document.getElementById("chat-list-view").classList.remove("hidden");
+    document.getElementById("chat-details-view").classList.add("hidden");
+    listenForChats();
+    document.getElementById("back-to-chats-btn").onclick = () =>
+      navigateTo("view-chat");
+  }
+  if (viewId === "view-logs") {
+    listenForAdminLogs();
+  }
+  if (viewId === "view-dashboard") {
+    // Re-inicializa o mapa de calor apenas quando a aba do dashboard é selecionada
+    initHeatmap();
+    listenForDashboardUpdates();
+  }
+  if (viewId === "view-settings") {
+    loadAppSettings();
+  }
 }
 
 /**
@@ -146,101 +224,210 @@ function navigateTo(viewId) {
  */
 async function navigateToUserDetails(userId) {
   navigateTo("view-user-details");
-  const contentDiv = document.getElementById("user-details-content");
-  contentDiv.innerHTML = `<div class="text-center p-10"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto"></div><p class="mt-4 text-gray-500">Carregando detalhes do usuário...</p></div>`;
+  currentDisplayedUserDetailsId = userId;
 
-  const user = allUsersData.find((u) => u.id === userId);
-  if (!user) {
-    contentDiv.innerHTML = `<p class="text-red-500 text-center">Usuário não encontrado.</p>`;
-    return;
-  }
+  // Reset/Loading states
+  document.getElementById("user-details-name").textContent = "Carregando...";
+  document.getElementById(
+    "user-details-content"
+  ).innerHTML = `<div class="text-center p-10"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto"></div></div>`;
+  document.getElementById("user-stats-earnings").textContent = "...";
+  document.getElementById("user-stats-expenses").textContent = "...";
+  document.getElementById("user-stats-balance").textContent = "...";
+  document.getElementById("user-stats-records").textContent = "...";
+  document.getElementById("user-stats-avg-earning").textContent = "...";
+  document.getElementById("user-stats-fav-category").textContent = "...";
+  document.getElementById("user-recent-activity-table").innerHTML = "";
 
-  const totalEarnings = user.earnings.reduce((sum, e) => sum + e.totalValue, 0);
-  const totalExpenses = user.expenses.reduce((sum, e) => sum + e.totalValue, 0);
-  const balance = totalEarnings - totalExpenses;
+  try {
+    // 1. Fetch all data in parallel
+    const userPromise = db
+      .collection("artifacts")
+      .doc(appId)
+      .collection("users")
+      .doc(userId)
+      .get();
+    const earningsPromise = db
+      .collection("artifacts")
+      .doc(appId)
+      .collection("users")
+      .doc(userId)
+      .collection("earnings")
+      .get();
+    const expensesPromise = db
+      .collection("artifacts")
+      .doc(appId)
+      .collection("users")
+      .doc(userId)
+      .collection("expenses")
+      .get();
 
-  const allRecords = [
-    ...user.earnings.map((e) => ({ ...e, type: "Ganho" })),
-    ...user.expenses.map((e) => ({ ...e, type: "Despesa" })),
-  ].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const [userDoc, earningsSnap, expensesSnap] = await Promise.all([
+      userPromise,
+      earningsPromise,
+      expensesPromise,
+    ]);
 
-  contentDiv.innerHTML = `
-    <div class="bg-white p-6 rounded-lg shadow-md">
-      <div class="flex items-center gap-4">
-        <div class="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center"><i data-lucide="user" class="w-10 h-10 text-gray-500"></i></div>
-        <div>
-          <h2 class="text-2xl font-bold text-gray-800">${
-            user.publicProfile?.name || "Nome não informado"
-          }</h2>
-          <p class="text-sm text-gray-500">${user.email || user.id}</p>
-          <p class="text-xs text-gray-400 mt-1">ID: ${user.id}</p>
-        </div>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 border-t pt-4">
-        <div class="text-center"><p class="text-sm text-gray-500">Ganhos Totais</p><p class="font-bold text-lg text-green-600">R$ ${totalEarnings.toFixed(
-          2
-        )}</p></div>
-        <div class="text-center"><p class="text-sm text-gray-500">Despesas Totais</p><p class="font-bold text-lg text-red-600">R$ ${totalExpenses.toFixed(
-          2
-        )}</p></div>
-        <div class="text-center"><p class="text-sm text-gray-500">Saldo Geral</p><p class="font-bold text-lg ${
-          balance >= 0 ? "text-blue-600" : "text-orange-600"
-        }">R$ ${balance.toFixed(2)}</p></div>
-      </div>
-    </div>
+    if (!userDoc.exists) {
+      throw new Error("Usuário não encontrado.");
+    }
 
-    <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
-      <h3 class="font-bold text-lg text-gray-800 mb-4">Histórico de Lançamentos (${
-        allRecords.length
-      })</h3>
-      <div class="overflow-x-auto max-h-96">
-        <table class="w-full text-left text-sm">
-          <thead>
-            <tr class="text-xs font-bold text-gray-500 border-b">
-              <th class="p-2">Data</th>
-              <th class="p-2">Tipo</th>
-              <th class="p-2">Categoria/Observação</th>
-              <th class="p-2 text-right">Valor</th>
-            </tr>
-          </thead>
-          <tbody>
+    const user = { id: userDoc.id, ...userDoc.data() };
+    const earnings = earningsSnap.docs.map((doc) => doc.data());
+    const expenses = expensesSnap.docs.map((doc) => doc.data());
+
+    // 2. Render Profile Details
+    document.getElementById("user-details-name").textContent =
+      user.publicProfile?.name || user.email;
+
+    const contentDiv = document.getElementById("user-details-content");
+    let userDetailsHtml = "";
+    if (user.type === "company") {
+      // Render company details (assuming they are in the same doc for simplicity)
+      // This part can be expanded if company data is in a separate collection
+      userDetailsHtml = `<p>Detalhes da empresa a serem implementados.</p>`;
+    } else {
+      // Render motoboy details
+      const profile = user.publicProfile || {};
+      userDetailsHtml = `
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center"><i data-lucide="bike" class="w-8 h-8 text-gray-500"></i></div>
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800">${
+                profile.name || "Nome não informado"
+              }</h2>
+              <p class="text-sm text-gray-500">${user.email || userId}</p>
+              <span class="text-xs font-bold px-2 py-1 rounded-full bg-green-100 text-green-800">Motoboy</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+            <div><p class="text-xs text-gray-500">WhatsApp</p><p class="font-semibold">${
+              profile.whatsapp || "N/A"
+            }</p></div>
+            <div><p class="text-xs text-gray-500">Placa</p><p class="font-semibold">${
+              profile.motoPlate || "N/A"
+            }</p></div>
+            <div><p class="text-xs text-gray-500">Marca/Modelo</p><p class="font-semibold">${
+              profile.fipeModelText || "N/A"
+            }</p></div>
+            <div><p class="text-xs text-gray-500">Ano/Cor</p><p class="font-semibold">${
+              profile.motoYear || "N/A"
+            } - ${profile.motoColor || "N/A"}</p></div>
+            <div><p class="text-xs text-gray-500">RENAVAM</p><p class="font-semibold">${
+              profile.motoRenavam || "N/A"
+            }</p></div>
+            <div><p class="text-xs text-gray-500">Estado</p><p class="font-semibold">${
+              profile.motoState || "N/A"
+            }</p></div>
             ${
-              allRecords.length > 0
-                ? allRecords
-                    .map(
-                      (r) => `
-              <tr class="border-b hover:bg-gray-50">
-                <td class="p-2">${new Date(
-                  r.date + "T12:00:00"
-                ).toLocaleDateString("pt-BR")}</td>
-                <td class="p-2"><span class="px-2 py-1 text-xs rounded-full ${
-                  r.type === "Ganho"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }">${r.type}</span></td>
-                <td class="p-2">${r.category || r.observation || "-"}</td>
-                <td class="p-2 text-right font-mono ${
-                  r.type === "Ganho" ? "text-green-700" : "text-red-700"
-                }">R$ ${r.totalValue.toFixed(2)}</td>
-              </tr>`
-                    )
-                    .join("")
-                : '<tr><td colspan="4" class="text-center p-8 text-gray-400">Nenhum lançamento encontrado.</td></tr>'
+              profile.motoImageUrl
+                ? `
+              <div class="col-span-full">
+                <p class="text-xs text-gray-500 mb-1">Imagem da Moto</p>
+                <img src="${profile.motoImageUrl}" class="max-h-48 rounded-lg border"/>
+              </div>
+            `
+                : ""
             }
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-  lucide.createIcons();
+          </div>
+        </div>
+      `;
+    }
+    contentDiv.innerHTML = userDetailsHtml;
+    lucide.createIcons();
 
-  // Adiciona o listener para o botão de apagar
-  updateUserActionSection(user);
+    // 3. Calculate and Render Stats
+    const totalEarnings = earnings.reduce(
+      (sum, item) => sum + item.totalValue,
+      0
+    );
+    const totalExpenses = expenses.reduce(
+      (sum, item) => sum + item.totalValue,
+      0
+    );
+    const balance = totalEarnings - totalExpenses;
+    const totalRecords = earnings.length + expenses.length;
+    const avgEarning =
+      earnings.length > 0 ? totalEarnings / earnings.length : 0;
 
-  // Adiciona listener para abrir o modal de notificação
-  document.getElementById("open-notification-modal-btn").onclick = () => {
-    openNotificationModal(user);
-  };
+    const expenseCategoryCounts = expenses.reduce((acc, item) => {
+      acc[item.category] = (acc[item.category] || 0) + 1;
+      return acc;
+    }, {});
+    const favCategory = Object.keys(expenseCategoryCounts).reduce(
+      (a, b) => (expenseCategoryCounts[a] > expenseCategoryCounts[b] ? a : b),
+      "N/A"
+    );
+
+    document.getElementById(
+      "user-stats-earnings"
+    ).textContent = `R$ ${totalEarnings.toFixed(2)}`;
+    document.getElementById(
+      "user-stats-expenses"
+    ).textContent = `R$ ${totalExpenses.toFixed(2)}`;
+    document.getElementById(
+      "user-stats-balance"
+    ).textContent = `R$ ${balance.toFixed(2)}`;
+    document.getElementById("user-stats-records").textContent = totalRecords;
+    document.getElementById(
+      "user-stats-avg-earning"
+    ).textContent = `R$ ${avgEarning.toFixed(2)}`;
+    document.getElementById("user-stats-fav-category").textContent =
+      favCategory;
+
+    // 4. Render Recent Activity
+    const recentActivity = [...earnings, ...expenses]
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 10);
+
+    const activityTable = document.getElementById("user-recent-activity-table");
+    if (recentActivity.length > 0) {
+      activityTable.innerHTML = recentActivity
+        .map((item) => {
+          const isEarning = !item.category.startsWith("combustivel"); // Simplification
+          return `
+          <tr class="text-sm">
+            <td class="p-2">${new Date(
+              item.date + "T00:00:00"
+            ).toLocaleDateString("pt-BR")}</td>
+            <td class="p-2">
+              <span class="px-2 py-1 text-xs font-bold rounded-full ${
+                isEarning
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }">
+                ${isEarning ? "Ganho" : "Despesa"}
+              </span>
+            </td>
+            <td class="p-2">${item.category}</td>
+            <td class="p-2 font-bold ${
+              isEarning ? "text-green-600" : "text-red-600"
+            }">R$ ${item.totalValue.toFixed(2)}</td>
+          </tr>
+        `;
+        })
+        .join("");
+    } else {
+      activityTable.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-gray-400">Nenhuma atividade recente.</td></tr>`;
+    }
+
+    // 5. Setup Action Buttons
+    updateUserActionSection(user);
+    document.getElementById("open-notification-modal-btn").onclick = () =>
+      openNotificationModal(user);
+    document.getElementById("edit-user-details-btn").onclick = () =>
+      openUserFormModal(userId);
+    document.getElementById("delete-user-details-btn").onclick = () =>
+      deleteUser(userId);
+    document.getElementById("generate-dossier-btn").onclick = () =>
+      generateDossier(userId);
+  } catch (error) {
+    console.error("Erro ao buscar detalhes do usuário:", error);
+    document.getElementById(
+      "user-details-content"
+    ).innerHTML = `<p class="text-red-500 text-center">Ocorreu um erro ao carregar os dados.</p>`;
+  }
 }
 
 /**
@@ -268,8 +455,6 @@ function openNotificationModal(user) {
 
   form.onsubmit = async (e) => {
     e.preventDefault();
-    const title = titleInput.value || "Mensagem do Administrador";
-    const message = messageInput.value;
 
     try {
       await sendNotificationToUser(
@@ -518,7 +703,7 @@ function listenForDashboardUpdates() {
   );
 
   // Inicia o listener para o log de atividades
-  listenForAdminLogs();
+  listenForAdminLogs(); // Agora esta função existe
 }
 
 async function processAndRenderData(usersData) {
@@ -671,11 +856,23 @@ async function processAndRenderData(usersData) {
  * @param {string} userId - O ID do usuário a ser apagado.
  */
 async function deleteUser(userId) {
-  const user = allUsersData.find((u) => u.id === userId);
+  // Busca os dados do usuário diretamente para garantir que temos as informações corretas
+  const userDoc = await db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("users")
+    .doc(userId)
+    .get();
+  const companyDoc = await db.collection("companies").doc(userId).get();
+
+  let userEmail = "ID: " + userId;
+  if (userDoc.exists && userDoc.data().email) {
+    userEmail = userDoc.data().email;
+  } else if (companyDoc.exists && companyDoc.data().email) {
+    userEmail = companyDoc.data().email;
+  }
   const confirmation = prompt(
-    `ATENÇÃO: Esta ação é IRREVERSÍVEL.\n\nVocê está prestes a apagar o usuário ${
-      user.email || user.id
-    } e todos os seus dados.\n\nPara confirmar, digite "APAGAR" no campo abaixo:`
+    `ATENÇÃO: Esta ação é IRREVERSÍVEL.\n\nVocê está prestes a apagar o usuário ${userEmail} e todos os seus dados (incluindo perfil de empresa, se houver).\n\nPara confirmar, digite "APAGAR" no campo abaixo:`
   );
 
   if (confirmation !== "APAGAR") {
@@ -696,6 +893,16 @@ async function deleteUser(userId) {
     // Para um app em produção, a exclusão de subcoleções deve ser feita no backend.
     await userRef.delete();
 
+    // Tenta apagar da coleção 'companies' se existir (para empresas)
+    const companyRef = db.collection("companies").doc(userId);
+    await companyRef
+      .delete()
+      .catch((e) =>
+        console.log(
+          "Usuário não era empresa ou já foi apagado da coleção 'companies'."
+        )
+      );
+
     alert("Usuário apagado com sucesso!");
     navigateTo("view-users"); // Volta para a lista de usuários
     // O listener onSnapshot irá recarregar os dados automaticamente.
@@ -706,6 +913,591 @@ async function deleteUser(userId) {
     );
   }
 }
+
+/**
+ * Gera um dossiê HTML completo para um usuário.
+ * @param {string} userId - O ID do usuário.
+ */
+async function generateDossier(userId) {
+  const dossierWindow = window.open("", "_blank");
+  dossierWindow.document.write(
+    "<html><head><title>Dossiê do Usuário</title><script src='https://cdn.tailwindcss.com'></script></head><body class='bg-gray-100 p-10'><h1 class='text-2xl font-bold mb-4'>Gerando Dossiê...</h1></body></html>"
+  );
+
+  try {
+    // 1. Coleta de Dados em Paralelo
+    const userRef = db
+      .collection("artifacts")
+      .doc(appId)
+      .collection("users")
+      .doc(userId);
+    const companyRef = db.collection("companies").doc(userId);
+
+    const [
+      userDoc,
+      companyDoc,
+      earningsSnap,
+      expensesSnap,
+      notificationsSnap,
+      adminLogsSnap,
+      chatsSnap,
+    ] = await Promise.all([
+      userRef.get(),
+      companyRef.get(),
+      userRef.collection("earnings").orderBy("date", "desc").get(),
+      userRef.collection("expenses").orderBy("date", "desc").get(),
+      userRef.collection("notifications").orderBy("createdAt", "desc").get(),
+      db
+        .collection("artifacts")
+        .doc(appId)
+        .collection("admin_logs")
+        .where("targetUserId", "==", userId)
+        .get(),
+      db.collection("jobs").where("motoboyId", "==", userId).get(), // Isso pode precisar de ajuste dependendo de como o chat é modelado
+    ]);
+
+    const user = userDoc.exists ? { id: userDoc.id, ...userDoc.data() } : null;
+    const company = companyDoc.exists
+      ? { id: companyDoc.id, ...companyDoc.data() }
+      : null;
+
+    // Função auxiliar para formatar datas
+    const formatDate = (timestamp) => {
+      if (!timestamp) return "N/A";
+      return new Date(timestamp.seconds * 1000).toLocaleString("pt-BR");
+    };
+
+    // 2. Construção do HTML do Dossiê
+    let html = `
+      <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+        <div class="flex justify-between items-center border-b pb-4">
+          <h1 class="text-3xl font-bold text-gray-800">Dossiê de Atividades</h1>
+          <button onclick="window.print()" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Imprimir / Salvar PDF
+          </button>
+        </div>
+        <div class="mt-6">
+          <h2 class="text-xl font-bold text-gray-700 border-b pb-2 mb-4">Informações Principais</h2>
+    `;
+
+    // Informações do Usuário/Empresa
+    if (user) {
+      html += `
+        <div class="grid grid-cols-2 gap-4">
+          <div><p class="text-sm text-gray-500">ID do Usuário</p><p class="font-semibold">${
+            user.id
+          }</p></div>
+          <div><p class="text-sm text-gray-500">Email</p><p class="font-semibold">${
+            user.email || "N/A"
+          }</p></div>
+          <div><p class="text-sm text-gray-500">Data de Cadastro</p><p class="font-semibold">${formatDate(
+            user.createdAt
+          )}</p></div>
+          <div><p class="text-sm text-gray-500">Status da Conta</p><p class="font-semibold">${
+            user.accountStatus || "N/A"
+          }</p></div>
+          <div><p class="text-sm text-gray-500">Último Acesso</p><p class="font-semibold">${formatDate(
+            user.status?.lastSeen
+          )}</p></div>
+        </div>
+      `;
+      if (user.publicProfile) {
+        html +=
+          '<h3 class="text-lg font-bold text-gray-600 mt-4">Perfil Público (Motoboy)</h3>';
+        html += '<div class="grid grid-cols-2 gap-4 mt-2">';
+        for (const [key, value] of Object.entries(user.publicProfile)) {
+          html += `<div><p class="text-sm text-gray-500">${key}</p><p class="font-semibold">${
+            value || "N/A"
+          }</p></div>`;
+        }
+        html += "</div>";
+      }
+    }
+    if (company) {
+      html +=
+        '<h3 class="text-lg font-bold text-gray-600 mt-4">Dados da Empresa</h3>';
+      html += '<div class="grid grid-cols-2 gap-4 mt-2">';
+      for (const [key, value] of Object.entries(company)) {
+        if (typeof value !== "object") {
+          // Evita imprimir objetos aninhados
+          html += `<div><p class="text-sm text-gray-500">${key}</p><p class="font-semibold">${
+            value || "N/A"
+          }</p></div>`;
+        }
+      }
+      html += "</div>";
+    }
+
+    // Função para gerar tabelas
+    const generateTable = (title, headers, data) => {
+      let tableHtml = `<div class="mt-8"><h2 class="text-xl font-bold text-gray-700 border-b pb-2 mb-4">${title}</h2>`;
+      if (data.length === 0) {
+        tableHtml += '<p class="text-gray-500">Nenhum registro encontrado.</p>';
+      } else {
+        tableHtml += '<table class="w-full text-left border-collapse">';
+        tableHtml +=
+          "<thead><tr>" +
+          headers
+            .map((h) => `<th class="border-b p-2 bg-gray-50">${h}</th>`)
+            .join("") +
+          "</tr></thead>";
+        tableHtml += "<tbody>";
+        data.forEach((row) => {
+          tableHtml +=
+            "<tr>" +
+            row
+              .map((cell) => `<td class="border-b p-2">${cell}</td>`)
+              .join("") +
+            "</tr>";
+        });
+        tableHtml += "</tbody></table>";
+      }
+      return tableHtml + "</div>";
+    };
+
+    // Tabela de Ganhos
+    html += generateTable(
+      "Registros de Ganhos",
+      ["Data", "Categoria", "Valor", "Origem", "Placa"],
+      earningsSnap.docs.map((doc) => {
+        const d = doc.data();
+        return [d.date, d.category, `R$ ${d.value}`, d.origin, d.vehicleId];
+      })
+    );
+
+    // Tabela de Despesas
+    html += generateTable(
+      "Registros de Despesas",
+      ["Data", "Categoria", "Valor", "Descrição"],
+      expensesSnap.docs.map((doc) => {
+        const d = doc.data();
+        return [d.date, d.category, `R$ ${d.value}`, d.description];
+      })
+    );
+
+    // Tabela de Notificações
+    html += generateTable(
+      "Notificações Enviadas ao Usuário",
+      ["Data", "Título", "Mensagem"],
+      notificationsSnap.docs.map((doc) => {
+        const d = doc.data();
+        return [formatDate(d.createdAt), d.title, d.message];
+      })
+    );
+
+    // Tabela de Logs do Admin
+    html += generateTable(
+      "Logs de Admin Relacionados",
+      ["Data", "Ação", "Admin", "Detalhes"],
+      adminLogsSnap.docs.map((doc) => {
+        const d = doc.data();
+        return [
+          formatDate(d.timestamp),
+          d.action,
+          d.adminEmail,
+          JSON.stringify(d.details),
+        ];
+      })
+    );
+
+    // Tabela de Chats
+    html += generateTable(
+      "Participação em Chats de Vagas",
+      ["Vaga", "Empresa", "Status da Vaga"],
+      chatsSnap.docs.map((doc) => {
+        const d = doc.data();
+        return [d.title, d.empresaName, d.status];
+      })
+    );
+
+    html += "</div></div>"; // Fecha as tags principais
+
+    // 3. Escreve o HTML final na nova janela
+    dossierWindow.document.body.innerHTML = html;
+    dossierWindow.document.close();
+  } catch (error) {
+    console.error("Erro ao gerar dossiê:", error);
+    dossierWindow.document.body.innerHTML = `<p class="text-red-500 font-bold">Erro ao gerar dossiê: ${error.message}</p>`;
+  }
+}
+
+/**
+ * Salva (cria ou atualiza) os dados de um usuário no Firestore.
+ * @param {object} formData - Os dados do formulário do usuário.
+ */
+async function saveUser(formData) {
+  const userFormModal = document.getElementById("user-form-modal");
+  const userId = formData.id; // Existing userId if editing, null if new
+  const isNewUser = !userId;
+
+  try {
+    // 1. Prepare user data for Firestore
+    const userData = {
+      email: formData.email,
+      publicProfile: {
+        name: formData.name,
+        whatsapp: formData.whatsapp,
+        // Common motoboy fields
+        motoPlate: formData.motoPlate,
+        fipeModelText: formData.motoModel,
+        motoYear: parseInt(formData.motoYear) || null,
+        motoColor: formData.motoColor,
+        motoRenavam: formData.motoRenavam,
+        motoState: formData.motoState,
+        motoImageUrl: formData.motoImageUrl,
+      },
+      type: formData.type, // 'motoboy' or 'company'
+      accountStatus: "active", // Default status for new users
+      createdAt: isNewUser
+        ? firebase.firestore.FieldValue.serverTimestamp()
+        : undefined, // Only set for new users
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    // 2. Handle 'company' specific fields
+    const companyData = {
+      name: formData.name,
+      email: formData.email,
+      cnpj: formData.cnpj,
+      phone: formData.phone,
+      address: formData.address,
+      createdAt: isNewUser
+        ? firebase.firestore.FieldValue.serverTimestamp()
+        : undefined,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    let targetUserId = userId; // Will be the same if editing, or new UID if creating Auth user
+
+    if (isNewUser) {
+      // For new users, we need to create a Firebase Auth user to get a UID
+      // IMPORTANT: Directly creating users from client-side is generally NOT recommended for production apps
+      // as it exposes admin credentials or allows unauthenticated creation.
+      // A Cloud Function should be used for this. For this demo, we proceed with client-side for simplicity.
+      const password = prompt(
+        "Defina uma senha provisória para o novo usuário:"
+      );
+      if (!password) {
+        alert("Senha é obrigatória para criar um novo usuário.");
+        return;
+      }
+      if (password.length < 6) {
+        alert("A senha deve ter pelo menos 6 caracteres.");
+        return;
+      }
+
+      const userCredential = await auth.createUserWithEmailAndPassword(
+        formData.email,
+        password
+      );
+      targetUserId = userCredential.user.uid;
+      alert(
+        "Usuário de autenticação criado com sucesso! Agora salvando os dados no Firestore."
+      );
+      userData.uid = targetUserId; // Store UID in Firestore document
+    }
+
+    // 3. Save/Update in Firestore
+    const userDocRef = db
+      .collection("artifacts")
+      .doc(appId)
+      .collection("users")
+      .doc(targetUserId);
+
+    if (formData.type === "company") {
+      // Save to 'companies' collection
+      const companyDocRef = db.collection("companies").doc(targetUserId);
+      await companyDocRef.set(companyData, { merge: true }); // Use merge for updates
+      // Remove motoboy-specific publicProfile fields
+      delete userData.publicProfile.motoPlate;
+      delete userData.publicProfile.fipeModelText;
+      delete userData.publicProfile.motoYear;
+      delete userData.publicProfile.motoColor;
+      delete userData.publicProfile.motoRenavam;
+      delete userData.publicProfile.motoState;
+      delete userData.publicProfile.motoImageUrl;
+    } else {
+      // 'motoboy' type
+      // Ensure 'company' data is cleared/not set if type changes from company to motoboy
+      // This is a simplification; in a real app, you might have separate forms/logic.
+      const companyDocRef = db.collection("companies").doc(targetUserId);
+      await companyDocRef
+        .delete()
+        .catch((e) =>
+          console.log(
+            "Não havia doc de empresa para este ID ou já foi apagado."
+          )
+        );
+      // Ensure publicProfile exists
+      if (!userData.publicProfile) userData.publicProfile = {};
+    }
+
+    await userDocRef.set(userData, { merge: true }); // Use merge for updates
+
+    alert(`Usuário ${isNewUser ? "criado" : "atualizado"} com sucesso!`);
+    userFormModal.classList.add("hidden"); // Esconde o modal
+    navigateTo("view-users"); // Volta para a lista de usuários
+    // O listener onSnapshot vai recarregar os dados.
+
+    logAdminAction(
+      isNewUser ? "create_user" : "update_user",
+      targetUserId,
+      formData.email,
+      formData
+    );
+  } catch (error) {
+    console.error("Erro ao salvar usuário:", error);
+    alert(`Erro ao salvar usuário: ${error.message}`);
+  }
+}
+
+/**
+ * Inicia o listener do Firestore para atualizações em tempo real das empresas.
+ */
+function listenForCompaniesUpdates() {
+  // Se já houver um listener, cancela antes de criar um novo
+  if (unsubscribeCompaniesListener) unsubscribeCompaniesListener();
+
+  const companiesQuery = db.collection("companies");
+
+  unsubscribeCompaniesListener = companiesQuery.onSnapshot(
+    (companiesSnapshot) => {
+      console.log("🔄 Dados das empresas atualizados em tempo real!");
+      const companiesData = companiesSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        type: "company", // Adiciona o tipo para facilitar o reuso do formulário
+      }));
+      allCompaniesData = companiesData; // Atualiza o cache global com os dados mais recentes
+
+      renderAllCompaniesTable(); // Renderiza a tabela completa na view de empresas
+    },
+    (error) => {
+      console.error("Erro no listener de empresas:", error);
+      alert(
+        "Erro ao receber atualizações em tempo real das empresas. Verifique o console."
+      );
+    }
+  );
+}
+
+/**
+ * Inicia o listener do Firestore para empresas aguardando aprovação.
+ */
+function listenForPendingCompanies() {
+  if (unsubscribePendingCompaniesListener)
+    unsubscribePendingCompaniesListener();
+
+  const pendingQuery = db
+    .collection("companies")
+    .where("status", "==", "pending");
+
+  unsubscribePendingCompaniesListener = pendingQuery.onSnapshot(
+    (snapshot) => {
+      const pendingCompanies = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      renderPendingCompaniesTable(pendingCompanies);
+
+      // Atualiza o indicador no menu
+      const indicator = document.getElementById("pending-approvals-indicator");
+      if (pendingCompanies.length > 0) {
+        indicator.textContent = pendingCompanies.length;
+        indicator.classList.remove("hidden");
+      } else {
+        indicator.classList.add("hidden");
+      }
+    },
+    (error) => {
+      console.error("Erro ao buscar empresas pendentes:", error);
+      alert("Não foi possível carregar a lista de aprovações.");
+    }
+  );
+}
+
+/**
+ * Renderiza a tabela de empresas aguardando aprovação.
+ * @param {Array} companies - Lista de empresas com status 'pending'.
+ */
+function renderPendingCompaniesTable(companies) {
+  const tableBody = document.getElementById("pending-companies-table-body");
+  if (!tableBody) return;
+
+  if (companies.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-gray-400">Nenhuma empresa aguardando aprovação.</td></tr>`;
+    return;
+  }
+
+  tableBody.innerHTML = companies
+    .map(
+      (company) => `
+    <tr class="text-sm text-gray-700 border-b">
+      <td class="p-3 font-medium">${company.name}</td>
+      <td class="p-3">${company.cnpj}</td>
+      <td class="p-3">${company.email}</td>
+      <td class="p-3">${company.whatsapp || "N/A"}</td>
+      <td class="p-3">${company.address || "N/A"}</td>
+      <td class="p-3">${
+        company.createdAt
+          ? new Date(company.createdAt.seconds * 1000).toLocaleDateString()
+          : "N/A"
+      }</td>
+      <td class="p-3 flex items-center space-x-2">
+        <button onclick="approveCompany('${
+          company.id
+        }')" class="bg-green-500 text-white px-3 py-1 rounded-md text-xs font-bold hover:bg-green-600">Aprovar</button>
+        <button onclick="reproveCompany('${
+          company.id
+        }')" class="bg-red-500 text-white px-3 py-1 rounded-md text-xs font-bold hover:bg-red-600">Reprovar</button>
+      </td>
+    </tr>
+  `
+    )
+    .join("");
+}
+
+/**
+ * Aprova o cadastro de uma empresa.
+ * @param {string} companyId - O ID da empresa a ser aprovada.
+ */
+async function approveCompany(companyId) {
+  if (!confirm("Tem certeza que deseja aprovar esta empresa?")) return;
+
+  try {
+    const companyRef = db.collection("companies").doc(companyId);
+    const companySnap = await companyRef.get();
+    if (!companySnap.exists()) {
+      throw new Error("Empresa não encontrada.");
+    }
+    const companyData = companySnap.data();
+
+    // Atualiza o status da empresa
+    await companyRef.update({ status: "approved" });
+    logAdminAction("approve_company", companyId, `Empresa ID: ${companyId}`);
+    alert("Empresa aprovada com sucesso!");
+
+    // Mostra o modal com as mensagens para copiar
+    showApprovalMessages(companyData);
+  } catch (error) {
+    console.error("Erro ao aprovar empresa:", error);
+    alert("Ocorreu um erro: " + error.message);
+  }
+}
+
+/**
+ * Exibe o modal com as mensagens de aprovação para copiar.
+ * @param {object} companyData - Os dados da empresa aprovada.
+ */
+function showApprovalMessages(companyData) {
+  const modal = document.getElementById("approval-message-modal");
+  const whatsappMsgEl = document.getElementById("whatsapp-message");
+  const emailMsgEl = document.getElementById("email-message");
+
+  const loginLink = "http://localhost/motoCash/empresa/"; // Altere para o link de produção
+
+  const whatsappMessage = `Olá, ${companyData.name}! 👋 Boas notícias! Seu cadastro no AppMotoCash foi aprovado. Você já pode acessar seu painel e começar a publicar vagas para os melhores motoboys da região. Acesse agora: ${loginLink}`;
+  const emailMessage = `Assunto: Seu cadastro no AppMotoCash foi Aprovado!
+
+Olá, ${companyData.name}!
+
+Temos ótimas notícias! Sua conta para a empresa ${companyData.name} foi aprovada em nossa plataforma.
+
+Você já pode acessar seu painel, publicar vagas e encontrar os melhores motoboys freelancers para suas entregas.
+
+Acesse seu painel agora: ${loginLink}
+
+Atenciosamente,
+Equipe AppMotoCash`;
+
+  whatsappMsgEl.value = whatsappMessage;
+  emailMsgEl.value = emailMessage;
+
+  modal.classList.remove("hidden");
+  document.getElementById("close-approval-modal-btn").onclick = () =>
+    modal.classList.add("hidden");
+}
+
+function copyToClipboard(elementId) {
+  const textarea = document.getElementById(elementId);
+  textarea.select();
+  document.execCommand("copy");
+  alert("Texto copiado para a área de transferência!");
+}
+
+/**
+ * Reprova o cadastro de uma empresa.
+ * @param {string} companyId - O ID da empresa a ser reprovada.
+ */
+async function reproveCompany(companyId) {
+  if (
+    !confirm(
+      "Tem certeza que deseja reprovar e apagar o cadastro desta empresa? Esta ação não pode ser desfeita."
+    )
+  )
+    return;
+  // Por segurança, em vez de apagar o usuário do Auth (o que é complexo no cliente),
+  // vamos apenas apagar o registro da empresa. O usuário no Auth ficará órfão, mas não conseguirá logar.
+  await db.collection("companies").doc(companyId).delete();
+  logAdminAction("reprove_company", companyId, `Empresa ID: ${companyId}`);
+  alert("Cadastro da empresa foi reprovado e removido.");
+}
+
+/**
+ * Inicia o listener para o log de atividades do admin.
+ */
+function listenForAdminLogs() {
+  const logsQuery = db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("admin_logs")
+    .orderBy("timestamp", "desc")
+    .limit(50);
+
+  logsQuery.onSnapshot(
+    (snapshot) => {
+      const logs = snapshot.docs.map((doc) => doc.data());
+      renderAdminLogsTable(logs);
+    },
+    (error) => {
+      console.error("Erro ao buscar logs de admin:", error);
+    }
+  );
+}
+
+/**
+ * Renderiza a tabela de logs de atividades do admin.
+ * @param {Array} logs - Lista de logs.
+ */
+function renderAdminLogsTable(logs) {
+  const tableBody = document.getElementById("admin-logs-table-body");
+  if (!tableBody) return;
+
+  if (logs.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-gray-400">Nenhum log de atividade encontrado.</td></tr>`;
+    return;
+  }
+
+  tableBody.innerHTML = logs
+    .map(
+      (log) => `
+    <tr class="text-xs text-gray-600 border-b">
+      <td class="p-2">${
+        log.timestamp
+          ? new Date(log.timestamp.seconds * 1000).toLocaleString("pt-BR")
+          : "N/A"
+      }</td>
+      <td class="p-2 font-mono">${log.action}</td>
+      <td class="p-2">${log.adminEmail}</td>
+      <td class="p-2">${log.targetUserEmail || "N/A"}</td>
+      <td class="p-2 text-gray-500">${JSON.stringify(log.details)}</td>
+    </tr>
+  `
+    )
+    .join("");
+}
+
 /**
  * Renderiza o gráfico de novos usuários.
  * @param {Array} users - Lista de todos os usuários.
@@ -781,14 +1573,10 @@ async function renderLocationReports(users) {
   // Processa as requisições sequencialmente para não sobrecarregar a API
   for (const user of usersWithLocation) {
     try {
-      // API gratuita de reverse geocoding. Cuidado com limites de uso para apps grandes.
+      // **CORREÇÃO CORS:** Usando um proxy CORS estável
+      const apiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${user.status.location.latitude}&lon=${user.status.location.longitude}`;
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${user.status.location.latitude}&lon=${user.status.location.longitude}`,
-        {
-          headers: {
-            "User-Agent": "AppMotoCashAdmin/1.0", // Política da Nominatim exige um User-Agent
-          },
-        }
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`
       );
       if (!response.ok) continue; // Pula para o próximo se a resposta não for OK
 
@@ -799,7 +1587,7 @@ async function renderLocationReports(users) {
         cityCounts[city] = (cityCounts[city] || 0) + 1;
       }
     } catch (error) {
-      console.warn("Erro no reverse geocoding:", error);
+      console.error("Erro no reverse geocoding:", error);
     }
   }
 
@@ -993,32 +1781,42 @@ function renderAllUsersTable(searchTerm = "") {
     filteredUsers.length;
 
   if (filteredUsers.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-gray-400">Nenhum usuário encontrado.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-gray-400">Nenhum usuário encontrado.</td></tr>`;
     return;
   }
 
   tableBody.innerHTML = filteredUsers
     .map(
       (user) => `
-        <tr class="text-sm text-gray-700 border-b hover:bg-gray-50 cursor-pointer" onclick="navigateToUserDetails('${
-          user.id
-        }')">
-            <td class="p-3">${user.publicProfile?.name || "Não informado"}</td>
-            <td class="p-3">${user.email || user.id}</td>
-            <td class="p-3">${
-              user.createdAt
-                ? new Date(user.createdAt.seconds * 1000).toLocaleDateString()
-                : "N/A"
-            }</td>
-            <td class="p-3">${
-              user.status?.lastSeen
-                ? new Date(user.status.lastSeen.seconds * 1000).toLocaleString(
-                    "pt-BR"
-                  )
-                : "Nunca"
-            }</td>
-            <td class="p-3 font-bold text-center">${user.totalRecords}</td>
-            <td class="p-3">
+        <tr class="text-sm text-gray-700 border-b hover:bg-gray-50">
+            <td class="p-3 cursor-pointer" onclick="navigateToUserDetails('${
+              user.id
+            }')">${user.publicProfile?.name || "Não informado"}</td>
+            <td class="p-3 cursor-pointer" onclick="navigateToUserDetails('${
+              user.id
+            }')">${user.email || user.id}</td>
+            <td class="p-3 cursor-pointer" onclick="navigateToUserDetails('${
+              user.id
+            }')">${
+        user.createdAt
+          ? new Date(user.createdAt.seconds * 1000).toLocaleDateString()
+          : "N/A"
+      }</td>
+            <td class="p-3 cursor-pointer" onclick="navigateToUserDetails('${
+              user.id
+            }')">${
+        user.status?.lastSeen
+          ? new Date(user.status.lastSeen.seconds * 1000).toLocaleString(
+              "pt-BR"
+            )
+          : "Nunca"
+      }</td>
+            <td class="p-3 font-bold text-center cursor-pointer" onclick="navigateToUserDetails('${
+              user.id
+            }')">${user.totalRecords}</td>
+            <td class="p-3 cursor-pointer" onclick="navigateToUserDetails('${
+              user.id
+            }')">
               ${
                 user.accountStatus === "suspended"
                   ? `<span class="px-2 py-1 text-xs font-bold rounded-full bg-yellow-100 text-yellow-800">Suspenso</span>`
@@ -1031,10 +1829,189 @@ function renderAllUsersTable(searchTerm = "") {
                 </span>`
               }
             </td>
+            <td class="p-3 flex items-center space-x-2">
+                <button title="Editar Usuário" onclick="openUserFormModal('${
+                  user.id
+                }')" class="text-blue-600 hover:text-blue-800">
+                    <i data-lucide="edit" class="w-4 h-4"></i>
+                </button>
+                <button title="Apagar Usuário" onclick="deleteUser('${
+                  user.id
+                }')" class="text-red-600 hover:text-red-800">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </td>
         </tr>
     `
     )
     .join("");
+  lucide.createIcons(); // Renderiza os ícones recém-adicionados
+}
+
+/**
+ * Renderiza a tabela completa de empresas com filtro de busca.
+ * @param {string} searchTerm - Termo para filtrar empresas por nome ou email.
+ */
+function renderAllCompaniesTable(searchTerm = "") {
+  const tableBody = document.getElementById("all-companies-table-body");
+  if (!tableBody) return;
+
+  const filteredCompanies = allCompaniesData.filter(
+    (company) =>
+      (company.name?.toLowerCase() || "").includes(searchTerm) ||
+      (company.email?.toLowerCase() || "").includes(searchTerm) ||
+      (company.cnpj?.toLowerCase() || "").includes(searchTerm)
+  );
+
+  document.getElementById("company-count-display").textContent =
+    filteredCompanies.length;
+
+  if (filteredCompanies.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-gray-400">Nenhuma empresa encontrada.</td></tr>`;
+    return;
+  }
+
+  tableBody.innerHTML = filteredCompanies
+    .map(
+      (company) => `
+        <tr class="text-sm text-gray-700 border-b hover:bg-gray-50">
+            <td class="p-3">${company.name || "Não informado"}</td>
+            <td class="p-3">${company.email || company.id}</td>
+            <td class="p-3">${company.cnpj || "N/A"}</td>
+            <td class="p-3">${company.phone || "N/A"}</td>
+            <td class="p-3">${company.address || "N/A"}</td>
+            <td class="p-3">${
+              company.createdAt
+                ? new Date(
+                    company.createdAt.seconds * 1000
+                  ).toLocaleDateString()
+                : "N/A"
+            }</td>
+            <td class="p-3 flex items-center space-x-2">
+                <button title="Editar Empresa" onclick="openUserFormModal('${
+                  company.id
+                }', 'company')" class="text-blue-600 hover:text-blue-800">
+                    <i data-lucide="edit" class="w-4 h-4"></i>
+                </button>
+                <button title="Apagar Empresa" onclick="deleteUser('${
+                  company.id
+                }')" class="text-red-600 hover:text-red-800">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </td>
+        </tr>
+    `
+    )
+    .join("");
+  lucide.createIcons(); // Renderiza os ícones recém-adicionados
+}
+
+/**
+ * Busca e renderiza a lista de conversas de vagas.
+ */
+function listenForChats() {
+  const tableBody = document.getElementById("all-chats-table-body");
+  if (!tableBody) return;
+  tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-gray-400">Carregando conversas...</td></tr>`;
+
+  // Busca vagas que estão ou estiveram em negociação
+  db.collection("jobs")
+    .where("status", "in", ["negociando", "concluida", "cancelada"])
+    .orderBy("createdAt", "desc")
+    .onSnapshot((snapshot) => {
+      if (snapshot.empty) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-gray-400">Nenhuma conversa encontrada.</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = snapshot.docs
+        .map((doc) => {
+          const job = doc.data();
+          return `
+          <tr class="text-sm text-gray-700 border-b hover:bg-gray-50">
+            <td class="p-3 font-medium">${job.title}</td>
+            <td class="p-3">${job.empresaName || "N/A"}</td>
+            <td class="p-3">${job.motoboyName || "N/A"}</td>
+            <td class="p-3">${new Date(
+              job.createdAt.seconds * 1000
+            ).toLocaleDateString()}</td>
+            <td class="p-3">
+              <button onclick="renderConversationDetails('${
+                doc.id
+              }')" class="text-blue-600 hover:underline text-xs font-bold">
+                Ver Conversa
+              </button>
+            </td>
+          </tr>
+        `;
+        })
+        .join("");
+    });
+}
+
+/**
+ * Renderiza os detalhes e as mensagens de uma conversa específica.
+ * @param {string} jobId - O ID da vaga (job) que contém a conversa.
+ */
+function renderConversationDetails(jobId) {
+  document.getElementById("chat-list-view").classList.add("hidden");
+  const detailsView = document.getElementById("chat-details-view");
+  detailsView.classList.remove("hidden");
+
+  const titleEl = document.getElementById("chat-details-title");
+  const messagesContainer = document.getElementById("chat-messages-container");
+  titleEl.textContent = "Carregando conversa...";
+  messagesContainer.innerHTML = `<p class="text-center text-gray-500">Buscando mensagens...</p>`;
+
+  // Busca os detalhes da vaga
+  db.collection("jobs")
+    .doc(jobId)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        const job = doc.data();
+        titleEl.textContent = `Conversa: ${job.title}`;
+      }
+    });
+
+  // Busca as mensagens da subcoleção
+  db.collection("jobs")
+    .doc(jobId)
+    .collection("messages")
+    .orderBy("createdAt", "asc")
+    .onSnapshot((snapshot) => {
+      if (snapshot.empty) {
+        messagesContainer.innerHTML = `<p class="text-center text-gray-500">Nenhuma mensagem nesta conversa.</p>`;
+        return;
+      }
+
+      messagesContainer.innerHTML = snapshot.docs
+        .map((doc) => {
+          const msg = doc.data();
+          const senderName =
+            msg.senderName ||
+            (msg.senderId === msg.empresaId ? "Empresa" : "Motoboy");
+          const timestamp = msg.createdAt
+            ? new Date(msg.createdAt.seconds * 1000).toLocaleString("pt-BR")
+            : "";
+
+          // Identifica o remetente para estilização
+          const isCompany = msg.senderId !== msg.motoboyId;
+
+          return `
+        <div class="p-3 rounded-lg ${isCompany ? "bg-blue-50" : "bg-green-50"}">
+          <div class="flex justify-between items-center">
+            <p class="text-sm font-bold ${
+              isCompany ? "text-blue-800" : "text-green-800"
+            }">${senderName}</p>
+            <p class="text-xs text-gray-500">${timestamp}</p>
+          </div>
+          <p class="mt-1 text-gray-800">${msg.text}</p>
+        </div>
+      `;
+        })
+        .join("");
+    });
 }
 
 /**
@@ -1145,3 +2122,231 @@ function renderRecordsActivityChart(users) {
     },
   });
 }
+
+// Helper Functions for User Management
+
+/**
+ * Alterna a visibilidade dos campos do formulário de usuário com base no tipo selecionado (Motoboy/Empresa).
+ */
+function toggleUserFormFields() {
+  const userType = document.getElementById("user-form-type").value;
+  document.querySelectorAll(".motoboy-field").forEach((field) => {
+    if (userType === "motoboy") {
+      field.classList.remove("hidden");
+    } else {
+      field.classList.add("hidden");
+    }
+  });
+  document.querySelectorAll(".company-field").forEach((field) => {
+    if (userType === "empresa") {
+      field.classList.remove("hidden");
+    } else {
+      field.classList.add("hidden");
+    }
+  });
+}
+
+/**
+ * Abre o modal de formulário para criar ou editar um usuário.
+ * @param {string|null} userId - O ID do usuário a ser editado, ou null para criar um novo.
+ * @param {string} [initialType='motoboy'] - O tipo inicial a ser selecionado ('motoboy' ou 'empresa').
+ */
+async function openUserFormModal(userId = null, initialType = "motoboy") {
+  const userFormModal = document.getElementById("user-form-modal");
+  const userFormTitle = document.getElementById("user-form-title");
+  const userForm = document.getElementById("user-form");
+
+  // Limpa o formulário e reseta o tipo
+  userForm.reset();
+  document.getElementById("user-form-type").value = initialType; // Set initial type
+  currentEditingUserId = userId; // Define o ID do usuário em edição
+
+  if (userId) {
+    userFormTitle.textContent = "Editar Usuário";
+    // Busca os dados do usuário (seja motoboy ou empresa) para preencher o formulário
+    const user =
+      allUsersData.find((u) => u.id === userId) ||
+      allCompaniesData.find((c) => c.id === userId);
+
+    if (user) {
+      document.getElementById("user-form-type").value = user.type || "motoboy";
+      document.getElementById("user-email-form").value = user.email || "";
+      document.getElementById("user-form-name").value =
+        user.publicProfile?.name || user.name || "";
+      document.getElementById("user-form-whatsapp").value =
+        user.publicProfile?.whatsapp || "";
+
+      // Campos de Empresa
+      document.getElementById("user-form-cnpj").value = user.cnpj || "";
+      document.getElementById("user-form-address").value =
+        user.fullAddress || "";
+
+      // Campos de Motoboy
+      document.getElementById("user-form-moto-plate").value =
+        user.publicProfile?.motoPlate || "";
+      document.getElementById("user-form-moto-model").value =
+        user.publicProfile?.fipeModelText || "";
+      document.getElementById("user-form-moto-year").value =
+        user.publicProfile?.motoYear || "";
+      document.getElementById("user-form-moto-color").value =
+        user.publicProfile?.motoColor || "";
+      document.getElementById("user-form-moto-renavam").value =
+        user.publicProfile?.motoRenavam || "";
+      document.getElementById("user-form-moto-state").value =
+        user.publicProfile?.motoState || "";
+      document.getElementById("user-form-moto-image-url").value =
+        user.publicProfile?.motoImageUrl || "";
+    }
+  } else {
+    userFormTitle.textContent = "Criar Novo Usuário";
+  }
+
+  toggleUserFormFields(); // Ajusta a visibilidade dos campos com base no tipo selecionado
+  userFormModal.classList.remove("hidden"); // Mostra o modal
+  lucide.createIcons(); // Renderiza ícones caso necessário
+}
+
+// =================================================================================
+// CONFIGURAÇÕES GERAIS
+// =================================================================================
+
+/**
+ * Carrega as configurações globais do app e preenche o formulário.
+ */
+async function loadAppSettings() {
+  try {
+    const settingsRef = db
+      .collection("artifacts")
+      .doc(appId)
+      .collection("config")
+      .doc("app_settings");
+    const docSnap = await settingsRef.get();
+
+    if (docSnap.exists) {
+      const settings = docSnap.data();
+      // Preenche Parâmetros do App
+      document.getElementById("setting-search-radius").value =
+        settings.searchRadius || "";
+      document.getElementById("setting-motd").value =
+        settings.motd?.message || "";
+      document.getElementById("setting-motd-enabled").checked =
+        settings.motd?.enabled || false;
+
+      // Preenche Modo Manutenção
+      document.getElementById("setting-maintenance-message").value =
+        settings.maintenance?.message || "";
+      document.getElementById("setting-maintenance-enabled").checked =
+        settings.maintenance?.enabled || false;
+
+      // Preenche Lista de Admins
+      const adminListEl = document.getElementById("admin-list");
+      const adminUids = settings.adminUids || [];
+      if (adminUids.length > 0) {
+        adminListEl.innerHTML = adminUids
+          .map(
+            (uid) =>
+              `<li class="flex justify-between items-center"><span>${uid}</span><button onclick="removeAdmin('${uid}')" class="text-red-500 hover:text-red-700 text-xs font-bold">Remover</button></li>`
+          )
+          .join("");
+      } else {
+        adminListEl.innerHTML = `<li>Nenhum admin adicional encontrado.</li>`;
+      }
+    }
+  } catch (error) {
+    console.error("Erro ao carregar configurações:", error);
+    alert("Não foi possível carregar as configurações do aplicativo.");
+  }
+
+  // Adiciona os listeners aos botões de salvar
+  document.getElementById("save-app-settings-btn").onclick = saveAppSettings;
+  document.getElementById("save-maintenance-settings-btn").onclick =
+    saveMaintenanceSettings;
+  document.getElementById("add-admin-btn").onclick = addAdmin;
+}
+
+/**
+ * Salva os parâmetros gerais do aplicativo.
+ */
+async function saveAppSettings() {
+  const settings = {
+    searchRadius:
+      parseInt(document.getElementById("setting-search-radius").value) || 10,
+    motd: {
+      message: document.getElementById("setting-motd").value,
+      enabled: document.getElementById("setting-motd-enabled").checked,
+    },
+  };
+
+  const settingsRef = db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("config")
+    .doc("app_settings");
+  await settingsRef.set(settings, { merge: true });
+  alert("Parâmetros do aplicativo salvos com sucesso!");
+}
+
+/**
+ * Salva as configurações de modo manutenção.
+ */
+async function saveMaintenanceSettings() {
+  const settings = {
+    maintenance: {
+      message: document.getElementById("setting-maintenance-message").value,
+      enabled: document.getElementById("setting-maintenance-enabled").checked,
+    },
+  };
+
+  const settingsRef = db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("config")
+    .doc("app_settings");
+  await settingsRef.set(settings, { merge: true });
+  alert("Configurações de manutenção salvas com sucesso!");
+}
+
+/**
+ * Adiciona um novo UID à lista de administradores.
+ */
+async function addAdmin() {
+  const newAdminUid = document
+    .getElementById("setting-new-admin-uid")
+    .value.trim();
+  if (!newAdminUid) return alert("Por favor, insira um UID.");
+
+  const settingsRef = db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("config")
+    .doc("app_settings");
+  await settingsRef.update({
+    adminUids: firebase.firestore.FieldValue.arrayUnion(newAdminUid),
+  });
+
+  alert("Administrador adicionado com sucesso!");
+  loadAppSettings(); // Recarrega a lista
+}
+
+/**
+ * Remove um UID da lista de administradores.
+ * @param {string} uidToRemove - O UID a ser removido.
+ */
+window.removeAdmin = async function (uidToRemove) {
+  if (
+    !confirm(`Tem certeza que deseja remover o admin com UID: ${uidToRemove}?`)
+  )
+    return;
+
+  const settingsRef = db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("config")
+    .doc("app_settings");
+  await settingsRef.update({
+    adminUids: firebase.firestore.FieldValue.arrayRemove(uidToRemove),
+  });
+
+  alert("Administrador removido com sucesso!");
+  loadAppSettings(); // Recarrega a lista
+};

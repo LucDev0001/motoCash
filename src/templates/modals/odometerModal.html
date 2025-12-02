@@ -1,0 +1,27 @@
+<!-- MODAL DE QUILOMETRAGEM -->
+<div
+  id="odometer-modal"
+  class="absolute inset-0 z-[85] bg-black/80 flex items-center justify-center transition-opacity p-4"
+>
+  <div
+    class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl"
+  >
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">
+        Quilometragem da Moto
+      </h3>
+      <button class="text-gray-500 dark:text-gray-400 close-modal-btn">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+      >Quilometragem Atual (Km)</label
+    >
+    <div class="flex items-center gap-2 mt-1">
+      <input type="number" id="current-odometer" placeholder="Ex: 25000" class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded" />
+      <button id="save-odometer-btn" class="bg-gray-900 text-white h-full px-4 rounded font-bold">
+        Salvar
+      </button>
+    </div>
+  </div>
+</div>

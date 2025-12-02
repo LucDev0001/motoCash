@@ -1,0 +1,59 @@
+<!-- MODAL DE MANUTENÇÃO -->
+<div
+  id="maintenance-modal"
+  class="absolute inset-0 z-[85] bg-black/80 flex items-center justify-center transition-opacity p-4"
+>
+  <div
+    class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl"
+  >
+    <div class="flex justify-between items-center mb-4">
+      <h3
+        id="maintenance-modal-title"
+        class="text-lg font-bold text-gray-800 dark:text-gray-100"
+      >
+        Adicionar Item
+      </h3>
+      <button class="text-gray-500 dark:text-gray-400 close-modal-btn">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <form id="maintenance-form" class="space-y-3">
+      <input type="hidden" id="maintenance-item-id" />
+      <input
+        required
+        id="maintenance-item-name"
+        placeholder="Nome do Item (Ex: Troca de Óleo)"
+        class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+      />
+      <div>
+        <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+          >Categoria</label
+        >
+        <select
+          required
+          id="maintenance-item-category"
+          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded mt-1"
+        >
+          <option value="engine">Motor e Transmissão</option>
+          <option value="wheels">Rodas e Freios</option>
+          <option value="electrical">Elétrica e Iluminação</option>
+          <option value="structure">Estrutura e Estética</option>
+          <option value="others">Outros</option>
+        </select>
+      </div>
+      <input
+        required
+        type="number"
+        id="maintenance-item-interval"
+        placeholder="Intervalo em Km (Ex: 1000)"
+        class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+      />
+      <button
+        type="submit"
+        class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg mt-2"
+      >
+        Salvar Item
+      </button>
+    </form>
+  </div>
+</div>

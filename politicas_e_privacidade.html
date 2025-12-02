@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Política de Privacidade | AppMotoCash</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            colors: {
+              brand: {
+                500: "#f59e0b", // Amber 500 (Amarelo Moto)
+                600: "#d97706",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      /* Estilos para scrollbar personalizada */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+      }
+
+      .legal-content h2 {
+        @apply text-2xl font-bold text-gray-900 dark:text-white mt-10 mb-4 scroll-mt-24;
+      }
+      .legal-content h3 {
+        @apply text-xl font-semibold text-brand-600 dark:text-brand-500 mt-6 mb-3;
+      }
+      .legal-content p {
+        @apply text-gray-600 dark:text-gray-300 leading-7 mb-4 text-justify;
+      }
+      .legal-content ul {
+        @apply list-disc list-outside ml-5 space-y-2 text-gray-600 dark:text-gray-300 mb-6;
+      }
+      .legal-content li strong {
+        @apply text-gray-800 dark:text-gray-100;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-50 dark:bg-gray-900 font-sans text-gray-800 dark:text-gray-200 flex flex-col min-h-screen"
+  >
+    <header
+      class="fixed w-full bg-white/90 dark:bg-gray-800/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 z-50"
+    >
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-2">
+          <div
+            class="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center text-white font-bold"
+          >
+            M
+          </div>
+          <span class="text-xl font-bold text-gray-900 dark:text-white"
+            >AppMotoCash</span
+          >
+        </div>
+        <a
+          href="index.html"
+          class="text-sm font-medium text-gray-600 hover:text-brand-600 dark:text-gray-300 dark:hover:text-brand-500 transition-colors flex items-center gap-1"
+        >
+          <i class="ri-arrow-left-line"></i> Voltar ao Início
+        </a>
+      </div>
+    </header>
+
+    <main class="flex-grow pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12">
+        <aside class="hidden lg:block w-64 flex-shrink-0">
+          <div class="sticky top-24">
+            <h5
+              class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4"
+            >
+              Nesta Página
+            </h5>
+            <nav class="space-y-1" id="toc">
+              <a href="#intro" class="block text-sm text-brand-600 font-medium"
+                >Introdução</a
+              >
+              <a
+                href="#coleta"
+                class="block text-sm text-gray-600 hover:text-brand-600 dark:text-gray-400 transition-colors"
+                >1. Informações Coletadas</a
+              >
+              <a
+                href="#uso"
+                class="block text-sm text-gray-600 hover:text-brand-600 dark:text-gray-400 transition-colors"
+                >2. Uso das Informações</a
+              >
+              <a
+                href="#compartilhamento"
+                class="block text-sm text-gray-600 hover:text-brand-600 dark:text-gray-400 transition-colors"
+                >3. Compartilhamento</a
+              >
+              <a
+                href="#cookies"
+                class="block text-sm text-gray-600 hover:text-brand-600 dark:text-gray-400 transition-colors"
+                >4. Cookies e Tecnologias</a
+              >
+              <a
+                href="#direitos"
+                class="block text-sm text-gray-600 hover:text-brand-600 dark:text-gray-400 transition-colors"
+                >5. Seus Direitos (LGPD)</a
+              >
+              <a
+                href="#seguranca"
+                class="block text-sm text-gray-600 hover:text-brand-600 dark:text-gray-400 transition-colors"
+                >6. Segurança</a
+              >
+              <a
+                href="#contato"
+                class="block text-sm text-gray-600 hover:text-brand-600 dark:text-gray-400 transition-colors"
+                >7. Contato</a
+              >
+            </nav>
+          </div>
+        </aside>
+
+        <article
+          class="flex-1 max-w-3xl bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-8 border border-gray-100 dark:border-gray-700 legal-content"
+        >
+          <div
+            id="intro"
+            class="mb-8 border-b border-gray-100 dark:border-gray-700 pb-8"
+          >
+            <span
+              class="inline-block px-3 py-1 bg-brand-100 text-brand-700 rounded-full text-xs font-semibold mb-4"
+              >Atualizado: 28 de Novembro de 2025</span
+            >
+            <h1
+              class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4"
+            >
+              Política de Privacidade
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300">
+              Sua privacidade é o motor da nossa confiança. Esta política
+              descreve como o AppMotoCash coleta, usa e protege seus dados em
+              conformidade com a LGPD (Lei nº 13.709/2018).
+            </p>
+          </div>
+
+          <h2 id="coleta">1. Informações que Coletamos</h2>
+          <p>
+            Para operar nossa plataforma de intermediação e gestão, coletamos os
+            seguintes tipos de dados:
+          </p>
+
+          <h3>1.1. Informações Fornecidas por Você</h3>
+          <ul>
+            <li>
+              <strong>Dados de Cadastro (Motoboy):</strong> Nome completo, CPF,
+              e-mail, telefone (WhatsApp), dados bancários (para gestão
+              financeira pessoal) e dados do veículo (Placa, RENAVAM, Modelo).
+            </li>
+            <li>
+              <strong>Dados de Cadastro (Empresa):</strong> Razão Social, CNPJ,
+              endereço completo, telefone e e-mail corporativo.
+            </li>
+            <li>
+              <strong>Verificação de Identidade (KYC):</strong> Fotos de
+              documentos (CNH, CRLV, Cartão CNPJ) e biometria facial ("selfie")
+              para prevenção de fraudes.
+            </li>
+            <li>
+              <strong>Avaliações e Feedback:</strong> Notas e comentários
+              fornecidos pelas Empresas sobre os serviços prestados pelos
+              Motoboys após a conclusão de uma vaga.
+            </li>
+          </ul>
+
+          <h3>1.2. Informações Coletadas Automaticamente</h3>
+          <ul>
+            <li>
+              <strong>Geolocalização em Tempo Real:</strong> Coletada
+              <strong>apenas quando o status está "ONLINE"</strong>. Essencial
+              para o funcionamento do sistema de despacho de entregas. O
+              rastreamento cessa imediatamente ao mudar para "OFFLINE".
+            </li>
+            <li>
+              <strong>Dados do Dispositivo:</strong> Modelo do aparelho, sistema
+              operacional (Android/iOS), endereço IP e identificadores únicos
+              para fins de auditoria e segurança.
+            </li>
+          </ul>
+
+          <h2 id="uso">2. Como Usamos Seus Dados</h2>
+          <p>Utilizamos suas informações estritamente para:</p>
+          <ul>
+            <li>
+              <strong>Conexão Eficiente:</strong> Algoritmos de geolocalização
+              usam sua posição para oferecer as entregas mais próximas e
+              rentáveis.
+            </li>
+            <li>
+              <strong>Segurança da Comunidade:</strong> Validar se o condutor é
+              habilitado e se o veículo está regular, protegendo empresas e
+              clientes finais.
+            </li>
+            <li>
+              <strong>Gestão Financeira:</strong> Processar e organizar seus
+              registros de ganhos e despesas dentro do módulo "Minha Carteira".
+            </li>
+            <li>
+              <strong>Comunicação:</strong> Enviar notificações push sobre novas
+              vagas, status de pagamentos e atualizações de segurança.
+            </li>
+          </ul>
+
+          <h2 id="compartilhamento">3. Compartilhamento de Informações</h2>
+          <p>
+            A transparência é fundamental. Seus dados são compartilhados apenas
+            nos seguintes cenários:
+          </p>
+          <ul>
+            <li>
+              <strong>Visibilidade Operacional:</strong> Durante a negociação de
+              uma vaga (via chat), a Empresa contratante visualiza seu nome,
+              modelo da moto e avaliação média. Sua localização em tempo real só
+              é visível para o administrador da plataforma, não para a empresa.
+            </li>
+            <li>
+              <strong>Provedores de Serviço:</strong> Utilizamos serviços de
+              terceiros confiáveis, como Google Firebase (armazenamento em
+              nuvem) e APIs de Mapas. Estes parceiros seguem rigorosos padrões
+              de segurança.
+            </li>
+            <li>
+              <strong>Requisição Legal:</strong> Em caso de ordem judicial ou
+              solicitação de autoridades competentes.
+            </li>
+          </ul>
+          <p
+            class="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border-l-4 border-red-500 text-sm"
+          >
+            <strong>Importante:</strong> Nós <strong>NUNCA</strong> vendemos
+            seus dados pessoais para listas de marketing ou terceiros não
+            relacionados à operação do app.
+          </p>
+
+          <h2 id="cookies">4. Cookies e Tecnologias de Rastreamento</h2>
+          <p>Utilizamos cookies e identificadores anônimos para:</p>
+          <ul>
+            <li>Manter sua sessão ativa e segura.</li>
+            <li>Lembrar suas preferências de idioma e configuração.</li>
+            <li>
+              Analisar (de forma anônima) o desempenho do aplicativo para
+              melhorias técnicas.
+            </li>
+          </ul>
+
+          <h2 id="direitos">5. Seus Direitos (LGPD)</h2>
+          <p>Você é o dono dos seus dados. A qualquer momento, você pode:</p>
+          <ul>
+            <li>
+              <strong>Acessar:</strong> Solicitar uma cópia de tudo que temos
+              sobre você.
+            </li>
+            <li>
+              <strong>Corrigir:</strong> Atualizar dados incorretos diretamente
+              no perfil.
+            </li>
+            <li>
+              <strong>Excluir:</strong> Solicitar a exclusão total da conta e
+              dados (direito ao esquecimento), exceto quando a retenção for
+              exigida por lei (ex: Marco Civil da Internet).
+            </li>
+            <li>
+              <strong>Revogar Consentimento:</strong> Desativar o acesso à
+              localização nas configurações do seu celular (o que impedirá o
+              recebimento de novas entregas).
+            </li>
+          </ul>
+
+          <h2 id="seguranca">6. Segurança e Retenção</h2>
+          <p>
+            Adotamos medidas técnicas robustas, incluindo criptografia de ponta
+            a ponta para senhas e uso de servidores seguros (Firebase/Google
+            Cloud). Reteremos seus dados enquanto sua conta estiver ativa ou
+            pelo período necessário para cumprir obrigações legais e fiscais.
+          </p>
+
+          <h2 id="contato">7. Fale Conosco</h2>
+          <p>
+            O AppMotoCash possui um Encarregado de Proteção de Dados (DPO) à sua
+            disposição. Para dúvidas ou solicitações:
+          </p>
+          <div
+            class="mt-4 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl flex items-start gap-4"
+          >
+            <div
+              class="p-3 bg-white dark:bg-gray-600 rounded-full shadow-sm text-brand-500"
+            >
+              <i class="ri-mail-send-line text-xl"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-gray-900 dark:text-white">
+                Central de Privacidade
+              </h4>
+              <p class="text-sm text-gray-500 dark:text-gray-300 mt-1">
+                E-mail:
+                <a
+                  href="mailto:privacidade@appmotocash.com"
+                  class="text-brand-600 hover:underline"
+                  >privacidade@appmotocash.com</a
+                >
+              </p>
+              <p class="text-sm text-gray-500 dark:text-gray-300">
+                Prazo de resposta: Até 15 dias úteis.
+              </p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <footer
+      class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-8"
+    >
+      <div class="max-w-7xl mx-auto px-4 text-center">
+        <p class="text-gray-500 dark:text-gray-400 text-sm">
+          &copy; 2025 AppMotoCash. Todos os direitos reservados.
+        </p>
+        <div class="mt-4 space-x-4">
+          <a
+            href="termos_de_uso.html"
+            class="text-sm text-gray-400 hover:text-brand-500"
+            >Termos de Uso</a
+          >
+          <span class="text-gray-300">|</span>
+          <a href="#" class="text-sm text-gray-400 hover:text-brand-500"
+            >Suporte</a
+          >
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

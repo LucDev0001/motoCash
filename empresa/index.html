@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AppMotoCash para Empresas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Adiciona um ícone padrão para a aba do navegador -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏍️</text></svg>">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="empresa.css" />
+    <!-- Biblioteca de Mapa (Leaflet.js) -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Firebase (usaremos a versão modular aqui) -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+      import {
+        getAuth,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+      } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        setDoc,
+        getDoc,
+        getDocs,
+        collection,
+        query,
+        where,
+        onSnapshot,
+        addDoc,
+        deleteDoc,
+        updateDoc,
+        orderBy,
+        runTransaction,
+        arrayUnion,
+        deleteField,
+        arrayRemove,
+        serverTimestamp,
+        limit,
+      } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+      // Suas chaves do Firebase (as mesmas do app principal)
+      const firebaseConfig = {
+        apiKey: "AIzaSyDv_ZbrWZGmsdHSQ6oqfxNvJFKdPQRI8II",
+        authDomain: "app-da-web-7d419.firebaseapp.com",
+        projectId: "app-da-web-7d419",
+        storageBucket: "app-da-web-7d419.firebasestorage.app",
+        messagingSenderId: "398968396582",
+        appId: "1:398968396582:web:a40503a0a03304e27b7fe7",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      window.firebaseTools = {
+        auth,
+        db,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+        doc,
+        setDoc,
+        getDoc,
+        getDocs,
+        collection,
+        query,
+        where,
+        onSnapshot,
+        addDoc,
+        deleteDoc,
+        updateDoc,
+        orderBy,
+        runTransaction,
+        arrayUnion,
+        deleteField,
+        arrayRemove,
+        serverTimestamp,
+        limit,
+      };
+    </script>
+    <script type="module" src="empresa.js"></script>
+  </head>
+  <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+    <!-- TELA DE LOGIN / CADASTRO -->
+    <div
+      id="auth-screen"
+      class="min-h-screen flex items-center justify-center p-4"
+    >
+      <div
+        class="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 items-center"
+      >
+        <!-- Seção de Marketing (Landing Page) -->
+        <div class="text-center lg:text-left">
+          <div class="inline-flex items-center gap-3">
+            <div class="bg-yellow-500 p-3 rounded-full">
+              <i data-lucide="bike" class="w-8 h-8 text-black"></i>
+            </div>
+            <h1 class="text-4xl font-bold">AppMotoCash</h1>
+          </div>
+          <h2 class="text-3xl lg:text-5xl font-extrabold mt-4 leading-tight">
+            Encontre os melhores motoboys freelancers.
+            <span class="text-yellow-500">Agora.</span>
+          </h2>
+          <p class="text-gray-500 dark:text-gray-400 mt-6 text-lg">
+            Chega de depender de um único entregador. Tenha acesso a uma rede de
+            profissionais qualificados, prontos para atender sua demanda com
+            agilidade e segurança.
+          </p>
+          <div
+            class="mt-8 flex items-center justify-center lg:justify-start gap-4"
+          >
+            <div class="flex items-center gap-2">
+              <i data-lucide="map-pin" class="w-5 h-5 text-green-500"></i
+              ><span>Localização em tempo real</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="star" class="w-5 h-5 text-yellow-500"></i
+              ><span>Sistema de avaliação</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="message-circle" class="w-5 h-5 text-blue-500"></i
+              ><span>Chat integrado</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulário -->
+        <div
+          class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md mx-auto"
+        >
+          <div class="flex border-b dark:border-gray-700 mb-6">
+            <button
+              id="tab-login"
+              class="flex-1 pb-3 font-bold border-b-2 border-yellow-500 text-yellow-500"
+            >
+              Entrar
+            </button>
+            <button
+              id="tab-register"
+              class="flex-1 pb-3 font-bold text-gray-400"
+            >
+              Cadastrar
+            </button>
+          </div>
+
+          <!-- Mensagem de Erro -->
+          <div
+            id="auth-error"
+            class="hidden bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 p-3 rounded-lg text-sm mb-4"
+          ></div>
+
+          <!-- Formulário de Login -->
+          <form id="login-form" class="space-y-4">
+            <input
+              type="email"
+              id="login-email"
+              placeholder="E-mail da empresa"
+              required
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
+            />
+            <input
+              type="password"
+              id="login-password"
+              placeholder="Senha"
+              required
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
+            />
+            <button
+              type="submit"
+              class="w-full bg-yellow-500 text-black font-bold py-3 rounded-lg hover:bg-yellow-400 transition-colors"
+            >
+              Acessar Painel
+            </button>
+          </form>
+
+          <!-- Formulário de Cadastro -->
+          <form id="register-form" class="hidden space-y-4">
+            <input
+              type="text"
+              id="register-name"
+              placeholder="Nome da Empresa"
+              required
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
+            />
+            <input
+              type="text"
+              id="register-cnpj"
+              placeholder="CNPJ"
+              required
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
+            />
+            <input
+              type="text" id="register-cep" placeholder="CEP" required
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
+            />
+            <div class="grid grid-cols-3 gap-4">
+              <input
+                type="text" id="register-logradouro" placeholder="Logradouro" required
+                class="col-span-2 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
+              />
+              <input
+                type="text" id="register-numero" placeholder="Nº" required
+                class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
+              />
+            </div>
+            <input
+              type="text" id="register-bairro" placeholder="Bairro" required
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
+            />
+            <div class="grid grid-cols-3 gap-4">
+              <input type="text" id="register-cidade" placeholder="Cidade" required class="col-span-2 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"/>
+              <input type="text" id="register-estado" placeholder="UF" required maxlength="2" class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"/>
+            </div>
+            <input
+              type="tel"
+              id="register-whatsapp"
+              placeholder="WhatsApp (com DDD)"
+              required
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
+            />
+            <input
+              type="email"
+              id="register-email"
+              placeholder="E-mail de Contato"
+              required
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
+            />
+            <input
+              type="password"
+              id="register-password"
+              placeholder="Crie uma Senha"
+              required
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
+            />
+            <div class="flex items-start space-x-2 pt-2">
+              <input
+                type="checkbox"
+                id="register-terms"
+                required
+                class="mt-1 rounded border-gray-600 bg-gray-800 text-yellow-500 focus:ring-yellow-500"
+              />
+              <label for="register-terms" class="text-xs text-gray-400"
+                >Eu li e concordo com os
+                <a
+                  href="../termos_de_uso.html"
+                  target="_blank"
+                  class="underline text-yellow-500"
+                  >Termos de Uso</a
+                >.</label
+              >
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-500 transition-colors"
+            >
+              Criar Conta
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELA DE CADASTRO EM ANÁLISE -->
+    <div
+      id="pending-approval-screen"
+      class="hidden min-h-screen flex items-center justify-center text-center p-4"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-lg"
+      >
+        <i
+          data-lucide="shield-check"
+          class="w-16 h-16 text-green-500 mx-auto mb-4"
+        ></i>
+        <h2 class="text-2xl font-bold">Cadastro Recebido!</h2>
+        <p class="text-gray-500 dark:text-gray-400 mt-4">
+          Obrigado por se cadastrar! Para garantir a segurança da nossa
+          comunidade, seu cadastro está em processo de análise.
+        </p>
+        <p class="text-gray-500 dark:text-gray-400 mt-2">
+          Você receberá um e-mail em
+          <strong id="pending-email" class="text-yellow-500"
+            >seu-email@empresa.com</strong
+          >
+          assim que sua conta for aprovada. Geralmente, isso leva apenas alguns
+          minutos.
+        </p>
+        <p class="text-xs text-gray-400 mt-6">
+          Verifique sua caixa de entrada e a pasta de spam.
+        </p>
+      </div>
+    </div>
+
+    <!-- TELA PRINCIPAL DA APLICAÇÃO (DASHBOARD) -->
+    <div id="app-screen" class="hidden h-screen flex flex-col">
+      <header
+        class="bg-white dark:bg-gray-800 shadow-md p-4 flex justify-between items-center shrink-0"
+      >
+        <div>
+          <h1 id="company-name-header" class="text-xl font-bold">
+            Painel da Empresa
+          </h1>
+          <p class="text-sm text-gray-500">
+            Motoboys disponíveis na sua região
+          </p>
+        </div>
+        <button
+          id="logout-btn"
+          class="flex items-center gap-2 text-sm text-red-500 font-bold hover:bg-red-50 dark:hover:bg-red-900/50 p-2 rounded-lg"
+        >
+          <i data-lucide="log-out" class="w-5 h-5"></i>
+          <span>Sair</span>
+        </button>
+      </header>
+      <!-- Abas de Navegação -->
+      <nav class="bg-white dark:bg-gray-800 shadow-sm shrink-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-start space-x-4">
+                <button id="nav-company-dashboard" class="company-nav-btn text-yellow-500 border-b-2 border-yellow-500 px-3 py-3 text-sm font-medium">Dashboard</button>
+                <button id="nav-company-history" class="company-nav-btn text-gray-500 hover:text-gray-700 px-3 py-3 text-sm font-medium">Histórico</button>
+                <button id="nav-company-chat" class="company-nav-btn text-gray-500 hover:text-gray-700 px-3 py-3 text-sm font-medium hidden relative">Chat <span id="chat-notification-badge" class="hidden absolute top-1 right-0 w-3 h-3 bg-red-500 rounded-full"></span></button>
+                <button id="nav-company-profile" class="company-nav-btn text-gray-500 hover:text-gray-700 px-3 py-3 text-sm font-medium">Perfil</button>
+            </div>
+        </div>
+      </nav>
+
+      <!-- Conteúdo Principal que muda com as abas -->
+      <div class="flex-1 overflow-y-auto">
+        <!-- VIEW: DASHBOARD -->
+        <div id="view-company-dashboard" class="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
+            <!-- Coluna do Mapa com sobreposição de botão e aviso -->
+            <div class="lg:col-span-2 h-64 lg:h-full rounded-lg overflow-hidden shadow-lg relative">
+                <div id="map-notice" class="hidden absolute top-2 left-2 z-[1000] bg-white dark:bg-gray-800 p-2 rounded-lg shadow-md flex items-center gap-2 text-sm">
+                    <!-- Aviso de localização será inserido aqui -->
+                </div>
+                <button id="center-map-btn" class="hidden absolute top-2 right-2 z-[1000] bg-white dark:bg-gray-800 p-2 rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i data-lucide="locate-fixed" class="w-5 h-5"></i>
+                </button>
+                <div id="motoboys-map-container" class="w-full h-full"></div>
+            </div>
+
+            <!-- Coluna de Vagas Ativas -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg flex flex-col h-full">
+                <h2 class="text-lg font-bold p-4 border-b dark:border-gray-700 shrink-0">Minhas Vagas Ativas</h2>
+                <div id="published-jobs-container" class="flex-1 overflow-y-auto p-4 space-y-3">
+                    <!-- Vagas serão injetadas aqui -->
+                </div>
+            </div>
+
+            <!-- Botão Flutuante para Criar Vaga -->
+            <button id="open-create-job-modal-btn" class="absolute bottom-6 right-6 bg-yellow-500 text-black p-4 rounded-full shadow-lg hover:bg-yellow-400 transition-transform transform hover:scale-110 z-[401]">
+                <i data-lucide="plus" class="w-8 h-8"></i>
+            </button>
+        </div>
+
+        <!-- VIEW: HISTÓRICO -->
+        <div id="view-company-history" class="hidden p-4 space-y-4">
+            <h1 class="text-2xl font-bold">Histórico de Vagas</h1>
+            <div id="past-jobs-container" class="space-y-3">
+                <p class="text-center text-gray-400 py-8">Buscando histórico...</p>
+            </div>
+        </div>
+
+        
+        <!-- VIEW: PERFIL -->
+        <div id="view-company-profile" class="hidden p-4">
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200">Perfil da Empresa</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-1 mb-6">Gerencie suas informações e configurações de conta.</p>
+
+            <!-- Formulário de Edição de Perfil -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                <form id="company-profile-form" class="space-y-6">
+                    <h2 class="text-xl font-bold border-b dark:border-gray-700 pb-3 mb-4">Informações da Empresa</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="profile-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome da Empresa</label>
+                            <input type="text" id="profile-name" class="mt-1 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label for="profile-cnpj" class="block text-sm font-medium text-gray-700 dark:text-gray-300">CNPJ</label>
+                            <input type="text" id="profile-cnpj" class="mt-1 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg" required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="profile-cep" class="block text-sm font-medium text-gray-700 dark:text-gray-300">CEP</label>
+                            <input type="text" id="profile-cep" class="mt-1 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label for="profile-logradouro" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Logradouro</label>
+                            <input type="text" id="profile-logradouro" class="mt-1 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label for="profile-numero" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Número</label>
+                            <input type="text" id="profile-numero" class="mt-1 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label for="profile-bairro" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bairro</label>
+                            <input type="text" id="profile-bairro" class="mt-1 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label for="profile-whatsapp" class="block text-sm font-medium text-gray-700 dark:text-gray-300">WhatsApp</label>
+                            <input type="tel" id="profile-whatsapp" class="mt-1 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label for="profile-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">E-mail (não pode ser alterado)</label>
+                            <input type="email" id="profile-email" class="mt-1 w-full p-3 bg-gray-200 dark:bg-gray-900 border dark:border-gray-600 rounded-lg cursor-not-allowed" disabled>
+                        </div>
+                        <div>
+                            <label for="profile-cidade" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Cidade</label>
+                            <input type="text" id="profile-cidade" class="mt-1 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg" required>
+                        </div>
+                        <div>
+                            <label for="profile-estado" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado (UF)</label>
+                            <input type="text" id="profile-estado" class="mt-1 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg" required maxlength="2">
+                        </div>
+                    </div>
+                    <div class="flex justify-end pt-4">
+                        <button type="submit" class="bg-yellow-500 text-black font-bold py-2 px-6 rounded-lg hover:bg-yellow-400 transition-colors">
+                            Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Alteração de Senha -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mt-8">
+                <h2 class="text-xl font-bold border-b dark:border-gray-700 pb-3 mb-4">Alterar Senha</h2>
+                <form id="change-password-form" class="space-y-4 max-w-md">
+                    <div>
+                        <label for="current-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Senha Atual</label>
+                        <input type="password" id="current-password" class="mt-1 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg" required>
+                    </div>
+                    <div>
+                        <label for="new-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nova Senha</label>
+                        <input type="password" id="new-password" class="mt-1 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg" required>
+                    </div>
+                    <div class="flex justify-end pt-2">
+                        <button type="submit" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-500 transition-colors">
+                            Alterar Senha
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Zona de Perigo -->
+            <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-6 rounded-lg mt-8">
+                <h2 class="text-xl font-bold text-red-800 dark:text-red-300">Zona de Perigo</h2>
+                <p class="text-red-700 dark:text-red-400 mt-2 mb-4">A exclusão da sua conta é uma ação irreversível e removerá todos os seus dados, incluindo histórico de vagas e informações da empresa.</p>
+                <button id="delete-account-btn" class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition-colors">
+                    Excluir Minha Conta
+                </button>
+            </div>
+        </div>
+      </div>
+
+        <!-- VIEW: CHAT DEDICADO -->
+        <div id="view-company-chat" class="hidden p-4 h-full grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Coluna da Lista de Chats -->
+            <div class="md:col-span-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg flex flex-col">
+                <h2 class="text-lg font-bold p-4 border-b dark:border-gray-700 shrink-0">Conversas Ativas</h2>
+                <div id="chat-list-container" class="flex-1 overflow-y-auto p-2 space-y-2">
+                    <p class="text-center text-gray-400 p-4">Nenhuma conversa ativa.</p>
+                </div>
+            </div>
+
+            <!-- Coluna de Detalhes do Chat -->
+            <div id="chat-detail-view" class="md:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg flex flex-col h-full">
+                <!-- Cabeçalho do Chat -->
+                <div id="chat-header-info" class="shrink-0 p-4 border-b dark:border-gray-700 flex justify-between items-center">
+                    <div id="chat-header-details">
+                        <p class="text-center text-gray-400">Selecione uma conversa para começar</p>
+                    </div>
+                    <div id="chat-security-options" class="hidden items-center gap-2">
+                        <button id="view-motoboy-profile-btn" class="p-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600" title="Ver Perfil do Motoboy">
+                            <i data-lucide="user" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- Botões de Ação -->
+                <div id="chat-action-buttons" class="shrink-0 grid grid-cols-2 gap-2 p-2 border-b dark:border-gray-700">
+                    <!-- Botões serão inseridos aqui via JS -->
+                </div>
+                <!-- Mensagens -->
+                <div id="chat-messages-container" class="flex-1 overflow-y-auto space-y-3 p-4 bg-gray-100 dark:bg-gray-900">
+                    <!-- Mensagens serão inseridas aqui -->
+                </div>
+                <!-- Formulário de Envio -->
+                <div class="p-4 shrink-0">
+                    <form id="company-chat-form" class="flex gap-2">
+                        <input id="company-chat-input" required placeholder="Digite sua mensagem..." class="flex-1 p-3 bg-gray-100 dark:bg-gray-700 rounded-full outline-none" disabled>
+                        <button type="submit" class="bg-yellow-500 text-black w-12 h-12 rounded-full flex items-center justify-center" disabled>
+                            <i data-lucide="send"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+    <div id="company-modal-container">
+      <!-- Modal de Avaliação do Motoboy -->
+      <div
+        id="rating-modal"
+        class="hidden fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4"
+      >
+        <div
+          class="bg-white dark:bg-gray-800 w-full max-w-md rounded-xl p-6 shadow-2xl"
+        >
+          <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">
+            Avalie o Serviço de
+            <span id="rating-motoboy-name" class="text-yellow-500"></span>
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Sua avaliação ajuda a manter a qualidade da nossa comunidade.
+          </p>
+          <form id="rating-form">
+            <div class="mb-4">
+              <label class="block text-sm font-medium mb-2"
+                >Sua nota:</label
+              >
+              <div
+                id="star-rating-container"
+                class="flex items-center justify-center text-4xl text-gray-300 dark:text-gray-600"
+              >
+                <!-- Estrelas serão geradas pelo JS -->
+              </div>
+            </div>
+            <div class="mb-6">
+              <label for="rating-comment" class="block text-sm font-medium"
+                >Comentário (opcional):</label
+              >
+              <textarea
+                id="rating-comment"
+                rows="3"
+                placeholder="Deixe um elogio ou sugestão..."
+                class="w-full mt-1 p-2 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-md"
+              ></textarea>
+            </div>
+            <button type="submit" class="w-full bg-yellow-500 text-black font-bold py-3 rounded-lg hover:bg-yellow-400 transition-colors">Enviar Avaliação</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>

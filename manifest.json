@@ -52,14 +52,14 @@
       "icons": [{ "src": "icons/add.png", "sizes": "192x192" }]
     },
     {
-      "name": "Ver Perfil",
-      "short_name": "Perfil",
-      "description": "Acessar a tela de perfil e configurações",
-      "url": "./index.html?action=profile",
-      "icons": [{ "src": "icons/profile.png", "sizes": "192x192" }]
+      "name": "Minha Garagem",
+      "short_name": "Garagem",
+      "description": "Acessar os detalhes da sua moto e manutenções",
+      "url": "./index.html?action=garage",
+      "icons": [{ "src": "icons/garage.png", "sizes": "192x192" }]
     }
   ],
-  "categories": ["finance", "productivity", "business"],
+  "categories": ["finance", "productivity", "business", "navigation"],
   "scope": "./",
   "lang": "pt-BR"
 }

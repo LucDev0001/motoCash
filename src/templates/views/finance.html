@@ -1,0 +1,234 @@
+<div
+  class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden fade-in"
+>
+  <div class="flex border-b dark:border-gray-700">
+    <button
+      id="tab-earning"
+      class="fin-tab flex-1 py-3 text-sm font-bold bg-green-100 text-green-700 border-b-2 border-green-500"
+    >
+      Ganho
+    </button>
+    <button
+      id="tab-expense"
+      class="fin-tab flex-1 py-3 text-sm font-bold text-gray-500"
+    >
+      Despesa
+    </button>
+  </div>
+
+  <!-- Formulário de Ganhos -->
+  <form id="form-earning" class="p-6 space-y-4">
+    <input type="hidden" id="fin-category" value="app_entrega" />
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label
+          class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1"
+          >Data</label
+        >
+        <input
+          required
+          type="date"
+          id="fin-date-earning"
+          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"
+        />
+      </div>
+      <div>
+        <label
+          class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1"
+          >Turno</label
+        >
+        <select
+          id="fin-shift"
+          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"
+        >
+          <option value="dia">Dia</option>
+          <option value="noite">Noite</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex border-b dark:border-gray-700">
+      <button
+        type="button"
+        id="tab-app_entrega"
+        class="fin-tab-inner flex-1 py-2 text-[11px] font-bold bg-yellow-100 text-yellow-700 border-b-2 border-yellow-500 px-1"
+      >
+        iFood
+      </button>
+      <button
+        type="button"
+        id="tab-app_passageiro"
+        class="fin-tab-inner flex-1 py-2 text-[11px] font-bold text-gray-500 px-1"
+      >
+        Uber/99
+      </button>
+      <button
+        type="button"
+        id="tab-loja_fixa"
+        class="fin-tab-inner flex-1 py-2 text-[11px] font-bold text-gray-500 px-1"
+      >
+        Loja Fixa
+      </button>
+    </div>
+    <div id="dynamic-fields">
+      <div id="fields-app">
+        <div class="mb-4">
+          <label
+            class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1"
+            >Quantidade</label
+          >
+          <input
+            type="number"
+            id="fin-count"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200"
+            placeholder="0"
+          />
+        </div>
+        <div>
+          <label
+            class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1"
+            >Valor Total (R$)</label
+          >
+          <input
+            type="number"
+            step="0.01"
+            id="fin-total"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 text-lg font-semibold"
+            placeholder="0.00"
+          />
+        </div>
+      </div>
+      <div id="fields-loja" class="hidden space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+              >Diária</label
+            >
+            <input
+              type="number"
+              step="0.01"
+              id="fin-daily"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+            />
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+              >Qtd</label
+            >
+            <input
+              type="number"
+              id="fin-loja-count"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+            />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+              >Taxa</label
+            >
+            <input
+              type="number"
+              step="0.01"
+              id="fin-fee"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+            />
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
+              >Extra</label
+            >
+            <input
+              type="number"
+              step="0.01"
+              id="fin-extra"
+              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <label
+        class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1"
+        >Observação (Opcional)</label
+      >
+      <textarea
+        id="fin-observation"
+        class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200"
+        placeholder="Ex: Corrida com valor dinâmico"
+      ></textarea>
+    </div>
+    <button
+      id="btn-save-fin"
+      type="submit"
+      class="w-full bg-gray-900 text-white font-bold py-4 rounded-lg hover:bg-gray-800 shadow-lg mt-4 transition-transform active:scale-95"
+    >
+      Salvar Ganho
+    </button>
+  </form>
+
+  <!-- Formulário de Despesas -->
+  <form id="form-expense" class="p-6 space-y-4 hidden">
+    <div>
+      <label
+        class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1"
+        >Data</label
+      >
+      <input
+        required
+        type="date"
+        id="fin-date-expense"
+        class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"
+      />
+    </div>
+    <div>
+      <label
+        class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1"
+        >Categoria</label
+      >
+      <select
+        id="exp-category"
+        class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"
+      >
+        <option value="combustivel">Combustível</option>
+        <option value="manutencao">Manutenção</option>
+        <option value="pecas">Peças e Acessórios</option>
+        <option value="documentacao">Documentação</option>
+        <option value="alimentacao">Alimentação</option>
+        <option value="outros">Outros</option>
+      </select>
+    </div>
+    <div>
+      <label
+        class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1"
+        >Valor (R$)</label
+      >
+      <input
+        required
+        type="number"
+        step="0.01"
+        id="exp-total"
+        class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 text-lg font-semibold"
+        placeholder="0.00"
+      />
+    </div>
+    <div>
+      <label
+        class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1"
+        >Observação (Opcional)</label
+      >
+      <textarea
+        id="exp-desc"
+        class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200"
+        placeholder="Ex: Troca de óleo"
+      ></textarea>
+    </div>
+    <button
+      id="btn-save-exp"
+      type="submit"
+      class="w-full bg-red-600 text-white font-bold py-4 rounded-lg hover:bg-red-500 shadow-lg mt-4 transition-transform active:scale-95"
+    >
+      Salvar Despesa
+    </button>
+  </form>
+</div>

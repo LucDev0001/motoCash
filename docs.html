@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentação - AppMotoCash</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: sans-serif; }
+        .content h2 { font-size: 1.75rem; font-weight: bold; margin-top: 2rem; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+        .content h3 { font-size: 1.25rem; font-weight: bold; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .content p { margin-bottom: 1rem; line-height: 1.6; }
+        .content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
+        .content code { background-color: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-family: monospace; }
+        .content table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+        .content th, .content td { border: 1px solid #e2e8f0; padding: 0.75rem; text-align: left; }
+        .content th { background-color: #f8fafc; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <header class="bg-gray-900 text-white p-6 shadow-md">
+        <div class="container mx-auto">
+            <h1 class="text-3xl font-bold">Documentação do Ecossistema AppMotoCash</h1>
+            <p class="text-gray-300 mt-1">Uma análise completa das aplicações, arquitetura e funcionalidades.</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-6 lg:p-8">
+        <div class="content">
+            <h2>1. Introdução</h2>
+            <p>
+                O AppMotoCash é um ecossistema de software robusto, desenhado para atender às necessidades de três perfis de usuário distintos: <strong>Motoboys Autônomos</strong>, <strong>Empresas Contratantes</strong> e <strong>Administradores do Sistema</strong>. O projeto é composto por três aplicações web front-end distintas que se comunicam com um backend centralizado em Firebase (Firestore).
+            </p>
+
+            <h2>2. Arquitetura e Tecnologias</h2>
+            <p>
+                O projeto é construído como uma aplicação web moderna, utilizando uma abordagem de "Vanilla JS" (JavaScript puro) com uma estrutura modular. É um PWA (Progressive Web App), permitindo a instalação em dispositivos móveis.
+            </p>
+            <h3>Tecnologias Principais:</h3>
+            <ul>
+                <li><strong>Frontend:</strong> HTML5, CSS3, JavaScript (ES6 Modules).</li>
+                <li><strong>Backend & Database:</strong> Google Firebase (Authentication, Firestore, Storage).</li>
+                <li><strong>Styling:</strong> Tailwind CSS.</li>
+                <li><strong>Ícones:</strong> Lucide Icons.</li>
+                <li><strong>Bibliotecas Externas:</strong>
+                    <ul>
+                        <li><code>Chart.js</code>: Para visualização de dados em gráficos (painéis financeiro e de admin).</li>
+                        <li><code>Leaflet.js</code>: Para mapas interativos (localização de motoboys).</li>
+                        <li><code>Tesseract.js</code>: Para funcionalidades de OCR (leitura ótica de caracteres), provavelmente para documentos ou odômetro.</li>
+                        <li><code>ViaCEP</code>: Para preenchimento automático de endereços a partir do CEP.</li>
+                    </ul>
+                </li>
+                <li><strong>Hospedagem:</strong> A estrutura sugere um deploy em um servidor web estático (como o Firebase Hosting).</li>
+            </ul>
+
+            <h2>3. Aplicação Principal (PWA para Motoboys)</h2>
+            <p>
+                A aplicação principal (raiz do projeto) é um PWA completo focado no motoboy, oferecendo um conjunto de ferramentas para gestão de sua vida profissional e financeira.
+            </p>
+            <h3>Funcionalidades Chave:</h3>
+            <ul>
+                <li><strong>Gestão Financeira:</strong> Lançamento de ganhos e despesas, com categorização (App de Passageiro, App de Entrega, Loja Fixa) e divisão por turnos.</li>
+                <li><strong>Dashboard:</strong> Visão geral das finanças com filtros por período (dia, semana, mês), gráficos de evolução de saldo e estatísticas detalhadas.</li>
+                <li><strong>Garagem Virtual:</strong> Gerenciamento da motocicleta, incluindo controle de odômetro, agendamento de manutenções preventivas (com base em KM), e registro de histórico de serviços.</li>
+                <li><strong>Gestão de Documentos:</strong> Alertas e controle de vencimento para CNH e Licenciamento do veículo.</li>
+                <li><strong>Hub de Vagas ("Meu Corre"):</strong> Plataforma para encontrar vagas publicadas por empresas, aceitá-las e iniciar negociações via chat em tempo real.</li>
+                <li><strong>Perfil Público:</strong> Criação de um perfil profissional com dados da moto, contato e avaliação, que fica visível para as empresas.</li>
+                <li><strong>Gamificação:</strong> Sistema de conquistas e medalhas para incentivar o uso do app e o alcance de metas.</li>
+                <li><strong>Backup e Restauração:</strong> Ferramenta para exportar e importar todos os dados financeiros em formato JSON.</li>
+            </ul>
+            <h3>Estrutura de Dados (Firestore):</h3>
+            <p>Os dados do motoboy são armazenados em: <code>/artifacts/moto-manager-v1/users/{userId}</code>. Este documento contém subcoleções para <code>earnings</code> e <code>expenses</code>, além de objetos para perfil, documentos, manutenções, etc.</p>
+
+            <h2>4. Portal de Empresas (/empresa)</h2>
+            <p>
+                Este portal é uma aplicação dedicada a empresas que desejam contratar motoboys freelancers. Ele possui seu próprio fluxo de autenticação e funcionalidades.
+            </p>
+            <h3>Funcionalidades Chave:</h3>
+            <ul>
+                <li><strong>Cadastro e Aprovação:</strong> Empresas se cadastram com dados de negócio (CNPJ, endereço). Um administrador precisa aprovar o cadastro para que a empresa possa acessar o sistema.</li>
+                <li><strong>Mapa de Motoboys:</strong> O dashboard principal exibe um mapa em tempo real com a localização dos motoboys online que estão dentro de um raio de busca configurável.</li>
+                <li><strong>Publicação de Vagas:</strong> Formulário para criar, editar e publicar vagas de entrega, que se tornam visíveis para os motoboys no app principal.</li>
+                <li><strong>Chat de Negociação:</strong> Quando um motoboy aceita uma vaga, um chat privado é aberto para a negociação. A empresa pode concluir o acordo ou cancelar a negociação.</li>
+                <li><strong>Histórico e Avaliação:</strong> A empresa pode ver um histórico de vagas concluídas e avaliar o desempenho dos motoboys, contribuindo para o sistema de rating.</li>
+                <li><strong>Favoritos:</strong> Possibilidade de marcar motoboys como "favoritos" para facilitar futuras contratações.</li>
+            </ul>
+            <h3>Estrutura de Dados (Firestore):</h3>
+            <p>Os dados das empresas ficam em <code>/companies/{companyId}</code>, enquanto as vagas são gerenciadas na coleção <code>/jobs</code>. O chat é uma subcoleção dentro de cada documento de vaga.</p>
+
+            <h2>5. Painel de Administração (/admin)</h2>
+            <p>
+                Uma aplicação de back-office completa para a gestão total do ecossistema. É uma ferramenta poderosa para monitoramento, moderação e análise.
+            </p>
+            <h3>Funcionalidades Chave:</h3>
+            <ul>
+                <li><strong>Dashboard Analítico:</strong> Exibe KPIs (métricas de desempenho) como total de usuários, usuários ativos (DAU/MAU), e gráficos sobre novos cadastros, atividade de registros e distribuição por categoria.</li>
+                <li><strong>Gestão de Usuários:</strong> Lista, busca e visualiza todos os usuários (motoboys e empresas). O admin pode editar perfis, apagar contas, e até mesmo suspender o acesso de um usuário.</li>
+                <li><strong>Dossiê de Usuário:</strong> Ferramenta que gera um relatório completo (dossiê) sobre um usuário, incluindo todos os seus dados, logs de atividades, e histórico de interações com o sistema.</li>
+                <li><strong>Aprovação de Empresas:</strong> Interface dedicada para aprovar ou reprovar os cadastros de novas empresas, com mensagens pré-formatadas para agilizar a comunicação.</li>
+                <li><strong>Monitoramento de Chats:</strong> Permite ao admin visualizar o histórico de conversas de negociação entre empresas e motoboys.</li>
+                <li><strong>Configurações Globais:</strong> Controle de configurações do sistema, como ativar um <strong>Modo Manutenção</strong> (que bloqueia o acesso aos apps) ou definir uma <strong>Mensagem do Dia</strong> (um banner de aviso global).</li>
+                <li><strong>Logs de Auditoria:</strong> Todas as ações realizadas pelos administradores são registradas para fins de segurança e auditoria.</li>
+            </ul>
+
+            <h2>6. Estrutura de Arquivos do Projeto</h2>
+            <p>O projeto está organizado de forma clara, separando as três aplicações principais e o código-fonte compartilhado.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pasta/Arquivo</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>/</code></td>
+                        <td>Contém a aplicação principal (PWA do Motoboy), arquivos de configuração PWA (manifest.json, sw.js) e páginas estáticas (ajuda, termos).</td>
+                    </tr>
+                    <tr>
+                        <td><code>/admin/</code></td>
+                        <td>Aplicação front-end do Painel de Administração.</td>
+                    </tr>
+                    <tr>
+                        <td><code>/empresa/</code></td>
+                        <td>Aplicação front-end do Portal de Empresas.</td>
+                    </tr>
+                    <tr>
+                        <td><code>/src/</code></td>
+                        <td>Código-fonte principal do PWA do Motoboy.</td>
+                    </tr>
+                    <tr>
+                        <td><code>/src/js/</code></td>
+                        <td>Contém a lógica JavaScript, com arquivos modulares para API (<code>api.js</code>), autenticação (<code>auth.js</code>), roteamento (<code>router.js</code>), e manipulação da UI (<code>ui.js</code> e <code>ui/</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>/src/templates/</code></td>
+                        <td>Armazena os templates HTML para as diferentes views e modais que são carregados dinamicamente no PWA.</td>
+                    </tr>
+                    <tr>
+                        <td><code>firestore.rules</code></td>
+                        <td>Regras de segurança para o banco de dados Firestore.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer class="text-center text-sm text-gray-500 py-6">
+        Documentação gerada automaticamente.
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,111 @@
+<div class="fade-in space-y-4 pb-10">
+  <!-- Seção do Modelo 3D e FIPE -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+    <div id="garage-header" class="text-center mb-4">
+      <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">
+        Carregando sua moto...
+      </h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400"></p>
+    </div>
+    <div
+      id="model-viewer-container"
+      class="h-64 bg-gray-100 dark:bg-gray-900 rounded-lg flex items-center justify-center"
+    >
+      <p class="text-gray-400">Carregando modelo 3D...</p>
+    </div>
+    <div
+      id="fipe-container"
+      class="mt-4 text-center bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg"
+    >
+      <p class="text-xs font-bold text-gray-500 dark:text-gray-400">
+        Valor Tabela FIPE
+      </p>
+      <p
+        id="fipe-value"
+        class="text-lg font-bold text-green-600 dark:text-green-400 animate-pulse"
+      >
+        Buscando...
+      </p>
+    </div>
+  </div>
+
+  <!-- Card de Análise de Custo -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+    <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm mb-2">
+      Análise de Custo Operacional
+    </h3>
+    <div
+      id="cost-analysis-container"
+      class="text-center bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg"
+    >
+      <p class="text-xs font-bold text-gray-500 dark:text-gray-400">
+        Custo por Km Rodado
+      </p>
+      <p
+        id="cost-per-km-value"
+        class="text-2xl font-bold text-purple-600 dark:text-purple-400 animate-pulse"
+      >
+        Calculando...
+      </p>
+      <p
+        id="cost-per-km-explanation"
+        class="text-xs text-gray-500 dark:text-gray-400 mt-1"
+      >
+        Calculando o custo total da sua moto dividido pela quilometragem total.
+      </p>
+    </div>
+  </div>
+
+  <!-- Container para Alertas de Vencimento -->
+  <div id="garage-alerts-container" class="space-y-2"></div>
+
+  <!-- Painel de Ações da Garagem -->
+  <div class="grid grid-cols-4 gap-3 text-center">
+    <button
+      id="debits-btn"
+      class="flex flex-col items-center p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm"
+    >
+      <i data-lucide="landmark" class="w-7 h-7 text-blue-500 mb-1"></i>
+      <span class="text-[10px] font-bold text-gray-600 dark:text-gray-300"
+        >Débitos</span
+      >
+    </button>
+    <button
+      id="docs-btn"
+      class="flex flex-col items-center p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm"
+    >
+      <i data-lucide="file-text" class="w-7 h-7 text-orange-500 mb-1"></i>
+      <span class="text-[10px] font-bold text-gray-600 dark:text-gray-300"
+        >Docs</span
+      >
+    </button>
+    <button
+      id="odometer-btn"
+      class="flex flex-col items-center p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm"
+    >
+      <i data-lucide="gauge-circle" class="w-7 h-7 text-purple-500 mb-1"></i>
+      <span class="text-[10px] font-bold text-gray-600 dark:text-gray-300"
+        >Km</span
+      >
+    </button>
+    <button
+      id="maintenance-btn"
+      class="flex flex-col items-center p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm"
+    >
+      <i data-lucide="wrench" class="w-7 h-7 text-green-500 mb-1"></i>
+      <span class="text-[10px] font-bold text-gray-600 dark:text-gray-300"
+        >Manutenção</span
+      >
+    </button>
+  </div>
+
+  <!-- NOVO: Checklist de Manutenção -->
+  <div class="mt-4 space-y-2">
+    <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm">
+      Checklist de Manutenção
+    </h3>
+    <div id="maintenance-checklist-container" class="space-y-2">
+      <!-- As categorias do checklist serão injetadas aqui pelo JS -->
+    </div>
+  </div>
+</div>

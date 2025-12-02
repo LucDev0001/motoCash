@@ -1,0 +1,55 @@
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in">
+  <h2 class="text-xl font-bold mb-4 dark:text-gray-200">Novo Anúncio</h2>
+  <form id="ad-form" class="space-y-3">
+    <input
+      required
+      id="ad-title"
+      placeholder="Título"
+      class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+    />
+    <div class="grid grid-cols-2 gap-3">
+      <input
+        required
+        type="number"
+        id="ad-price"
+        placeholder="Preço"
+        class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+      />
+      <select
+        id="ad-cat"
+        class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+      >
+        <option>Peças</option>
+        <option>Acessórios</option>
+        <option>Motos</option>
+        <option>Outros</option>
+      </select>
+    </div>
+    <textarea
+      required
+      id="ad-desc"
+      placeholder="Descrição"
+      class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+    ></textarea>
+    <input
+      type="url"
+      id="ad-img"
+      placeholder="Link Imagem"
+      class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+    />
+    <input
+      required
+      type="tel"
+      id="ad-zap"
+      placeholder="WhatsApp (DDD+Num)"
+      class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+    />
+    <button
+      type="submit"
+      class="w-full bg-yellow-500 text-black font-bold py-3 rounded"
+    >
+      Publicar
+    </button>
+  </form>
+  <button id="ad-cancel-btn" class="w-full text-gray-500 mt-3">Cancelar</button>
+</div>

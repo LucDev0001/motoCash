@@ -18,6 +18,7 @@
       content="black-translucent"
     />
     <link rel="apple-touch-icon" href="Icon-192.png" />
+    <link rel="icon" href="Icon-192.png" type="image/png" />
 
     <!-- Bibliotecas -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -28,6 +29,14 @@
     </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Biblioteca de OCR (Tesseract.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <!-- Biblioteca de Mapa (Leaflet.js) -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <!-- FIREBASE COMPAT -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -38,103 +47,10 @@
       Mover o script principal para o <head> com 'defer' garante que as funções 
       estejam disponíveis antes da interação do usuário, corrigindo erros de 'not defined'.
     -->
-    <script type="module" src="main.js" defer></script>
+    <script type="module" src="src/js/main.js" defer></script>
 
-    <style>
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
-        height: 100dvh;
-        width: 100vw;
-        overflow: hidden;
-      }
-
-      /* Estilos base para temas */
-      body {
-        background-color: #f3f4f6;
-      }
-      .dark body {
-        background-color: #111827;
-      }
-
-      #app-container {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        background-color: #f3f4f6; /* bg-gray-100 */
-        color: #1f2937; /* text-gray-800 */
-        max-width: 500px;
-        margin: 0 auto;
-        position: relative;
-      }
-
-      nav {
-        padding-bottom: env(safe-area-inset-bottom);
-        height: calc(3.5rem + env(safe-area-inset-bottom));
-      }
-
-      #content-area {
-        padding-bottom: calc(5rem + env(safe-area-inset-bottom));
-      }
-
-      .dark #app-container {
-        background-color: #030712; /* bg-gray-950 */
-        color: #d1d5db; /* text-gray-300 */
-      }
-
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-      }
-      .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      .modal-enter {
-        animation: slideUp 0.3s ease-out forwards;
-      }
-      @keyframes slideUp {
-        from {
-          transform: translateY(100%);
-        }
-        to {
-          transform: translateY(0);
-        }
-      }
-      .toast-enter {
-        animation: toast-in 0.5s ease-out forwards;
-      }
-      .toast-leave {
-        animation: toast-out 0.5s ease-in forwards;
-      }
-      @keyframes toast-in {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      @keyframes toast-out {
-        from {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        to {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-      }
-      .animate-pulse-slow {
-        animation: pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-      }
-      @keyframes pulse {
-        50% {
-          opacity: 0.7;
-        }
-      }
-    </style>
+    <!-- Estilos personalizados movidos para um arquivo externo -->
+    <link rel="stylesheet" href="src/css/styles.css" />
   </head>
   <body>
     <div id="app-container" class="shadow-2xl">
@@ -144,406 +60,8 @@
         class="fixed bottom-0 right-0 p-4 w-full max-w-sm z-[200] space-y-2 pointer-events-none"
       ></div>
 
-      <!-- MODAL DE NOTIFICAÇÃO/CONFIRMAÇÃO -->
-      <div
-        id="notification-modal"
-        class="hidden absolute inset-0 z-[99] bg-black/80 flex items-center justify-center transition-opacity p-4"
-      >
-        <div
-          class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl text-center"
-        >
-          <h3
-            id="notification-title"
-            class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2"
-          >
-            Título
-          </h3>
-          <p
-            id="notification-message"
-            class="text-gray-600 dark:text-gray-400 text-sm mb-6"
-          >
-            Mensagem aqui.
-          </p>
-          <div id="notification-buttons" class="flex gap-3 justify-center">
-            <!-- Buttons will be injected here by JS -->
-          </div>
-        </div>
-      </div>
-
-      <!-- MODAL DE EDIÇÃO -->
-      <div
-        id="edit-modal"
-        class="hidden absolute inset-0 z-[80] bg-black/80 flex items-center justify-center transition-opacity p-4"
-      >
-        <div
-          class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl"
-        >
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">
-              Editar Ganho
-            </h3>
-            <button
-              onclick="closeEditModal()"
-              class="text-gray-500 dark:text-gray-400"
-            >
-              <i data-lucide="x"></i>
-            </button>
-          </div>
-          <form onsubmit="saveEdit(event)" class="space-y-3">
-            <input type="hidden" id="edit-id" />
-            <input type="hidden" id="edit-type" />
-            <input type="hidden" id="edit-category" />
-            <!-- Usado apenas para ganhos -->
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label
-                  class="text-xs font-bold text-gray-500 dark:text-gray-400"
-                  >Data</label
-                ><input
-                  type="date"
-                  id="edit-date"
-                  class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"
-                />
-                <!-- 
-                  NOTA PARA CORREÇÃO DA DATA:
-                  Para evitar que a data mude para o dia anterior após as 21h (problema de fuso horário),
-                  no arquivo JavaScript (main.js), ao ler o valor deste campo, use o seguinte padrão:
-                  const dateValue = document.getElementById('edit-date').value; // "YYYY-MM-DD"
-                  const correctedDate = new Date(dateValue + 'T12:00:00'); // Adiciona meio-dia para evitar problemas de UTC
-                  Use 'correctedDate' para salvar no Firestore.
-                -->
-              </div>
-              <div id="edit-shift-container">
-                <label
-                  class="text-xs font-bold text-gray-500 dark:text-gray-400"
-                  >Turno</label
-                >
-                <select
-                  id="edit-shift"
-                  class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"
-                >
-                  <option value="dia">Dia</option>
-                  <option value="noite">Noite</option>
-                </select>
-              </div>
-            </div>
-            <!-- Campos para Ganhos -->
-            <div id="edit-fields-app">
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label
-                    class="text-xs font-bold text-gray-500 dark:text-gray-400"
-                    >Qtd</label
-                  ><input
-                    type="number"
-                    id="edit-count"
-                    class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200"
-                  />
-                </div>
-                <div>
-                  <label
-                    class="text-xs font-bold text-gray-500 dark:text-gray-400"
-                    >Total (R$)</label
-                  ><input
-                    type="number"
-                    step="0.01"
-                    id="edit-total"
-                    class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 font-bold"
-                  />
-                </div>
-              </div>
-            </div>
-            <div id="edit-fields-loja" class="hidden space-y-3">
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label
-                    class="text-xs font-bold text-gray-500 dark:text-gray-400"
-                    >Diária</label
-                  ><input
-                    type="number"
-                    step="0.01"
-                    id="edit-daily"
-                    class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-                  />
-                </div>
-                <div>
-                  <label
-                    class="text-xs font-bold text-gray-500 dark:text-gray-400"
-                    >Qtd</label
-                  ><input
-                    type="number"
-                    id="edit-loja-count"
-                    class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-                  />
-                </div>
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label
-                    class="text-xs font-bold text-gray-500 dark:text-gray-400"
-                    >Taxa</label
-                  ><input
-                    type="number"
-                    step="0.01"
-                    id="edit-fee"
-                    class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-                  />
-                </div>
-                <div>
-                  <label
-                    class="text-xs font-bold text-gray-500 dark:text-gray-400"
-                    >Extra</label
-                  ><input
-                    type="number"
-                    step="0.01"
-                    id="edit-extra"
-                    class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-                  />
-                </div>
-              </div>
-            </div>
-            <!-- Campos para Despesas -->
-            <div id="edit-fields-expense" class="hidden space-y-3">
-              <div>
-                <label
-                  class="text-xs font-bold text-gray-500 dark:text-gray-400"
-                  >Categoria</label
-                >
-                <select
-                  id="edit-exp-category"
-                  class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 outline-none"
-                >
-                  <option value="combustivel">Combustível</option>
-                  <option value="manutencao">Manutenção</option>
-                  <option value="pecas">Peças e Acessórios</option>
-                  <option value="documentacao">Documentação</option>
-                  <option value="alimentacao">Alimentação</option>
-                  <option value="outros">Outros</option>
-                </select>
-              </div>
-              <div>
-                <label
-                  class="text-xs font-bold text-gray-500 dark:text-gray-400"
-                  >Valor (R$)</label
-                >
-                <input
-                  required
-                  type="text"
-                  step="0.01"
-                  id="edit-exp-total"
-                  class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200 font-semibold"
-                  placeholder="0.00"
-                />
-              </div>
-              <div>
-                <label
-                  class="text-xs font-bold text-gray-500 dark:text-gray-400"
-                  >Observação (Opcional)</label
-                >
-                <textarea
-                  id="edit-exp-desc"
-                  class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200"
-                  placeholder="Ex: Troca de óleo"
-                ></textarea>
-              </div>
-            </div>
-            <!-- Campo de Observação para Ganhos -->
-            <div id="edit-observation-container">
-              <label class="text-xs font-bold text-gray-500 dark:text-gray-400"
-                >Observação (Opcional)</label
-              >
-              <textarea
-                id="edit-observation"
-                class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded border border-gray-200"
-                placeholder="Ex: Corrida com valor dinâmico"
-              ></textarea>
-            </div>
-
-            <button
-              type="submit"
-              class="w-full bg-gray-900 text-white font-bold py-3 rounded-lg mt-2"
-            >
-              Salvar
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <!-- MODAL DE COMPARTILHAMENTO -->
-      <div
-        id="share-modal"
-        class="hidden absolute inset-0 z-[70] bg-black/80 flex items-end sm:items-center justify-center transition-opacity"
-      >
-        <div
-          class="bg-white dark:bg-gray-800 w-full max-w-md rounded-t-2xl sm:rounded-xl p-6 modal-enter pb-10 sm:pb-6"
-        >
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">
-              Compartilhar
-            </h3>
-            <button
-              onclick="closeShareModal()"
-              class="text-gray-500 dark:text-gray-400"
-            >
-              <i data-lucide="x"></i>
-            </button>
-          </div>
-          <div class="space-y-4">
-            <div>
-              <h4
-                class="text-sm font-bold text-gray-600 dark:text-gray-300 mb-2"
-              >
-                Ganhos
-              </h4>
-              <div class="grid grid-cols-4 gap-3">
-                <button
-                  onclick="shareCategory('earning_loja_fixa')"
-                  class="flex flex-col items-center p-3 bg-red-50 border border-red-100 rounded-xl"
-                >
-                  <i data-lucide="store" class="text-red-500 mb-1"></i
-                  ><span class="text-[10px] font-bold text-red-700">Loja</span>
-                </button>
-                <button
-                  onclick="shareCategory('earning_app_passageiro')"
-                  class="flex flex-col items-center p-3 bg-blue-50 border border-blue-100 rounded-xl"
-                >
-                  <i data-lucide="bike" class="text-blue-500 mb-1"></i
-                  ><span class="text-[10px] font-bold text-blue-700"
-                    >Uber/99</span
-                  >
-                </button>
-                <button
-                  onclick="shareCategory('earning_app_entrega')"
-                  class="flex flex-col items-center p-3 bg-yellow-50 border border-yellow-100 rounded-xl"
-                >
-                  <i data-lucide="package" class="text-yellow-500 mb-1"></i
-                  ><span class="text-[10px] font-bold text-yellow-700"
-                    >iFood</span
-                  >
-                </button>
-                <button
-                  onclick="shareCategory('earning_total')"
-                  class="flex flex-col items-center p-3 bg-green-50 border border-green-200 rounded-xl"
-                >
-                  <i
-                    data-lucide="arrow-up-circle"
-                    class="text-green-600 mb-1"
-                  ></i
-                  ><span class="text-[10px] font-bold text-green-700"
-                    >Total</span
-                  >
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <h4
-                class="text-sm font-bold text-gray-600 dark:text-gray-300 mb-2"
-              >
-                Despesas
-              </h4>
-              <div class="grid grid-cols-1">
-                <button
-                  onclick="shareCategory('expense_total')"
-                  class="w-full py-3 bg-red-500 text-white rounded-lg font-bold flex justify-center items-center gap-2"
-                >
-                  <i data-lucide="arrow-down-circle" class="w-4"></i>
-                  <span>Relatório de Despesas</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="border-t dark:border-gray-700 my-4"></div>
-
-          <button
-            onclick="shareCategory('geral')"
-            class="w-full mt-4 py-3 bg-gray-900 text-white rounded-lg font-bold flex justify-center gap-2"
-          >
-            <i data-lucide="file-text" class="w-4"></i> Relatório Geral
-          </button>
-        </div>
-      </div>
-
-      <!-- MODAL PARA COMPLETAR PERFIL PÚBLICO -->
-      <div
-        id="complete-profile-modal"
-        class="hidden absolute inset-0 z-[90] bg-black/80 flex items-center justify-center transition-opacity p-4"
-      >
-        <div
-          class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl"
-        >
-          <div class="flex justify-between items-center">
-            <h3
-              id="public-profile-modal-title"
-              class="text-lg font-bold text-gray-800 dark:text-gray-100"
-            >
-              Complete seu Perfil Público
-            </h3>
-            <button
-              onclick="closeCompleteProfileModal()"
-              class="text-gray-500 dark:text-gray-400 -mr-2 -mt-2"
-            >
-              <i data-lucide="x"></i>
-            </button>
-          </div>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Para ficar online no Hub, preencha seus dados. Eles serão visíveis
-            para as empresas.
-          </p>
-          <form onsubmit="savePublicProfile(event)" class="space-y-3">
-            <input
-              required
-              id="public-name"
-              placeholder="Nome Completo"
-              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-            />
-            <input
-              required
-              id="public-moto-model"
-              placeholder="Modelo da Moto (Ex: Honda CG 160)"
-              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-            />
-            <input
-              required
-              type="tel"
-              id="public-whatsapp"
-              placeholder="WhatsApp (Ex: 11912345678)"
-              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-            />
-            <input
-              required
-              id="public-moto-plate"
-              placeholder="Placa da Moto (Ex: BRA2E19)"
-              class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-            />
-            <div class="flex items-start space-x-2 pt-2">
-              <input
-                type="checkbox"
-                id="public-terms-checkbox"
-                class="mt-1 rounded border-gray-600 bg-gray-800 text-yellow-500 focus:ring-yellow-500"
-              />
-              <label for="public-terms-checkbox" class="text-xs text-gray-400">
-                Eu concordo em compartilhar meu nome, modelo e placa da moto no
-                Hub de Entregas, conforme os
-                <a
-                  href="#"
-                  onclick="event.preventDefault(); router('privacy')"
-                  class="underline text-yellow-500"
-                  >Termos de Uso</a
-                >.
-              </label>
-            </div>
-            <button
-              type="submit"
-              id="public-profile-submit-btn"
-              class="w-full bg-yellow-500 text-black font-bold py-3 rounded-lg mt-2"
-            >
-              <span>Ficar Online</span>
-            </button>
-          </form>
-        </div>
-      </div>
+      <!-- Container para Modais -->
+      <div id="modal-container"></div>
 
       <!-- LOGIN -->
       <div
@@ -578,8 +96,8 @@
             <label for="terms-checkbox" class="text-xs text-gray-400">
               Eu li e aceito os
               <a
-                href="#"
-                onclick="event.preventDefault(); router('privacy')"
+                id="login-privacy-link"
+                href="politicas_e_privacidade.html"
                 class="underline text-yellow-500"
               >
                 Termos e Política de Privacidade </a
@@ -588,7 +106,7 @@
           </div>
           <div class="text-right">
             <button
-              onclick="handlePasswordReset()"
+              id="btn-forgot-password"
               class="text-xs text-gray-400 hover:text-white"
             >
               Esqueceu a senha?
@@ -596,14 +114,12 @@
           </div>
           <div class="flex gap-2">
             <button
-              onclick="handleEmailLogin('login')"
               id="btn-signin"
               class="flex-1 bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 rounded"
             >
               Entrar
             </button>
             <button
-              onclick="handleEmailLogin('register')"
               id="btn-signup"
               class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded"
               data-mode="register"
@@ -611,17 +127,6 @@
               Cadastrar
             </button>
           </div>
-          <div class="hidden flex items-center py-2">
-            <div class="flex-grow border-t border-gray-700"></div>
-            <span class="mx-2 text-xs text-gray-500">OU</span>
-            <div class="flex-grow border-t border-gray-700"></div>
-          </div>
-          <button
-            onclick="handleAnonLogin()"
-            class="hidden w-full border border-gray-600 text-gray-400 py-2 rounded text-sm"
-          >
-            Entrar como Visitante
-          </button>
         </div>
         <button
           id="pwa-install-btn"
@@ -640,7 +145,7 @@
 
       <!-- APP MAIN -->
       <div id="main-app" class="hidden flex-col h-full w-full">
-        <!-- OFFLINE INDICATOR -->
+        <!-- INDICADOR DE OFFLINE -->
         <div
           id="offline-indicator"
           class="hidden bg-yellow-500 text-black text-center p-2 text-sm font-bold z-30"
@@ -651,7 +156,7 @@
           </p>
         </div>
 
-        <!-- EMAIL VERIFICATION BANNER -->
+        <!-- BANNER DE VERIFICAÇÃO DE EMAIL -->
         <div
           id="email-verification-banner"
           class="hidden bg-yellow-100 dark:bg-yellow-900/50 border-b-2 border-yellow-500 p-3 z-30"
@@ -659,15 +164,12 @@
           <div class="flex items-center justify-between">
             <p class="text-sm text-yellow-800 dark:text-yellow-300">
               Seu e-mail não foi verificado.
-              <button
-                onclick="resendVerificationEmail()"
-                class="font-bold underline"
-              >
+              <button id="resend-verification-btn" class="font-bold underline">
                 Reenviar e-mail
               </button>
             </p>
             <button
-              onclick="document.getElementById('email-verification-banner').classList.add('hidden')"
+              id="close-verification-banner-btn"
               class="text-yellow-800 dark:text-yellow-300"
             >
               <i data-lucide="x" class="w-4 h-4"></i>
@@ -675,7 +177,18 @@
           </div>
         </div>
 
-        <!-- LOADING OVERLAY -->
+        <!-- NOVO: Indicador de Vaga Ativa -->
+        <div id="active-job-indicator" class="hidden">
+          <button
+            id="active-job-btn"
+            class="w-full bg-orange-500 text-white text-sm font-bold p-2 flex items-center justify-center gap-2 animate-pulse"
+          >
+            <i data-lucide="message-square-plus"></i>
+            <span>Vaga em Negociação! Clique para ver.</span>
+          </button>
+        </div>
+
+        <!-- OVERLAY DE CARREGAMENTO -->
         <div
           id="loading-overlay"
           class="hidden absolute inset-0 z-40 bg-gray-100 dark:bg-gray-900 flex items-center justify-center"
@@ -684,14 +197,15 @@
             class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"
           ></div>
         </div>
+
         <header
           class="bg-gray-900 text-white p-4 pt-10 flex justify-between items-center shadow-md z-20 shrink-0"
         >
           <h1 id="page-title" class="text-xl font-bold flex items-center gap-2">
             Meu Painel
           </h1>
-          <!-- Ícone de Notificações -->
-          <button onclick="router('notifications')" class="relative">
+
+          <button id="notifications-btn" class="relative">
             <i data-lucide="bell" class="w-6 h-6 text-white"></i>
             <div
               id="notification-indicator"
@@ -700,13 +214,12 @@
               0
             </div>
           </button>
-          <!-- Toggle Online/Offline -->
-          <div class="hidden items-center gap-2">
+
+          <div class="flex items-center gap-2">
             <span id="user-status-text" class="text-xs font-bold text-gray-400"
               >OFFLINE</span
             >
             <button
-              onclick="toggleUserOnlineStatus()"
               id="user-status-toggle"
               class="w-12 h-6 flex items-center bg-gray-700 rounded-full p-1 duration-300 ease-in-out"
             >
@@ -727,41 +240,37 @@
           class="fixed bottom-0 w-full max-w-[500px] bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-around items-start pt-2 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
         >
           <button
-            onclick="router('dashboard')"
-            class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400"
             id="nav-dashboard"
+            class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400"
           >
             <i data-lucide="dollar-sign" class="w-5 h-5"></i
             ><span class="text-[10px] mt-1">Painel</span>
           </button>
           <button
-            onclick="router('hub')"
-            class="hidden nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400"
-            id="nav-hub"
+            id="nav-garage"
+            class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400"
           >
-            <i data-lucide="map" class="w-5 h-5"></i>
-            <span class="text-[10px] mt-1">Freelancer</span>
+            <i data-lucide="warehouse" class="w-5 h-5"></i>
+            <span class="text-[10px] mt-1">Garagem</span>
           </button>
           <div class="relative -top-5">
             <button
-              onclick="router('finance')"
+              id="nav-finance"
               class="bg-yellow-500 hover:bg-yellow-400 text-black w-14 h-14 rounded-full shadow-lg flex items-center justify-center transform active:scale-95 transition"
             >
               <i data-lucide="plus" class="w-8 h-8 stroke-[3]"></i>
             </button>
           </div>
           <button
-            onclick="router('market')"
+            id="nav-hub"
             class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400"
-            id="nav-market"
           >
-            <i data-lucide="shopping-bag" class="w-5 h-5"></i
-            ><span class="text-[10px] mt-1">Loja</span>
+            <i data-lucide="briefcase" class="w-5 h-5"></i>
+            <span class="text-[10px] mt-1">Meu Corre</span>
           </button>
           <button
-            onclick="router('profile')"
-            class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400"
             id="nav-profile"
+            class="nav-btn flex flex-col items-center justify-center w-full h-full text-gray-400"
           >
             <i data-lucide="user" class="w-5 h-5"></i
             ><span class="text-[10px] mt-1">Perfil</span>

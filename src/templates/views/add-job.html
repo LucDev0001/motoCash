@@ -1,0 +1,23 @@
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 fade-in">
+  <h2 class="text-xl font-bold mb-4 dark:text-gray-200">Publicar Vaga</h2>
+  <form id="job-form" class="space-y-3">
+    <input
+      required
+      id="job-title"
+      placeholder="Título da Vaga (Ex: Entregador Noturno)"
+      class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+    />
+    <input
+      type="text"
+      id="job-payment"
+      placeholder="Pagamento (Ex: R$ 120/dia)"
+      class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+    />
+    <textarea required id="job-desc" placeholder="Descrição (Ex: Precisa-se de entregador para o turno da noite na pizzaria X. Horário das 18h às 23h.)" class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded h-24"></textarea>
+    <input required type="tel" id="job-contact" placeholder="Contato (WhatsApp ou Telefone)" class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded" />
+    <button type="submit" class="w-full bg-yellow-500 text-black font-bold py-3 rounded">Publicar Vaga</button>
+  </form>
+  <button id="job-cancel-btn" class="w-full text-gray-500 mt-3">
+    Cancelar
+  </button>
+</div>

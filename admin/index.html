@@ -107,6 +107,31 @@
             </a>
             <a
               href="#"
+              id="nav-companies"
+              class="nav-link flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700"
+            >
+              <i data-lucide="building-2" class="w-5 h-5"></i>
+              <span>Empresas</span>
+            </a>
+            <a
+              href="#"
+              id="nav-approvals"
+              class="nav-link flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700 relative"
+            >
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+              <span>Aprovações</span>
+              <span id="pending-approvals-indicator" class="hidden absolute top-1 right-2 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center"></span>
+            </a>
+            <a
+              href="#"
+              id="nav-chat"
+              class="nav-link flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700"
+            >
+              <i data-lucide="message-square" class="w-5 h-5"></i>
+              <span>Monitorar Chats</span>
+            </a>
+            <a
+              href="#"
               id="nav-reports"
               class="nav-link flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700"
             >
@@ -148,7 +173,7 @@
             <div class="flex justify-between items-center">
               <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
               <button
-                id="refresh-data-btn"
+                id="refresh-dashboard-btn"
                 class="flex items-center gap-2 text-sm bg-white hover:bg-gray-50 border rounded-lg px-4 py-2 shadow-sm"
               >
                 <i data-lucide="refresh-cw" class="w-4 h-4 text-gray-500"></i>
@@ -299,7 +324,12 @@
             </h1>
             <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
               <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-gray-800">Todos os Usuários</h3>
+                <div class="flex items-center space-x-4">
+                    <h3 class="font-bold text-gray-800">Todos os Motoboys</h3>
+                    <button id="create-user-btn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center">
+                        <i data-lucide="plus-circle" class="w-5 h-5 mr-2"></i> Criar Novo Usuário
+                    </button>
+                </div>
                 <div class="relative">
                   <input
                     type="text"
@@ -323,6 +353,7 @@
                       <th class="p-3">Último Acesso</th>
                       <th class="p-3">Registros</th>
                       <th class="p-3">Status</th>
+                      <th class="p-3">Ações</th>
                     </tr>
                   </thead>
                   <tbody id="all-users-table-body">
@@ -333,17 +364,188 @@
             </div>
           </div>
 
+          <!-- ======================= VIEW: EMPRESAS ======================= -->
+          <div id="view-companies" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-800">
+              Gerenciamento de Empresas (<span id="company-count-display">0</span>)
+            </h1>
+            <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
+              <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center space-x-4">
+                    <h3 class="font-bold text-gray-800">Todas as Empresas</h3>
+                    <button id="create-company-btn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center">
+                        <i data-lucide="plus-circle" class="w-5 h-5 mr-2"></i> Criar Nova Empresa
+                    </button>
+                </div>
+                <div class="relative">
+                  <input
+                    type="text"
+                    id="company-search-input"
+                    placeholder="Buscar por nome ou email..."
+                    class="w-64 pl-10 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  />
+                  <i
+                    data-lucide="search"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                  ></i>
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="text-sm font-bold text-gray-500 border-b">
+                      <th class="p-3">Nome da Empresa</th>
+                      <th class="p-3">Email</th>
+                      <th class="p-3">CNPJ</th>
+                      <th class="p-3">Telefone</th>
+                      <th class="p-3">Endereço</th>
+                      <th class="p-3">Data de Cadastro</th>
+                      <th class="p-3">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="all-companies-table-body">
+                    <!-- Linhas da tabela de empresas serão injetadas aqui -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================= VIEW: APROVAÇÕES ======================= -->
+          <div id="view-approvals" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-800">Aprovação de Novas Empresas</h1>
+            <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
+              <h3 class="font-bold text-gray-800">Empresas aguardando aprovação</h3>
+              <div class="overflow-x-auto mt-4">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="text-sm font-bold text-gray-500 border-b">
+                      <th class="p-3">Nome da Empresa</th>
+                      <th class="p-3">CNPJ</th>
+                      <th class="p-3">Email</th>
+                      <th class="p-3">WhatsApp</th>
+                      <th class="p-3">Endereço</th>
+                      <th class="p-3">Data do Cadastro</th>
+                      <th class="p-3">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pending-companies-table-body">
+                    <!-- Linhas da tabela de aprovações serão injetadas aqui -->
+                    <tr>
+                      <td colspan="7" class="text-center p-8 text-gray-400">
+                        Nenhuma empresa aguardando aprovação.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================= VIEW: MONITORAMENTO DE CHAT ======================= -->
+          <div id="view-chat" class="hidden">
+            <!-- Lista de Conversas -->
+            <div id="chat-list-view">
+              <h1 class="text-3xl font-bold text-gray-800">
+                Monitoramento de Chats
+              </h1>
+              <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
+                <h3 class="font-bold text-gray-800">Conversas Recentes</h3>
+                <div class="overflow-x-auto mt-4">
+                  <table class="w-full text-left">
+                    <thead>
+                      <tr class="text-sm font-bold text-gray-500 border-b">
+                        <th class="p-3">Vaga</th>
+                        <th class="p-3">Empresa</th>
+                        <th class="p-3">Motoboy</th>
+                        <th class="p-3">Data</th>
+                        <th class="p-3">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody id="all-chats-table-body">
+                      <!-- Linhas da tabela de chats serão injetadas aqui -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detalhes de uma Conversa -->
+            <div id="chat-details-view" class="hidden">
+              <button
+                id="back-to-chats-btn"
+                class="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
+              >
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Voltar para a lista de conversas
+              </button>
+              <h2
+                id="chat-details-title"
+                class="text-2xl font-bold text-gray-800 mb-4"
+              ></h2>
+              <div
+                id="chat-messages-container"
+                class="p-4 bg-gray-200 rounded-lg space-y-4 max-h-[60vh] overflow-y-auto"
+              ></div>
+            </div>
+          </div>
+
+          <!-- ======================= VIEW: LOG DE ATIVIDADES ======================= -->
+          <div id="view-logs" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-800">
+              Log de Atividades do Admin
+            </h1>
+            <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
+              <h3 class="font-bold text-gray-800">Últimas 50 Ações</h3>
+              <div class="overflow-x-auto mt-4">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="text-sm font-bold text-gray-500 border-b">
+                      <th class="p-3">Data/Hora</th>
+                      <th class="p-3">Ação</th>
+                      <th class="p-3">Admin</th>
+                      <th class="p-3">Usuário Alvo</th>
+                      <th class="p-3">Detalhes</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-logs-table-body">
+                    <!-- Linhas da tabela de logs serão injetadas aqui -->
+                    <tr>
+                      <td colspan="5" class="text-center p-8 text-gray-400">
+                        Carregando logs...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
           <!-- ======================= VIEW: DETALHES DO USUÁRIO ======================= -->
           <div id="view-user-details" class="hidden">
-            <button
-              id="back-to-users-btn"
-              class="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
-            >
-              <i data-lucide="arrow-left" class="w-4 h-4"></i>
-              Voltar para a lista de usuários
-            </button>
+            <div class="flex items-center justify-between mb-4">
+                <button
+                    id="back-to-users-btn"
+                    class="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+                >
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    Voltar para a lista de usuários
+                </button>
+                <div class="flex space-x-2">
+                    <button id="edit-user-details-btn" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors flex items-center">
+                        <i data-lucide="edit" class="w-5 h-5 mr-2"></i> Editar
+                    </button>
+                    <button id="delete-user-details-btn" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors flex items-center">
+                        <i data-lucide="trash-2" class="w-5 h-5 mr-2"></i> Apagar
+                    </button>
+                    <button id="generate-dossier-btn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center">
+                        <i data-lucide="file-text" class="w-5 h-5 mr-2"></i> Gerar Dossiê
+                    </button>
+                </div>
+            </div>
+            <h2 id="user-details-name" class="text-3xl font-bold text-gray-800 mb-6">Detalhes do Usuário</h2>
 
-            <div id="user-details-content">
+            <div id="user-details-content" class="space-y-6">
               <!-- Conteúdo será injetado pelo JS -->
               <div class="text-center p-10">
                 <div
@@ -353,6 +555,60 @@
                   Carregando detalhes do usuário...
                 </p>
               </div>
+            </div>
+
+            <!-- Estatísticas do Usuário -->
+            <div class="mt-8 p-6 bg-white rounded-lg shadow-md">
+                <h3 class="font-bold text-lg text-gray-800 mb-4">Estatísticas de Atividade</h3>
+                <div id="user-stats-container" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Cards de estatísticas serão injetados aqui -->
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm text-gray-500">Total Ganhos</p>
+                        <p id="user-stats-earnings" class="text-2xl font-bold text-green-600">R$ 0,00</p>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm text-gray-500">Total Despesas</p>
+                        <p id="user-stats-expenses" class="text-2xl font-bold text-red-600">R$ 0,00</p>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm text-gray-500">Saldo</p>
+                        <p id="user-stats-balance" class="text-2xl font-bold text-blue-600">R$ 0,00</p>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm text-gray-500">Nº de Registros</p>
+                        <p id="user-stats-records" class="text-2xl font-bold text-gray-700">0</p>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg col-span-2 lg:col-span-2">
+                        <p class="text-sm text-gray-500">Média por Ganho</p>
+                        <p id="user-stats-avg-earning" class="text-2xl font-bold text-purple-600">R$ 0,00</p>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg col-span-2 lg:col-span-2">
+                        <p class="text-sm text-gray-500">Categoria Mais Frequente</p>
+                        <p id="user-stats-fav-category" class="text-xl font-bold text-teal-600">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Atividade Recente -->
+            <div class="mt-8 p-6 bg-white rounded-lg shadow-md">
+                <h3 class="font-bold text-lg text-gray-800 mb-4">Atividade Recente</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-sm font-bold text-gray-500 border-b">
+                                <th class="p-2">Data</th>
+                                <th class="p-2">Tipo</th>
+                                <th class="p-2">Categoria</th>
+                                <th class="p-2">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-recent-activity-table">
+                            <tr>
+                                <td colspan="4" class="text-center p-8 text-gray-400">Nenhuma atividade recente.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Seção de Ações Perigosas -->
@@ -396,6 +652,113 @@
             </div>
           </div>
 
+          <!-- ======================= VIEW: CONFIGURAÇÕES ======================= -->
+          <div id="view-settings" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-800">Configurações Gerais</h1>
+            <p class="text-gray-500 mt-1">Controle parâmetros globais e o comportamento do aplicativo.</p>
+
+            <!-- Card de Parâmetros Globais -->
+            <div class="mt-8 p-6 bg-white rounded-lg shadow-md">
+              <h3 class="font-bold text-lg text-gray-800 mb-4">Parâmetros do Aplicativo</h3>
+              <div class="space-y-6">
+                <!-- Raio de Busca -->
+                <div>
+                  <label for="setting-search-radius" class="block text-sm font-medium text-gray-700">Raio de Busca de Motoboys (km)</label>
+                  <input type="number" id="setting-search-radius" class="mt-1 w-full max-w-xs p-2 border rounded-md" placeholder="Ex: 10">
+                  <p class="text-xs text-gray-500 mt-1">Define a distância máxima que o app da empresa busca por motoboys disponíveis.</p>
+                </div>
+
+                <!-- Mensagem do Dia -->
+                <div>
+                  <label for="setting-motd" class="block text-sm font-medium text-gray-700">Mensagem do Dia (MOTD)</label>
+                  <textarea id="setting-motd" rows="3" class="mt-1 w-full p-2 border rounded-md" placeholder="Anúncios, promoções ou avisos importantes para todos os usuários."></textarea>
+                  <div class="flex items-center mt-2">
+                    <input type="checkbox" id="setting-motd-enabled" class="h-4 w-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500">
+                    <label for="setting-motd-enabled" class="ml-2 block text-sm text-gray-900">Ativar Mensagem do Dia</label>
+                  </div>
+                </div>
+
+                <div class="border-t pt-4">
+                  <button id="save-app-settings-btn" class="bg-blue-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    Salvar Parâmetros
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card de Modo Manutenção -->
+            <div class="mt-8 p-6 bg-white rounded-lg shadow-md border-t-4 border-orange-500">
+              <h3 class="font-bold text-lg text-gray-800 mb-4">Modo Manutenção</h3>
+              <div class="space-y-6">
+                <div>
+                  <label for="setting-maintenance-message" class="block text-sm font-medium text-gray-700">Mensagem de Manutenção</label>
+                  <textarea id="setting-maintenance-message" rows="2" class="mt-1 w-full p-2 border rounded-md" placeholder="Ex: Estamos realizando uma manutenção programada. Voltamos em breve!"></textarea>
+                </div>
+                <div class="flex items-center">
+                  <input type="checkbox" id="setting-maintenance-enabled" class="h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
+                  <label for="setting-maintenance-enabled" class="ml-2 block text-sm text-gray-900">Ativar Modo Manutenção</label>
+                </div>
+                <div class="border-t pt-4">
+                  <button id="save-maintenance-settings-btn" class="bg-orange-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+                    Salvar Configuração de Manutenção
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card de Gerenciamento de Admins -->
+            <div class="mt-8 p-6 bg-white rounded-lg shadow-md border-t-4 border-red-500">
+              <h3 class="font-bold text-lg text-red-700 mb-4">Gerenciamento de Administradores</h3>
+              <div class="space-y-4">
+                <div>
+                  <h4 class="text-sm font-medium text-gray-700 mb-2">Administradores Atuais:</h4>
+                  <ul id="admin-list" class="list-disc list-inside bg-gray-50 p-3 rounded-md text-sm text-gray-600 space-y-1">
+                    <!-- Lista de UIDs de admins será injetada aqui -->
+                    <li>Carregando...</li>
+                  </ul>
+                </div>
+                <div>
+                  <label for="setting-new-admin-uid" class="block text-sm font-medium text-gray-700">Adicionar Novo Admin (por UID)</label>
+                  <div class="flex gap-2 mt-1">
+                    <input type="text" id="setting-new-admin-uid" class="flex-1 p-2 border rounded-md" placeholder="Cole o UID do usuário aqui">
+                    <button id="add-admin-btn" class="bg-green-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">Adicionar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================= VIEW: LOG DE ATIVIDADES ======================= -->
+          <div id="view-logs" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-800">
+              Log de Atividades do Admin
+            </h1>
+            <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
+              <h3 class="font-bold text-gray-800">Últimas 50 Ações</h3>
+              <div class="overflow-x-auto mt-4">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="text-sm font-bold text-gray-500 border-b">
+                      <th class="p-3">Data/Hora</th>
+                      <th class="p-3">Ação</th>
+                      <th class="p-3">Admin</th>
+                      <th class="p-3">Usuário Alvo</th>
+                      <th class="p-3">Detalhes</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-logs-table-body">
+                    <!-- Linhas da tabela de logs serão injetadas aqui -->
+                    <tr>
+                      <td colspan="5" class="text-center p-8 text-gray-400">
+                        Carregando logs...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
           <!-- ======================= VIEW: RELATÓRIOS ======================= -->
           <div id="view-reports" class="hidden">
             <h1 class="text-3xl font-bold text-gray-800">Relatórios</h1>
@@ -430,79 +793,83 @@
               </div>
             </div>
           </div>
-
-          <!-- ======================= VIEW: LOG DE ATIVIDADES ======================= -->
-          <div id="view-logs" class="hidden">
-            <h1 class="text-3xl font-bold text-gray-800">Log de Atividades</h1>
-            <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
-              <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                  <thead>
-                    <tr class="text-sm font-bold text-gray-500 border-b">
-                      <th class="p-3">Data/Hora</th>
-                      <th class="p-3">Ação</th>
-                      <th class="p-3">Admin</th>
-                      <th class="p-3">Usuário Alvo</th>
-                      <th class="p-3">Detalhes</th>
-                    </tr>
-                  </thead>
-                  <tbody id="admin-logs-table-body">
-                    <!-- Linhas do log serão injetadas aqui -->
-                    <tr>
-                      <td colspan="5" class="text-center p-8 text-gray-400">
-                        Carregando logs...
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- ======================= VIEW: CONFIGURAÇÕES ======================= -->
-          <div id="view-settings" class="hidden">
-            <h1 class="text-3xl font-bold text-gray-800">Configurações</h1>
-            <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
-              <h3 class="font-bold text-gray-800 mb-4">Exportação de Dados</h3>
-              <div class="space-y-3">
-                <button
-                  onclick="exportAllUsersToCSV()"
-                  class="w-full text-left p-3 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-3"
-                >
-                  <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
-                  <span>Exportar Lista Completa de Usuários (CSV)</span>
+    <!-- User Form Modal -->
+    <div id="user-form-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="user-form-title" class="text-2xl font-bold text-gray-800">Criar Novo Usuário</h3>
+                <button id="close-user-form-modal-btn" class="text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
-              </div>
-
-              <div class="border-t my-6"></div>
-
-              <h3 class="font-bold text-gray-800 mb-4">
-                Notificação em Massa (Broadcast)
-              </h3>
-              <div
-                class="mt-4 flex flex-col md:flex-row justify-between items-center gap-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
-              >
-                <div>
-                  <h4 class="font-bold text-yellow-800">Enviar para Todos</h4>
-                  <p class="text-sm text-yellow-700 mt-1">
-                    Envie uma notificação para todos os usuários cadastrados.
-                    Use com moderação.
-                  </p>
+            </div>
+            <form id="user-form">
+                <input type="hidden" id="user-id">
+                <div class="mb-4">
+                    <label for="user-form-type" class="block text-gray-700 text-sm font-bold mb-2">Tipo de Usuário:</label>
+                    <select id="user-form-type" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <option value="motoboy">Motoboy</option>
+                        <option value="empresa">Empresa</option>
+                    </select>
                 </div>
-                <button
-                  id="open-broadcast-modal-btn"
-                  class="bg-yellow-500 text-black font-bold px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors shrink-0"
-                >
-                  Enviar para Todos
-                </button>
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="mb-4">
+                        <label for="user-email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+                        <input type="email" id="user-email-form" placeholder="email@exemplo.com" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="user-form-name" class="block text-gray-700 text-sm font-bold mb-2">Nome Completo / Razão Social:</label>
+                        <input type="text" id="user-form-name" placeholder="Nome do usuário ou empresa" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="mb-4">
+                        <label for="user-form-whatsapp" class="block text-gray-700 text-sm font-bold mb-2">WhatsApp:</label>
+                        <input type="text" id="user-form-whatsapp" placeholder="(XX) XXXXX-XXXX" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="mb-4 company-field">
+                        <label for="user-form-cnpj" class="block text-gray-700 text-sm font-bold mb-2">CNPJ (Empresa):</label>
+                        <input type="text" id="user-form-cnpj" placeholder="XX.XXX.XXX/XXXX-XX" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="mb-4 company-field col-span-full">
+                        <label for="user-form-address" class="block text-gray-700 text-sm font-bold mb-2">Endereço (Empresa):</label>
+                        <input type="text" id="user-form-address" placeholder="Rua, Número, Bairro, Cidade - UF" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <!-- Additional Motoboy fields -->
+                    <div class="mb-4 motoboy-field">
+                        <label for="user-form-moto-plate" class="block text-gray-700 text-sm font-bold mb-2">Placa da Moto:</label>
+                        <input type="text" id="user-form-moto-plate" placeholder="ABC-1234" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="mb-4 motoboy-field">
+                        <label for="user-form-moto-model" class="block text-gray-700 text-sm font-bold mb-2">Marca/Modelo da Moto:</label>
+                        <input type="text" id="user-form-moto-model" placeholder="Honda CG 160" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="mb-4 motoboy-field">
+                        <label for="user-form-moto-year" class="block text-gray-700 text-sm font-bold mb-2">Ano da Moto:</label>
+                        <input type="number" id="user-form-moto-year" placeholder="2020" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="mb-4 motoboy-field">
+                        <label for="user-form-moto-color" class="block text-gray-700 text-sm font-bold mb-2">Cor da Moto:</label>
+                        <input type="text" id="user-form-moto-color" placeholder="Preta" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="mb-4 motoboy-field">
+                        <label for="user-form-moto-renavam" class="block text-gray-700 text-sm font-bold mb-2">RENAVAM da Moto:</label>
+                        <input type="text" id="user-form-moto-renavam" placeholder="XXXXXXXXXXX" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="mb-4 motoboy-field">
+                        <label for="user-form-moto-state" class="block text-gray-700 text-sm font-bold mb-2">Estado da Moto:</label>
+                        <input type="text" id="user-form-moto-state" placeholder="SP" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="mb-4 motoboy-field col-span-full">
+                        <label for="user-form-moto-image-url" class="block text-gray-700 text-sm font-bold mb-2">URL Imagem da Moto:</label>
+                        <input type="url" id="user-form-moto-image-url" placeholder="https://example.com/moto.jpg" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-4 mt-6">
+                    <button type="button" id="cancel-user-form-btn" class="bg-gray-300 text-gray-800 font-bold px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors">Cancelar</button>
+                    <button type="submit" id="save-user-btn" class="bg-yellow-500 text-black font-bold px-6 py-2 rounded-lg hover:bg-yellow-600 transition-colors">Salvar Usuário</button>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <!-- MODAL DE NOTIFICAÇÃO -->
+          <!-- MODAL DE NOTIFICAÇÃO -->
     <div
       id="notification-modal"
       class="hidden fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4"

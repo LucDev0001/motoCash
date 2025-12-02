@@ -1,0 +1,121 @@
+<!-- MODAL DE DOCUMENTOS -->
+<div
+  id="documents-modal"
+  class="absolute inset-0 z-[85] bg-black/80 flex items-center justify-center transition-opacity p-4 overflow-y-auto"
+>
+  <div
+    class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl my-auto"
+  >
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">
+        Meus Documentos
+      </h3>
+      <button class="text-gray-500 dark:text-gray-400 close-modal-btn">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+
+    <!-- Seção CNH -->
+    <div class="space-y-3 border-b dark:border-gray-700 pb-4 mb-4">
+      <h4 class="font-bold text-gray-700 dark:text-gray-300">
+        Carteira de Habilitação (CNH)
+      </h4>
+      <input
+        type="file"
+        id="cnh-scan-input"
+        class="hidden"
+        accept="image/*"
+        capture="environment"
+      />
+      <button
+        id="scan-cnh-btn"
+        class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"
+      >
+        <i data-lucide="camera"></i> Escanear CNH
+      </button>
+      <div
+        id="cnh-scan-status"
+        class="hidden text-center text-sm text-gray-500 dark:text-gray-400 p-2"
+      >
+        <div
+          class="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-500 mx-auto mb-2"
+        ></div>
+        <p>Lendo documento... Isso pode levar um momento.</p>
+      </div>
+      <div class="space-y-2">
+        <input
+          id="doc-cnh-number"
+          placeholder="Nº de Registro da CNH"
+          class="w-full p-2 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+        />
+        <input
+          type="date"
+          id="doc-cnh-expiry"
+          placeholder="Data de Validade"
+          class="w-full p-2 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+        />
+      </div>
+    </div>
+
+    <!-- Seção CRLV -->
+    <div class="space-y-3">
+      <h4 class="font-bold text-gray-700 dark:text-gray-300">
+        Documento do Veículo (CRLV)
+      </h4>
+      <input
+        type="file"
+        id="crlv-scan-input"
+        class="hidden"
+        accept="image/*"
+        capture="environment"
+      />
+      <button
+        id="scan-crlv-btn"
+        class="w-full bg-green-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"
+      >
+        <i data-lucide="scan-line"></i> Escanear CRLV
+      </button>
+      <div
+        id="crlv-scan-status"
+        class="hidden text-center text-sm text-gray-500 dark:text-gray-400 p-2"
+      >
+        <div
+          class="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-500 mx-auto mb-2"
+        ></div>
+        <p>Lendo documento...</p>
+      </div>
+      <div class="space-y-2">
+        <input
+          id="doc-plate"
+          placeholder="Placa"
+          class="w-full p-2 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+        />
+        <input
+          id="doc-renavam"
+          placeholder="RENAVAM"
+          class="w-full p-2 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+        />
+        <input
+          type="date"
+          id="doc-licensing-expiry"
+          placeholder="Vencimento do Licenciamento"
+          class="w-full p-2 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+        />
+      </div>
+    </div>
+
+    <div class="border-t dark:border-gray-700 my-4"></div>
+
+    <!-- Alertas de Vencimento -->
+    <div id="doc-alerts-container" class="space-y-2">
+      <!-- Alertas serão injetados aqui -->
+    </div>
+
+    <button
+      id="save-docs-btn"
+      class="w-full bg-gray-900 text-white font-bold py-3 rounded-lg mt-4"
+    >
+      Salvar Datas
+    </button>
+  </div>
+</div>
