@@ -1,0 +1,56 @@
+<div class="fade-in h-full flex flex-col bg-gray-100 dark:bg-gray-900">
+  <!-- Cabeçalho da Assistente -->
+  <div
+    class="bg-white dark:bg-gray-800 p-4 shadow-md flex items-center gap-4 shrink-0"
+  >
+    <div
+      class="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center"
+    >
+      <i data-lucide="bot" class="w-7 h-7 text-black"></i>
+    </div>
+    <div>
+      <h2 class="font-bold text-lg dark:text-white">Assistente Graxa</h2>
+      <p id="graxa-status" class="text-xs text-green-500">Online</p>
+    </div>
+  </div>
+
+  <!-- Área de Mensagens -->
+  <div id="graxa-messages" class="flex-1 p-4 space-y-4 overflow-y-auto">
+    <!-- Mensagens serão injetadas aqui -->
+  </div>
+
+  <!-- Área de Input -->
+  <div
+    class="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700 shrink-0"
+  >
+    <!-- NOVO: Sugestões de Perguntas -->
+    <div
+      id="graxa-suggestions"
+      class="flex gap-2 overflow-x-auto scrollbar-hide pb-3"
+    >
+      <!-- Sugestões serão injetadas aqui -->
+    </div>
+    <div
+      id="graxa-limit-warning"
+      class="hidden text-center text-xs text-red-500 mb-2"
+    >
+      Você atingiu seu limite de perguntas diárias. Torne-se um Apoiador para
+      acesso ilimitado!
+    </div>
+    <form id="graxa-form" class="flex items-center gap-2">
+      <input
+        id="graxa-input"
+        type="text"
+        placeholder="Pergunte sobre manutenção, leis..."
+        class="flex-1 p-3 bg-gray-100 dark:bg-gray-700 rounded-full outline-none focus:ring-2 focus:ring-yellow-500"
+        autocomplete="off"
+      />
+      <button
+        type="submit"
+        class="bg-yellow-500 text-black w-12 h-12 rounded-full flex items-center justify-center shrink-0"
+      >
+        <i data-lucide="send" class="w-6 h-6"></i>
+      </button>
+    </form>
+  </div>
+</div>

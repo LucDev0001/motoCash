@@ -97,7 +97,10 @@
           Voltar
         </button>
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 md:p-8">
-          <div id="article-content" class="prose dark:prose-invert max-w-none">
+          <div
+            id="article-content"
+            class="prose dark:prose-invert max-w-none prose-p:text-gray-600 prose-p:dark:text-gray-300 prose-li:text-gray-600 prose-li:dark:text-gray-300"
+          >
             <!-- Conteúdo do artigo será injetado aqui -->
           </div>
           <div
@@ -126,118 +129,17 @@
           rel="noopener noreferrer"
           >Política de Privacidade</a
         >
-        <p class="mt-2">AppMotoCash v1.3.0 &copy; 2025</p>
+        <p class="mt-2">AppMotoCash v2.0.0 &copy; 2025</p>
       </footer>
     </div>
 
     <script>
-      // --- Banco de Dados de Artigos ---
-      const helpArticles = {
-        "primeiros-passos": {
-          name: "Primeiros Passos",
-          icon: "rocket",
-          color: "text-green-500",
-          articles: [
-            {
-              id: "cadastro",
-              question: "Como me cadastrar no AppMotoCash?",
-              answer: `
-                <p>É muito simples! Siga os passos:</p>
-                <ol>
-                  <li>Na tela inicial, clique no botão <strong>"Cadastrar"</strong>.</li>
-                  <li>Preencha seu e-mail e crie uma senha segura (mínimo 6 caracteres).</li>
-                  <li>Marque a caixa para aceitar os Termos de Uso e a Política de Privacidade.</li>
-                  <li>Clique em "Cadastrar" novamente.</li>
-                  <li>Você receberá um e-mail de verificação. Clique no link do e-mail para ativar sua conta.</li>
-                </ol>
-              `,
-            },
-            {
-              id: "completar-perfil",
-              question:
-                "Por que preciso completar meu perfil para ficar online?",
-              answer: `
-                <p>Completar seu perfil público é um passo de segurança essencial. As empresas precisam saber quem estão contratando. As informações necessárias são:</p>
-                <ul>
-                  <li><strong>Seu Nome Completo:</strong> Para identificação.</li>
-                  <li><strong>Dados da Moto (Marca, Modelo, Ano, Cor, Placa, RENAVAM):</strong> Para segurança e identificação do veículo.</li>
-                  <li><strong>WhatsApp:</strong> Para que a empresa possa entrar em contato após você aceitar uma vaga.</li>
-                </ul>
-                <p>Esses dados só são compartilhados com a empresa <strong>após</strong> você aceitar uma vaga, garantindo sua privacidade.</p>
-              `,
-            },
-          ],
-        },
-        conta: {
-          name: "Minha Conta",
-          icon: "user-cog",
-          color: "text-blue-500",
-          articles: [
-            {
-              id: "resetar-senha",
-              question: "Esqueci minha senha, como posso recuperá-la?",
-              answer: `
-                <p>Na tela de login, siga estes passos:</p>
-                <ol>
-                  <li>Digite o seu e-mail no campo correspondente.</li>
-                  <li>Clique no link <strong>"Esqueceu a senha?"</strong>.</li>
-                  <li>Um e-mail com instruções para criar uma nova senha será enviado para você. Verifique sua caixa de entrada e a pasta de spam.</li>
-                </ol>
-              `,
-            },
-            {
-              id: "apagar-conta",
-              question: "Como posso apagar minha conta permanentemente?",
-              answer: `
-                <p class="text-red-500 font-bold">Atenção: Esta ação é irreversível e todos os seus dados serão perdidos.</p>
-                <ol>
-                  <li>Vá para a tela de <strong>"Perfil"</strong>.</li>
-                  <li>Role até o final e clique no botão vermelho <strong>"Apagar Conta Permanentemente"</strong>.</li>
-                  <li>Uma janela de confirmação aparecerá. Você precisará digitar a palavra "APAGAR" para confirmar a exclusão.</li>
-                </ol>
-              `,
-            },
-          ],
-        },
-        financeiro: {
-          name: "Financeiro",
-          icon: "dollar-sign",
-          color: "text-purple-500",
-          articles: [
-            {
-              id: "add-ganho",
-              question: "Como adiciono um novo ganho?",
-              answer: `
-                <p>Clique no grande botão amarelo com o sinal de <strong>"+"</strong> na barra de navegação. Na tela que abrir, a aba "Ganho" já estará selecionada. Preencha os detalhes do seu trabalho (data, tipo, valor) e clique em "Salvar Ganho".</p>
-              `,
-            },
-            {
-              id: "add-despesa",
-              question: "Como registro uma despesa?",
-              answer: `
-                <p>Clique no botão <strong>"+"</strong>. Na tela de "Adicionar", clique na aba "Despesa". Selecione a data, a categoria (ex: Combustível), o valor e clique em "Salvar Despesa".</p>
-              `,
-            },
-          ],
-        },
-        hub: {
-          name: "Hub de Entregas",
-          icon: "briefcase",
-          color: "text-orange-500",
-          articles: [
-            {
-              id: "aceitar-vaga",
-              question: "Como aceito uma vaga de freelancer?",
-              answer: `
-                <p>Vá para a aba <strong>"Hub"</strong>. Você verá uma lista de vagas disponíveis. Leia os detalhes de cada uma (endereço, pagamento, etc.). Quando encontrar uma que te interessa, clique no botão verde <strong>"Aceitar Vaga"</strong>. A vaga irá para sua lista de "Vagas Aceitas" e você poderá iniciar a negociação com a empresa.</p>
-              `,
-            },
-          ],
-        },
-      };
-
       // --- Lógica da Página de Ajuda ---
-      document.addEventListener("DOMContentLoaded", () => {
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Carrega os artigos do arquivo JSON
+        const response = await fetch("src/data/ajuda.json");
+        const helpArticles = await response.json();
+
         const searchInput = document.getElementById("help-search-input");
         const categoriesGrid = document.getElementById("categories-grid");
         const mainView = document.getElementById("help-main-view");
@@ -363,15 +265,21 @@
           `;
           document.getElementById("article-feedback").innerHTML = `
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Este artigo foi útil?</p>
-            <div class="flex justify-center gap-3">
-              <button class="px-6 py-2 border border-green-500 text-green-600 rounded-full hover:bg-green-50">Sim</button>
-              <button class="px-6 py-2 border border-red-500 text-red-600 rounded-full hover:bg-red-50">Não</button>
+            <div id="feedback-buttons" class="flex justify-center gap-3">
+              <button onclick="handleFeedback()" class="px-6 py-2 border border-green-500 text-green-600 rounded-full hover:bg-green-50 dark:hover:bg-green-900/50">Sim</button>
+              <button onclick="handleFeedback()" class="px-6 py-2 border border-red-500 text-red-600 rounded-full hover:bg-red-50 dark:hover:bg-red-900/50">Não</button>
             </div>
           `;
 
           mainView.classList.add("hidden");
           articleView.classList.remove("hidden");
           window.scrollTo(0, 0);
+        };
+
+        // Função para lidar com o feedback
+        window.handleFeedback = () => {
+          const feedbackContainer = document.getElementById("article-feedback");
+          feedbackContainer.innerHTML = `<p class="text-green-600 dark:text-green-400 font-semibold">Obrigado pelo seu feedback!</p>`;
         };
 
         lucide.createIcons();

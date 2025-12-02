@@ -1,17 +1,21 @@
-const CACHE_NAME = "motomanager-v31.0.0"; // Versão incrementada
+const CACHE_NAME = "motomanager-v2.0.6"; // Versão incrementada para forçar a atualização do cache
 
 // Lista de arquivos essenciais para o App Shell.
 const assetsToCache = [
   "./",
   "./index.html",
   "./manifest.json",
+  "./src/templates/views/achievements.html", // Adiciona o novo template
   "./src/css/styles.css",
   "./ajuda.html",
+  "./src/data/ajuda.json", // Adiciona o novo arquivo de dados
   "./termos_de_uso.html",
   "./politicas_e_privacidade.html",
   "./Icon-192.png",
   "./Icon-512.png",
   "./assets/notification.mp3",
+  "./icons/add.png", // Ícone do atalho "Adicionar Transação"
+  "./icons/garage.png", // Ícone do atalho "Minha Garagem"
   // Os arquivos de CDN (Tailwind, Leaflet, Firebase, etc.)
   // e imagens de screenshots/atalhos foram removidos.
   // O cache do navegador é mais eficiente para eles e isso evita a falha do Service Worker.

@@ -1,5 +1,6 @@
 import * as API from "./api.js";
 import { allLoadedItems, currentStats } from "./api.js"; // Keep for shareCategory
+import { router } from "./router.js";
 
 import { auth, db, appId } from "./config.js";
 import { currentUser } from "./auth.js";
@@ -40,10 +41,59 @@ export async function openEditModal(id, type) {
   const item = allLoadedItems.find((i) => i.id === id);
   if (!item) return;
 
-  await openModal("editModal");
+  const modal = await openModal("editModal");
 
-  const modalTitle = document.querySelector("#edit-modal h3");
-  // O código para preencher os campos do modal de edição permanece aqui por enquanto
+  // Preenche os campos escondidos
+  modal.querySelector("#edit-id").value = id;
+  modal.querySelector("#edit-type").value = type;
+  modal.querySelector("#edit-category").value = item.category;
+
+  // Preenche a data
+  modal.querySelector("#edit-date").value = item.date;
+
+  // Mostra/esconde campos baseado no tipo (ganho ou despesa)
+  const earningFieldsApp = modal.querySelector("#edit-fields-app");
+  const earningFieldsLoja = modal.querySelector("#edit-fields-loja");
+  const expenseFields = modal.querySelector("#edit-fields-expense");
+  const shiftContainer = modal.querySelector("#edit-shift-container");
+  const observationContainer = modal.querySelector(
+    "#edit-observation-container"
+  );
+
+  if (type === "earning") {
+    expenseFields.classList.add("hidden");
+    shiftContainer.classList.remove("hidden");
+    observationContainer.classList.remove("hidden");
+
+    modal.querySelector("#edit-shift").value = item.shift || "dia";
+    modal.querySelector("#edit-observation").value = item.observation || "";
+
+    if (item.category === "loja_fixa") {
+      earningFieldsApp.classList.add("hidden");
+      earningFieldsLoja.classList.remove("hidden");
+      modal.querySelector("#edit-daily").value = item.details?.daily || 0;
+      modal.querySelector("#edit-loja-count").value = item.details?.count || 0;
+      modal.querySelector("#edit-fee").value = item.details?.fee || 0;
+      modal.querySelector("#edit-extra").value = item.details?.extra || 0;
+    } else {
+      // app_passageiro ou app_entrega
+      earningFieldsApp.classList.remove("hidden");
+      earningFieldsLoja.classList.add("hidden");
+      modal.querySelector("#edit-count").value = item.count || 0;
+      modal.querySelector("#edit-total").value = item.totalValue || 0;
+    }
+  } else {
+    // type === 'expense'
+    earningFieldsApp.classList.add("hidden");
+    earningFieldsLoja.classList.add("hidden");
+    shiftContainer.classList.add("hidden");
+    observationContainer.classList.add("hidden"); // Esconde observação para despesas no edit modal
+    expenseFields.classList.remove("hidden");
+
+    modal.querySelector("#edit-exp-category").value = item.category;
+    modal.querySelector("#edit-exp-total").value = item.totalValue;
+    modal.querySelector("#edit-exp-desc").value = item.observation || "";
+  }
 }
 
 export async function openShareModal() {
@@ -54,6 +104,14 @@ export async function openShareModal() {
       shareCategory(btn.dataset.shareType);
     });
   });
+}
+
+/**
+ * Abre o modal do Plano Pro e adiciona o listener para o botão de assinatura.
+ */
+export async function openProPlanModal() {
+  // Agora o modal é apenas informativo, então só precisamos abri-lo.
+  await openModal("proPlanModal");
 }
 
 export function shareCategory(type) {
@@ -102,14 +160,18 @@ export function shareCategory(type) {
   closeModal();
 }
 
-async function openModal(modalName) {
-  const modalContainer = document.getElementById("modal-container");
-  const response = await fetch(`src/templates/modals/${modalName}.html`);
-  modalContainer.innerHTML = await response.text();
-  lucide.createIcons();
-  modalContainer
-    .querySelector(".close-modal-btn")
-    ?.addEventListener("click", closeModal);
+export function openModal(modalName) {
+  return new Promise(async (resolve) => {
+    const modalContainer = document.getElementById("modal-container");
+    const response = await fetch(`src/templates/modals/${modalName}.html`);
+    modalContainer.innerHTML = await response.text();
+    lucide.createIcons();
+    modalContainer
+      .querySelector(".close-modal-btn")
+      ?.addEventListener("click", closeModal);
+    // Resolve a promessa com o elemento do modal recém-criado
+    resolve(modalContainer.firstElementChild);
+  });
 }
 
 export function showVerificationBanner() {
@@ -124,12 +186,10 @@ export function showLoginError(msg) {
 }
 
 export async function showNotification(message, title = "Aviso") {
-  await openModal("notificationModal");
-  const modal = document.getElementById("notification-modal"); // O modal agora está no DOM
-  const titleEl = document.getElementById("notification-title");
-  const messageEl = document.getElementById("notification-message");
-  const buttonsEl = document.getElementById("notification-buttons");
-
+  const modal = await openModal("notificationModal");
+  const titleEl = modal.querySelector("#notification-title");
+  const messageEl = modal.querySelector("#notification-message");
+  const buttonsEl = modal.querySelector("#notification-buttons");
   titleEl.innerText = title;
   messageEl.innerText = message;
   buttonsEl.innerHTML = `<button id="notification-ok-btn" class="bg-gray-900 dark:bg-yellow-500 dark:text-black text-white font-bold py-2 px-8 rounded-lg">OK</button>`;
@@ -139,18 +199,49 @@ export async function showNotification(message, title = "Aviso") {
     .addEventListener("click", closeModal);
 }
 
+/**
+ * Exibe uma notificação rápida (toast) que desaparece sozinha.
+ * @param {string} message - A mensagem a ser exibida.
+ * @param {string} [icon='check-circle'] - O ícone do Lucide a ser usado.
+ */
+export function showToast(message, icon = "check-circle") {
+  const container = document.getElementById("toast-container");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.className = `w-full bg-gray-800 border border-green-600 shadow-2xl rounded-lg p-4 flex items-start gap-4 pointer-events-auto toast-enter`;
+  toast.innerHTML = `
+    <div>
+        <i data-lucide="${icon}" class="w-6 h-6 text-green-500"></i>
+    </div>
+    <div class="flex-1">
+        <p class="text-sm font-semibold text-white">${message}</p>
+    </div>
+  `;
+
+  container.appendChild(toast);
+  lucide.createIcons();
+
+  // Remove o toast após alguns segundos
+  setTimeout(() => {
+    toast.classList.remove("toast-enter");
+    toast.classList.add("toast-leave");
+    setTimeout(() => toast.remove(), 500); // Remove o elemento após a animação
+  }, 3000); // O toast fica visível por 3 segundos
+}
+
 export function showConfirmation(
   message,
   title = "Confirmação",
   onConfirm,
+  onCancel = closeModal, // Define closeModal como o padrão se onCancel não for fornecido
   requireTextInput = null,
   customHTML = ""
 ) {
-  openModal("notificationModal").then(() => {
-    const modal = document.getElementById("notification-modal");
-    const titleEl = document.getElementById("notification-title");
-    const messageEl = document.getElementById("notification-message");
-    const buttonsEl = document.getElementById("notification-buttons");
+  openModal("notificationModal").then((modal) => {
+    const titleEl = modal.querySelector("#notification-title");
+    const messageEl = modal.querySelector("#notification-message");
+    const buttonsEl = modal.querySelector("#notification-buttons");
 
     titleEl.innerText = title;
     let textInputHTML = customHTML; // Usa o HTML customizado se fornecido
@@ -167,17 +258,16 @@ export function showConfirmation(
         <button id="confirm-btn" class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg disabled:bg-red-400 dark:disabled:bg-red-800 disabled:cursor-not-allowed">Confirmar</button>
     `;
 
-    document.getElementById("confirm-btn").onclick = () => {
+    modal.querySelector("#confirm-btn").onclick = () => {
       onConfirm();
       closeModal();
     };
-    document
-      .getElementById("notification-cancel-btn")
-      .addEventListener("click", closeModal);
+    // Usa a função onCancel fornecida ou o padrão (closeModal)
+    modal.querySelector("#notification-cancel-btn").onclick = onCancel;
 
     if (requireTextInput) {
-      const confirmBtn = document.getElementById("confirm-btn");
-      const confirmInput = document.getElementById("confirmation-input");
+      const confirmBtn = modal.querySelector("#confirm-btn");
+      const confirmInput = modal.querySelector("#confirmation-input");
       confirmBtn.disabled = true;
 
       confirmInput.addEventListener("input", () => {
@@ -188,14 +278,12 @@ export function showConfirmation(
         }
       });
     }
-
-    modal.classList.remove("hidden");
   });
 }
 
 export async function showCompleteProfileModal() {
-  await openModal("completeProfileModal");
-  document
+  const modal = await openModal("completeProfileModal");
+  modal
     .getElementById("public-profile-form")
     .addEventListener("submit", API.savePublicProfile);
 }
@@ -212,16 +300,16 @@ export async function openDocumentsModal() {
     .get();
   const documentDates = userDoc.data()?.documentDates || {};
 
-  const cnhInput = document.getElementById("doc-cnh-expiry");
-  const licensingInput = document.getElementById("doc-licensing-expiry");
+  const cnhInput = modal.querySelector("#doc-cnh-expiry");
+  const licensingInput = modal.querySelector("#doc-licensing-expiry");
 
   if (cnhInput) cnhInput.value = documentDates.cnh || "";
   if (licensingInput) licensingInput.value = documentDates.licensing || "";
 
   checkAndDisplayDocumentAlerts(documentDates);
 
-  document
-    .getElementById("save-docs-btn")
+  modal
+    .querySelector("#save-docs-btn")
     .addEventListener("click", API.saveDocumentDates);
 
   // Adiciona listeners para os botões de scan
@@ -299,7 +387,7 @@ function processOcrText(text, docType) {
 }
 
 export async function openOdometerModal() {
-  await openModal("odometerModal");
+  const modal = await openModal("odometerModal");
   // Busca e preenche a quilometragem atual
   const userDoc = await db
     .collection("artifacts")
@@ -308,70 +396,84 @@ export async function openOdometerModal() {
     .doc(currentUser.uid)
     .get();
   const odometer = userDoc.data()?.odometer || "";
-  const odometerInput = document.getElementById("current-odometer");
+  const odometerInput = modal.querySelector("#current-odometer");
   if (odometerInput) odometerInput.value = odometer;
 
-  document
-    .getElementById("save-odometer-btn")
+  modal
+    .querySelector("#save-odometer-btn")
     .addEventListener("click", API.saveOdometer);
 }
 
 export async function openDebitsModal() {
-  await openModal("debitsModal");
+  const modal = await openModal("debitsModal");
   document
     .getElementById("consult-debits-btn")
     .addEventListener("click", API.consultDebits);
 }
 
-export async function openMaintenanceModal(itemId = null) {
-  await openModal("maintenanceModal");
-  const modal = document.getElementById("maintenance-modal");
-  const titleEl = document.getElementById("maintenance-modal-title");
-  const form = modal.querySelector("form");
-  form.reset();
-  document.getElementById("maintenance-item-category").value = "engine"; // Default
-  document.getElementById("maintenance-item-id").value = "";
+/**
+ * Roteador para modais de manutenção.
+ * @param {string|Event} [itemIdOrEvent] - O ID do item ou o objeto de evento do clique.
+ * @param {string} [action="add"] - A ação a ser executada: 'add', 'edit', 'register', 'history'.
+ */
+export async function openMaintenanceModal(
+  itemIdOrEvent = null,
+  action = "add"
+) {
+  // Se o primeiro argumento for um evento, o itemId é nulo.
+  const itemId = typeof itemIdOrEvent === "string" ? itemIdOrEvent : null;
 
-  // Adiciona a div da lista se não existir
-  if (!modal.querySelector("#maintenance-list")) {
-    const listContainer = document.createElement("div");
-    listContainer.innerHTML = `<div id="maintenance-list" class="space-y-3 mt-4 border-t dark:border-gray-700 pt-4"></div>`;
-    form.insertAdjacentElement("afterend", listContainer.firstChild);
+  switch (action) {
+    case "register":
+      // Abre o modal para registrar um novo serviço para um item existente.
+      if (itemId) openServiceRecordModal(itemId);
+      break;
+
+    case "history":
+      // Abre o modal para ver o histórico de serviços de um item.
+      if (itemId) openServiceHistoryModal(itemId);
+      break;
+
+    case "edit":
+    case "add":
+      // Abre o modal principal para adicionar um novo item ou editar um existente.
+      const modal = await openModal("maintenanceModal");
+      const titleEl = modal.querySelector("#maintenance-modal-title");
+      const form = modal.querySelector("form");
+      form.reset();
+      modal.querySelector("#maintenance-item-id").value = "";
+
+      if (itemId && action === "edit") {
+        // Modo de Edição: preenche o formulário com os dados do item.
+        titleEl.textContent = "Editar Item de Manutenção";
+        const userDoc = await db
+          .collection("artifacts")
+          .doc(appId)
+          .collection("users")
+          .doc(currentUser.uid)
+          .get();
+        const items = userDoc.data()?.maintenanceItems || [];
+        const item = items.find((i) => i.id === itemId);
+
+        if (item) {
+          modal.querySelector("#maintenance-item-id").value = item.id;
+          modal.querySelector("#maintenance-item-name").value = item.name;
+          modal.querySelector("#maintenance-item-interval").value =
+            item.interval;
+          modal.querySelector("#maintenance-item-category").value =
+            item.category || "engine";
+        }
+      } else {
+        // Modo de Adição: prepara o formulário para um novo item.
+        titleEl.textContent = "Adicionar Novo Item";
+        modal.querySelector("#maintenance-item-category").value = "engine"; // Categoria padrão
+      }
+
+      modal
+        .querySelector("#maintenance-form")
+        .addEventListener("submit", API.saveMaintenanceItem);
+      break;
   }
-
-  if (itemId) {
-    // Modo de Edição
-    titleEl.textContent = "Editar Item";
-    const userDoc = await db
-      .collection("artifacts")
-      .doc(appId)
-      .collection("users")
-      .doc(currentUser.uid)
-      .get();
-    const items = userDoc.data()?.maintenanceItems || [];
-    const item = items.find((i) => i.id === itemId);
-
-    if (item) {
-      document.getElementById("maintenance-item-id").value = item.id;
-      document.getElementById("maintenance-item-name").value = item.name;
-      document.getElementById("maintenance-item-interval").value =
-        item.interval;
-      document.getElementById("maintenance-item-category").value =
-        item.category || "engine";
-    }
-  } else {
-    // Modo de Adição
-    titleEl.textContent = "Adicionar Item";
-  }
-
-  // Carrega e exibe a lista de manutenção sempre que o modal é aberto
-  API.getMaintenanceData(({ items, odometer }) => {
-    // A lista agora é renderizada na tela da garagem, não mais no modal.
-  });
-
-  document
-    .getElementById("maintenance-form")
-    .addEventListener("submit", API.saveMaintenanceItem);
 }
 
 export async function openPublicProfileEditor() {
@@ -389,32 +491,32 @@ export async function openPublicProfileEditor() {
       .get();
     const publicProfile = userDoc.data()?.publicProfile || {};
 
-    await showCompleteProfileModal();
+    const modal = await openModal("completeProfileModal");
 
-    document.getElementById("public-profile-modal-title").textContent =
+    modal.querySelector("#public-profile-modal-title").textContent =
       "Editar Perfil da Moto";
-    document
-      .getElementById("public-profile-submit-btn")
+    modal
+      .querySelector("#public-profile-submit-btn")
       .querySelector("span").textContent = "Salvar Alterações";
 
-    document.getElementById("public-name").value = publicProfile.name || "";
-    document.getElementById("public-whatsapp").value =
+    modal.querySelector("#public-name").value = publicProfile.name || "";
+    modal.querySelector("#public-whatsapp").value =
       publicProfile.whatsapp || "";
-    document.getElementById("public-moto-plate").value =
+    modal.querySelector("#public-moto-plate").value =
       publicProfile.motoPlate || "";
-    document.getElementById("public-moto-year").value =
+    modal.querySelector("#public-moto-year").value =
       publicProfile.motoYear || "";
-    document.getElementById("public-moto-color").value =
+    modal.querySelector("#public-moto-color").value =
       publicProfile.motoColor || "";
-    document.getElementById("public-moto-renavam").value =
+    modal.querySelector("#public-moto-renavam").value =
       publicProfile.motoRenavam || "";
-    document.getElementById("public-moto-state").value =
+    modal.querySelector("#public-moto-state").value =
       publicProfile.motoState || "";
 
-    const imageUrlInput = document.getElementById("public-moto-image-url");
+    const imageUrlInput = modal.querySelector("#public-moto-image-url");
     if (publicProfile.motoImageUrl) {
       imageUrlInput.value = publicProfile.motoImageUrl;
-      updateImagePreview(publicProfile.motoImageUrl);
+      updateImagePreview(publicProfile.motoImageUrl, modal);
     }
 
     initFipeSelectors(publicProfile.fipeBrandCode, publicProfile.fipeModelCode);
@@ -430,9 +532,9 @@ export async function openPublicProfileEditor() {
   }
 }
 
-function updateImagePreview(imageUrl) {
-  const previewImg = document.getElementById("image-preview");
-  const placeholder = document.getElementById("image-placeholder-icon");
+function updateImagePreview(imageUrl, modal) {
+  const previewImg = modal.querySelector("#image-preview");
+  const placeholder = modal.querySelector("#image-placeholder-icon");
 
   if (imageUrl && previewImg && placeholder) {
     previewImg.src = imageUrl;
@@ -535,7 +637,7 @@ export async function toggleUserOnlineStatus() {
 }
 
 export async function openServiceRecordModal(itemId) {
-  await openModal("serviceRecordModal");
+  const modal = await openModal("serviceRecordModal");
 
   const userDoc = await db
     .collection("artifacts")
@@ -548,20 +650,21 @@ export async function openServiceRecordModal(itemId) {
 
   if (!item) return closeModal();
 
-  document.getElementById(
-    "service-record-title"
+  modal.querySelector(
+    "#service-record-title"
   ).textContent = `Registrar: ${item.name}`;
-  document.getElementById("service-item-id").value = itemId;
-  document.getElementById("service-date").valueAsDate = new Date();
-  document.getElementById("service-km").value = userDoc.data()?.odometer || "";
+  modal.querySelector("#service-item-id").value = itemId;
+  modal.querySelector("#service-date").valueAsDate = new Date();
+  modal.querySelector("#service-km").value = userDoc.data()?.odometer || "";
 
-  document
-    .getElementById("service-record-form")
+  modal
+    .querySelector("#service-record-form")
     .addEventListener("submit", API.saveServiceRecord);
 }
 
-export function checkAndDisplayDocumentAlerts(dates) {
-  const alertsContainer = document.getElementById("doc-alerts-container");
+export function checkAndDisplayDocumentAlerts(dates, container) {
+  const alertsContainer =
+    container || document.getElementById("doc-alerts-container");
   if (!alertsContainer) return;
 
   alertsContainer.innerHTML = ""; // Limpa alertas antigos
@@ -599,7 +702,7 @@ export function checkAndDisplayDocumentAlerts(dates) {
 }
 
 export async function openServiceHistoryModal(itemId) {
-  await openModal("serviceHistoryModal");
+  const modal = await openModal("serviceHistoryModal");
 
   const userDoc = await db
     .collection("artifacts")
@@ -610,28 +713,33 @@ export async function openServiceHistoryModal(itemId) {
   const items = userDoc.data()?.maintenanceItems || [];
   const item = items.find((i) => i.id === itemId);
 
+  const historyListEl = modal.querySelector("#service-history-list");
+
   if (!item || !item.history || item.history.length === 0) {
-    document.getElementById(
-      "service-history-list"
-    ).innerHTML = `<p class="text-center text-gray-400 py-10">Nenhum serviço registrado para este item.</p>`;
+    historyListEl.innerHTML = `<p class="text-center text-gray-400 py-10">Nenhum serviço registrado para este item.</p>`;
     return;
   }
 
-  document.getElementById(
-    "service-history-title"
+  modal.querySelector(
+    "#service-history-title"
   ).textContent = `Histórico: ${item.name}`;
-
-  const historyListEl = document.getElementById("service-history-list");
   historyListEl.innerHTML = item.history
     .sort((a, b) => new Date(b.date) - new Date(a.date)) // Ordena do mais recente para o mais antigo
     .map(
       (record) => `
       <div class="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border-l-4 border-gray-300 dark:border-gray-600">
-        <div class="flex justify-between items-center text-sm font-bold">
-          <span>${new Date(record.date + "T12:00:00").toLocaleDateString(
-            "pt-BR"
-          )}</span>
-          <span class="text-red-500">R$ ${record.cost.toFixed(2)}</span>
+        <div class="flex justify-between items-start text-sm">
+          <div>
+            <p class="font-bold">${new Date(
+              record.date + "T12:00:00"
+            ).toLocaleDateString("pt-BR")}</p>
+            <p class="font-bold text-red-500">R$ ${record.cost.toFixed(2)}</p>
+          </div>
+          <button data-item-id="${item.id}" data-record-id="${
+        record.id
+      }" class="delete-service-record-btn text-gray-400 hover:text-red-500 p-1">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
         </div>
         <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
           <p><strong>Km:</strong> ${record.km}</p>
@@ -646,6 +754,19 @@ export async function openServiceHistoryModal(itemId) {
     `
     )
     .join("");
+
+  // Adiciona o listener para os novos botões de apagar
+  historyListEl
+    .querySelectorAll(".delete-service-record-btn")
+    .forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const currentButton = e.currentTarget;
+        const itemId = currentButton.dataset.itemId;
+        const recordId = currentButton.dataset.recordId;
+        API.deleteServiceRecord(itemId, recordId);
+      });
+    });
+  lucide.createIcons();
 }
 
 /**
@@ -729,11 +850,10 @@ export function openProfileModal(profileData, type) {
  * @param {string} empresaName - O nome da empresa.
  */
 export function openCompanyRatingModal(jobId, empresaId, empresaName) {
-  openModal("notificationModal").then(() => {
-    const modal = document.getElementById("notification-modal");
-    const titleEl = document.getElementById("notification-title");
-    const messageEl = document.getElementById("notification-message");
-    const buttonsEl = document.getElementById("notification-buttons");
+  openModal("notificationModal").then((modal) => {
+    const titleEl = modal.querySelector("#notification-title");
+    const messageEl = modal.querySelector("#notification-message");
+    const buttonsEl = modal.querySelector("#notification-buttons");
 
     titleEl.textContent = "Avaliar Empresa";
     messageEl.innerHTML = `
@@ -756,7 +876,7 @@ export function openCompanyRatingModal(jobId, empresaId, empresaName) {
 
     let currentRating = 0;
     const stars = modal.querySelectorAll("#modal-rating-stars i");
-    const submitBtn = document.getElementById("submit-rating-btn");
+    const submitBtn = modal.querySelector("#submit-rating-btn");
 
     stars.forEach((star, index) => {
       star.addEventListener("click", () => {
@@ -770,7 +890,7 @@ export function openCompanyRatingModal(jobId, empresaId, empresaName) {
       });
     });
 
-    document.getElementById("skip-rating-btn").onclick = closeModal;
+    modal.querySelector("#skip-rating-btn").onclick = closeModal;
     submitBtn.onclick = () => API.rateCompany(jobId, empresaId, currentRating);
   });
 }

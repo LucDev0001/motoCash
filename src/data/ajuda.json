@@ -1,0 +1,82 @@
+{
+  "primeiros-passos": {
+    "name": "Primeiros Passos",
+    "icon": "rocket",
+    "color": "text-green-500",
+    "articles": [
+      {
+        "id": "cadastro",
+        "question": "Como me cadastrar no AppMotoCash?",
+        "answer": "<p>É muito simples! Siga os passos:</p><ol><li>Na tela inicial, clique no botão <strong>\"Cadastrar\"</strong>.</li><li>Preencha seu e-mail e crie uma senha segura (mínimo 6 caracteres).</li><li>Marque a caixa para aceitar os Termos de Uso e a Política de Privacidade.</li><li>Clique em \"Cadastrar\" novamente.</li><li>Você receberá um e-mail de verificação. Clique no link do e-mail para ativar sua conta.</li></ol>"
+      },
+      {
+        "id": "completar-perfil",
+        "question": "Por que preciso completar meu perfil para ficar online?",
+        "answer": "<p>Completar seu perfil público é um passo de segurança essencial. As empresas precisam saber quem estão contratando. As informações necessárias são:</p><ul><li><strong>Seu Nome Completo:</strong> Para identificação.</li><li><strong>Dados da Moto (Marca, Modelo, Ano, Cor, Placa, RENAVAM):</strong> Para segurança e identificação do veículo.</li><li><strong>WhatsApp:</strong> Para que a empresa possa entrar em contato após você aceitar uma vaga.</li></ul><p>Esses dados só são compartilhados com a empresa <strong>após</strong> você aceitar uma vaga, garantindo sua privacidade.</p>"
+      }
+    ]
+  },
+  "conta": {
+    "name": "Minha Conta",
+    "icon": "user-cog",
+    "color": "text-blue-500",
+    "articles": [
+      {
+        "id": "resetar-senha",
+        "question": "Esqueci minha senha, como posso recuperá-la?",
+        "answer": "<p>Na tela de login, siga estes passos:</p><ol><li>Digite o seu e-mail no campo correspondente.</li><li>Clique no link <strong>\"Esqueceu a senha?\"</strong>.</li><li>Um e-mail com instruções para criar uma nova senha será enviado para você. Verifique sua caixa de entrada e a pasta de spam.</li></ol>"
+      },
+      {
+        "id": "apagar-conta",
+        "question": "Como posso apagar minha conta permanentemente?",
+        "answer": "<p class=\"text-red-500 font-bold\">Atenção: Esta ação é irreversível e todos os seus dados serão perdidos.</p><ol><li>Vá para a tela de <strong>\"Perfil\"</strong>.</li><li>Role até o final e clique no botão vermelho <strong>\"Apagar Conta Permanentemente\"</strong>.</li><li>Uma janela de confirmação aparecerá. Você precisará digitar a palavra \"APAGAR\" para confirmar a exclusão.</li></ol>"
+      }
+    ]
+  },
+  "financeiro": {
+    "name": "Financeiro",
+    "icon": "dollar-sign",
+    "color": "text-purple-500",
+    "articles": [
+      {
+        "id": "add-ganho",
+        "question": "Como adiciono um novo ganho?",
+        "answer": "<p>Clique no grande botão amarelo com o sinal de <strong>\"+\"</strong> na barra de navegação. Na tela que abrir, a aba \"Ganho\" já estará selecionada. Preencha os detalhes do seu trabalho (data, tipo, valor) e clique em \"Salvar Ganho\".</p>"
+      },
+      {
+        "id": "add-despesa",
+        "question": "Como registro uma despesa?",
+        "answer": "<p>Clique no botão <strong>\"+\"</strong>. Na tela de \"Adicionar\", clique na aba \"Despesa\". Selecione a data, a categoria (ex: Combustível), o valor e clique em \"Salvar Despesa\".</p>"
+      }
+    ]
+  },
+  "hub": {
+    "name": "Hub de Entregas",
+    "icon": "briefcase",
+    "color": "text-orange-500",
+    "articles": [
+      {
+        "id": "aceitar-vaga",
+        "question": "Como aceito uma vaga de freelancer?",
+        "answer": "<p>Vá para a aba <strong>\"Hub\"</strong>. Você verá uma lista de vagas disponíveis. Leia os detalhes de cada uma (endereço, pagamento, etc.). Quando encontrar uma que te interessa, clique no botão verde <strong>\"Aceitar Vaga\"</strong>. A vaga irá para sua lista de \"Vagas Aceitas\" e você poderá iniciar a negociação com a empresa.</p>"
+      }
+    ]
+  },
+  "garagem": {
+    "name": "Garagem e Manutenção",
+    "icon": "wrench",
+    "color": "text-cyan-500",
+    "articles": [
+      {
+        "id": "checklist-manutencao",
+        "question": "Como funciona o Checklist de Manutenção?",
+        "answer": "<p>O checklist na tela 'Garagem' te ajuda a controlar a vida útil das peças e serviços da sua moto.</p><ol><li><strong>Adicionar Item:</strong> Clique em 'Manutenção' e adicione um novo item (ex: Troca de Óleo) com seu intervalo em Km.</li><li><strong>Registrar Serviço:</strong> Quando fizer a troca, clique em 'Registrar' no item correspondente e informe a quilometragem. Isso irá 'zerar' a barra de progresso.</li><li><strong>Barra de Progresso:</strong> A barra mostra o quanto falta para a próxima manutenção. Ela fica amarela quando passa de 70% e vermelha acima de 90%, te alertando para a troca.</li><li><strong>Histórico:</strong> Você pode ver todos os serviços registrados para um item clicando em 'Histórico'.</li></ol>"
+      },
+      {
+        "id": "atualizar-km",
+        "question": "Como atualizo a quilometragem (odômetro) da minha moto?",
+        "answer": "<p>Manter a quilometragem atualizada é essencial para o cálculo da manutenção.</p><ol><li>Vá para a tela <strong>'Garagem'</strong>.</li><li>Clique no botão <strong>'Km'</strong> no painel de ações.</li><li>Digite a quilometragem atual da sua moto no campo que aparecer.</li><li>Clique em 'Salvar'.</li></ol><p>A quilometragem atualizada será usada para calcular o progresso de todos os itens do seu checklist de manutenção.</p>"
+      }
+    ]
+  }
+}

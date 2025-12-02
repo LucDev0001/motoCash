@@ -25,6 +25,9 @@
     <script>
       tailwind.config = {
         darkMode: "class", // Habilita o modo escuro baseado em classe
+        theme: {
+          extend: {},
+        },
       };
     </script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -68,9 +71,16 @@
         id="login-screen"
         class="absolute inset-0 z-50 bg-gray-900 flex flex-col items-center justify-center text-white p-6 h-full w-full"
       >
-        <div class="bg-yellow-500 p-4 rounded-full mb-4">
-          <i data-lucide="bike" class="w-12 h-12 text-black"></i>
+        <!-- Container do Escudo/Logo -->
+        <div
+          id="login-logo-container"
+          class="mb-4 flex items-center justify-center"
+        >
+          <div class="bg-yellow-500 p-4 rounded-full">
+            <i data-lucide="bike" class="w-12 h-12 text-black"></i>
+          </div>
         </div>
+
         <h1 class="text-3xl font-bold mb-1">AppMotoCash</h1>
         <p class="text-gray-400 text-center mb-6 text-sm">Versão PWA Pro</p>
         <div class="w-full max-w-xs space-y-3">
@@ -196,6 +206,7 @@
           <div
             class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"
           ></div>
+          <!-- Mantido amarelo por ser um loader genérico -->
         </div>
 
         <header
@@ -205,15 +216,23 @@
             Meu Painel
           </h1>
 
-          <button id="notifications-btn" class="relative">
-            <i data-lucide="bell" class="w-6 h-6 text-white"></i>
-            <div
-              id="notification-indicator"
-              class="hidden absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 text-black text-[10px] font-bold rounded-full flex items-center justify-center"
-            >
-              0
-            </div>
-          </button>
+          <div class="flex items-center gap-4">
+            <button id="header-graxa-btn">
+              <i data-lucide="bot" class="w-6 h-6 text-white"></i>
+            </button>
+            <button id="header-market-btn">
+              <i data-lucide="shopping-bag" class="w-6 h-6 text-white"></i>
+            </button>
+            <button id="notifications-btn" class="relative">
+              <i data-lucide="bell" class="w-6 h-6 text-white"></i>
+              <div
+                id="notification-indicator"
+                class="hidden absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 text-black text-[10px] font-bold rounded-full flex items-center justify-center"
+              >
+                0
+              </div>
+            </button>
+          </div>
 
           <div class="flex items-center gap-2">
             <span id="user-status-text" class="text-xs font-bold text-gray-400"

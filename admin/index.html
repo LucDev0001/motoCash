@@ -155,6 +155,18 @@
               <span>Configurações</span>
             </a>
           </nav>
+          <!-- NOVO: Link para o Gerenciador da Assistente -->
+          <div class="p-4 border-t border-gray-700">
+             <a href="#" id="nav-graxa-kb" class="nav-link flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700">
+                <i data-lucide="bot" class="w-5 h-5 text-yellow-400"></i>
+                <span>Assistente Graxa</span>
+            </a>
+            <!-- NOVO: Link para o Gerador -->
+            <a href="#" id="nav-graxa-generator" class="nav-link flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700">
+                <i data-lucide="wand-2" class="w-5 h-5 text-cyan-400"></i>
+                <span>Gerador de KB</span>
+            </a>
+          </div>
           <div class="p-4 border-t border-gray-700">
             <button
               id="logout-btn"
@@ -353,6 +365,8 @@
                       <th class="p-3">Último Acesso</th>
                       <th class="p-3">Registros</th>
                       <th class="p-3">Status</th>
+                      <th class="p-3">Assinatura</th>
+                      <th class="p-3">Vencimento</th>
                       <th class="p-3">Ações</th>
                     </tr>
                   </thead>
@@ -557,6 +571,29 @@
               </div>
             </div>
 
+            <!-- NOVO: Seção de Gerenciamento de Assinatura -->
+            <div
+              class="mt-8 p-6 bg-white rounded-lg shadow-md border-t-4 border-yellow-500"
+            >
+              <h3 class="font-bold text-lg text-gray-800">
+                Gerenciamento de Assinatura (Apoiador)
+              </h3>
+              <div
+                id="subscription-management-container"
+                class="mt-4 flex flex-col md:flex-row justify-between items-center gap-4"
+              >
+                <div>
+                  <label for="pro-expiry-date" class="block text-sm font-medium text-gray-700">Definir/Atualizar Vencimento:</label>
+                  <input type="date" id="pro-expiry-date" class="mt-1 p-2 border rounded-md">
+                  <button id="save-subscription-btn" class="ml-2 bg-green-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">Salvar</button>
+                </div>
+                <div class="flex gap-2">
+                  <button id="remind-subscription-btn" class="bg-blue-500 text-white font-bold px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors shrink-0">Lembrar Vencimento</button>
+                  <button id="remove-subscription-btn" class="bg-red-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-red-700 transition-colors shrink-0">Remover Apoiador</button>
+                </div>
+              </div>
+            </div>
+
             <!-- Estatísticas do Usuário -->
             <div class="mt-8 p-6 bg-white rounded-lg shadow-md">
                 <h3 class="font-bold text-lg text-gray-800 mb-4">Estatísticas de Atividade</h3>
@@ -755,6 +792,120 @@
                     </tr>
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================= VIEW: ASSISTENTE GRAXA KB ======================= -->
+          <div id="view-graxa-kb" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-800">Base de Conhecimento da Assistente Graxa</h1>
+            <p class="text-gray-500 mt-1">Adicione, edite ou remova os conhecimentos que a assistente usará para responder aos usuários.</p>
+
+            <!-- NOVO: Seção de Upload de JSON -->
+            <div class="mt-8 p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+              <h3 class="font-bold text-lg text-blue-800">Importar Conhecimentos em Massa</h3>
+              <div class="flex items-center gap-4 mt-2">
+                <input type="file" id="kb-json-upload" class="hidden" accept=".json">
+                <button id="kb-upload-btn" class="bg-blue-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                  <i data-lucide="upload-cloud"></i> Upar Arquivo JSON
+                </button>
+                <!-- NOVO: Botão para a base de conhecimento dos manuais -->
+                <input type="file" id="kb-pdf-json-upload" class="hidden" accept=".json">
+                <button id="kb-pdf-upload-btn" class="bg-green-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
+                  <i data-lucide="book-open"></i> Importar Manuais (JSON)
+                </button>
+                <div class="text-xs text-blue-700">
+                  <p><strong>Dica:</strong> Peça para uma IA (como ChatGPT ou Gemini) gerar um arquivo JSON para você com o seguinte prompt:</p>
+                  <p class="font-mono bg-blue-100 p-2 rounded mt-1">"Crie um array de objetos JSON com os campos 'question', 'answer' (com tags HTML como &lt;p&gt; e &lt;ol&gt;) e 'keywords' (separadas por vírgula) sobre [assunto desejado]."</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Formulário para Adicionar/Editar Conhecimento -->
+            <div class="mt-8 p-6 bg-white rounded-lg shadow-md">
+              <h3 id="kb-form-title" class="font-bold text-lg text-gray-800 mb-4">Adicionar Novo Conhecimento</h3>
+              <form id="kb-form" class="space-y-4">
+                <input type="hidden" id="kb-doc-id">
+                <div>
+                  <label for="kb-question" class="block text-sm font-medium text-gray-700">Pergunta ou Título</label>
+                  <input type="text" id="kb-question" class="mt-1 w-full p-2 border rounded-md" placeholder="Ex: Como trocar o óleo da moto?" required>
+                </div>
+                <div>
+                  <label for="kb-answer" class="block text-sm font-medium text-gray-700">Resposta (aceita HTML)</label>
+                  <textarea id="kb-answer" rows="6" class="mt-1 w-full p-2 border rounded-md" placeholder="Ex: <p>Para trocar o óleo, siga estes passos:</p><ol><li>Passo 1...</li></ol>" required></textarea>
+                </div>
+                <div>
+                  <label for="kb-keywords" class="block text-sm font-medium text-gray-700">Palavras-chave (separadas por vírgula)</label>
+                  <input type="text" id="kb-keywords" class="mt-1 w-full p-2 border rounded-md" placeholder="Ex: oleo, trocar, cg160, manutencao" required>
+                  <p class="text-xs text-gray-500 mt-1">Essas palavras são essenciais para a busca da assistente.</p>
+                </div>
+                <div class="flex gap-4">
+                  <button type="submit" class="bg-blue-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-blue-700">Salvar Conhecimento</button>
+                  <button type="button" id="kb-form-cancel" class="bg-gray-200 text-gray-800 font-bold px-6 py-2 rounded-lg hover:bg-gray-300 hidden">Cancelar Edição</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Tabela de Conhecimentos Existentes -->
+            <div class="mt-8 p-6 bg-white rounded-lg shadow-md">
+              <h3 class="font-bold text-gray-800">Conhecimentos Cadastrados</h3>
+              <div class="overflow-x-auto mt-4">
+                <table class="w-full text-left">
+                  <thead>
+                    <tr class="text-sm font-bold text-gray-500 border-b">
+                      <th class="p-3">Pergunta/Título</th>
+                      <th class="p-3">Palavras-chave</th>
+                      <th class="p-3">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="kb-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- NOVO: Seção de Ações de Risco -->
+            <div class="mt-8 p-6 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
+              <h3 class="font-bold text-lg text-red-800">Ações de Risco</h3>
+              <div class="flex items-center gap-4 mt-2">
+                <p class="text-sm text-red-700">Apagar permanentemente todos os conhecimentos da assistente. Use com cuidado.</p>
+                <button id="kb-clear-all-btn" class="bg-red-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2 shrink-0">
+                  <i data-lucide="trash-2"></i> Limpar Base de Conhecimento
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ======================= VIEW: GERADOR DE CONHECIMENTO GRAXA ======================= -->
+          <div id="view-graxa-generator" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-800">Gerador de Conhecimento em Lote</h1>
+            <p class="text-gray-500 mt-1">Gere centenas de conhecimentos para a assistente Graxa com apenas alguns cliques.</p>
+
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- Coluna de Inputs -->
+              <div class="p-6 bg-white rounded-lg shadow-md">
+                <h3 class="font-bold text-lg text-gray-800 mb-4">1. Insira as Motos</h3>
+                <p class="text-sm text-gray-500 mb-2">Cole a lista de nomes de motos abaixo, uma por linha.</p>
+                <textarea id="generator-motos-list" rows="10" class="w-full p-2 border rounded-md font-mono text-sm" placeholder="Honda CG 160 Fan&#10;Yamaha Fazer 250&#10;..."></textarea>
+              </div>
+
+              <!-- Coluna de Templates -->
+              <div class="p-6 bg-white rounded-lg shadow-md">
+                <h3 class="font-bold text-lg text-gray-800 mb-4">2. Selecione os Modelos de Pergunta</h3>
+                <div id="generator-templates-list" class="space-y-3">
+                  <!-- Checkboxes dos templates serão injetados aqui -->
+                  <p class="text-gray-400">Carregando modelos...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botão de Ação e Log -->
+            <div class="mt-8 p-6 bg-white rounded-lg shadow-md text-center">
+              <button id="generate-and-import-btn" class="bg-blue-600 text-white font-bold px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 mx-auto">
+                <i data-lucide="sparkles"></i> Gerar e Importar Conhecimentos
+              </button>
+              <div id="generator-log" class="mt-4 text-sm text-gray-500 font-mono h-24 bg-gray-50 p-2 rounded overflow-y-auto text-left">
+                Aguardando ação...
               </div>
             </div>
           </div>

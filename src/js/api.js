@@ -11,6 +11,57 @@ import {
 export let allLoadedItems = [];
 export let currentStats = {};
 
+/**
+ * **NOVO**: Busca os ganhos de um usuário para um período específico.
+ * @param {string} period - O período ('week', 'last-week', etc.).
+ * @returns {Promise<Array>} - Uma promessa que resolve com a lista de ganhos.
+ */
+export async function getEarningsForPeriod(period) {
+  if (!currentUser) return [];
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  let startDate, endDate;
+
+  if (period === "week") {
+    const dayOfWeek = now.getDay();
+    const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    startDate = new Date(now);
+    startDate.setDate(now.getDate() - diff);
+    endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+  } else if (period === "last-week") {
+    const dayOfWeek = now.getDay();
+    const daysToLastMonday = dayOfWeek === 0 ? 13 : dayOfWeek - 1 + 7;
+    startDate = new Date(now);
+    startDate.setDate(now.getDate() - daysToLastMonday);
+    endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+  } else {
+    return []; // Outros períodos podem ser implementados aqui
+  }
+
+  const startDateString = startDate.toISOString().split("T")[0];
+  const endDateString = endDate.toISOString().split("T")[0];
+
+  try {
+    const earningsSnap = await db
+      .collection("artifacts")
+      .doc(appId)
+      .collection("users")
+      .doc(currentUser.uid)
+      .collection("earnings")
+      .where("date", ">=", startDateString)
+      .where("date", "<=", endDateString)
+      .get();
+
+    return earningsSnap.docs.map((doc) => doc.data());
+  } catch (error) {
+    console.error(`Erro ao buscar ganhos para o período ${period}:`, error);
+    return [];
+  }
+}
+
 // --- AUTH API ---
 export function handleEmailLogin(mode) {
   const email = document.getElementById("login-email").value;
@@ -983,12 +1034,12 @@ export function deleteMarketItem(id) {
 
 export function submitAd(e) {
   e.preventDefault();
-  const btn = e.target.querySelector("button");
+  const btn = document.getElementById("ad-submit-btn");
   btn.disabled = true;
 
   let p = document.getElementById("ad-zap").value.replace(/\D/g, "");
 
-  if (p.startsWith("55") && p.length > 11) {
+  if (p.startsWith("55") && p.length > 13) {
     p = p.substring(2);
   }
 
@@ -1001,21 +1052,35 @@ export function submitAd(e) {
     return;
   }
 
-  db.collection("artifacts")
+  const adData = {
+    title: document.getElementById("ad-title").value,
+    price: parseFloat(document.getElementById("ad-price").value),
+    category: document.getElementById("ad-cat").value,
+    description: document.getElementById("ad-desc").value,
+    image: document.getElementById("ad-img").value,
+    whatsapp: p,
+    userId: currentUser.uid,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+
+  const adId = document.getElementById("ad-id").value;
+  const marketplaceRef = db
+    .collection("artifacts")
     .doc(appId)
     .collection("public")
     .doc("data")
-    .collection("marketplace")
-    .add({
-      title: document.getElementById("ad-title").value,
-      price: parseFloat(document.getElementById("ad-price").value),
-      category: document.getElementById("ad-cat").value,
-      description: document.getElementById("ad-desc").value,
-      image: document.getElementById("ad-img").value,
-      whatsapp: p,
-      userId: currentUser.uid,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    })
+    .collection("marketplace");
+
+  let promise;
+  if (adId) {
+    // Modo de Edição: atualiza o documento existente
+    promise = marketplaceRef.doc(adId).update(adData);
+  } else {
+    // Modo de Criação: adiciona um novo documento
+    promise = marketplaceRef.add(adData);
+  }
+
+  promise
     .then(() => router("market"))
     .catch((err) => {
       showNotification(err.message, "Erro ao Publicar");
@@ -1272,17 +1337,18 @@ export async function saveMaintenanceItem(e) {
   showNotification("Item de manutenção salvo!", "Sucesso");
 }
 
-export async function deleteMaintenanceItem(id) {
+export async function deleteMaintenanceItem(itemId) {
   const userRef = db
     .collection("artifacts")
     .doc(appId)
     .collection("users")
     .doc(currentUser.uid);
   const doc = await userRef.get();
-  let items = doc.data()?.maintenanceItems || [];
-  items = items.filter((i) => i.id !== id);
-  await userRef.set({ maintenanceItems: items }, { merge: true });
-  showNotification("Item removido.", "Sucesso");
+  const items = doc.data()?.maintenanceItems || [];
+  const updatedItems = items.filter((item) => item.id !== itemId);
+  await userRef.update({ maintenanceItems: updatedItems });
+  showNotification("Item de manutenção apagado com sucesso!", "Sucesso");
+  router("garage"); // <-- ADICIONADO: Força a atualização da UI
 }
 
 export async function saveServiceRecord(e) {
@@ -1333,7 +1399,6 @@ export async function saveServiceRecord(e) {
 
   // Salva o array de itens atualizado no Firestore
   await userRef.set({ maintenanceItems: items }, { merge: true });
-  closeModal();
   showNotification("Serviço registrado com sucesso!", "Sucesso");
 
   // **INTEGRAÇÃO COM FINANCEIRO**
@@ -1343,8 +1408,7 @@ export async function saveServiceRecord(e) {
     )} na categoria 'Manutenção'?`,
     "Registrar Despesa?",
     () => {
-      // Passa os dados para a tela de finanças via localStorage ou state manager
-      // Por simplicidade, vamos usar localStorage aqui.
+      // Passa os dados para a tela de finanças via localStorage
       localStorage.setItem(
         "prefillExpense",
         JSON.stringify({
@@ -1353,7 +1417,53 @@ export async function saveServiceRecord(e) {
           observation: `Serviço: ${items[itemIndex].name}`,
         })
       );
+      closeModal();
       router("finance");
+    },
+    () => {
+      // onCancel
+      closeModal();
+      router("garage");
+    }
+  );
+}
+
+/**
+ * Apaga um registro de serviço específico do histórico de um item de manutenção.
+ * @param {string} itemId O ID do item de manutenção pai.
+ * @param {string} recordId O ID do registro de serviço a ser apagado.
+ */
+export async function deleteServiceRecord(itemId, recordId) {
+  showConfirmation(
+    "Tem certeza que deseja apagar este registro de serviço? Esta ação não pode ser desfeita.",
+    "Apagar Registro?",
+    async () => {
+      if (!currentUser) return;
+
+      const userRef = db
+        .collection("artifacts")
+        .doc(appId)
+        .collection("users")
+        .doc(currentUser.uid);
+
+      try {
+        const doc = await userRef.get();
+        const items = doc.data()?.maintenanceItems || [];
+        const itemIndex = items.findIndex((i) => i.id === itemId);
+
+        if (itemIndex > -1 && items[itemIndex].history) {
+          // Filtra o histórico, removendo o registro com o ID correspondente.
+          items[itemIndex].history = items[itemIndex].history.filter(
+            (record) => record.id !== recordId
+          );
+
+          await userRef.update({ maintenanceItems: items });
+          showNotification("Registro de serviço apagado.", "Sucesso");
+          closeModal(); // Fecha o modal de histórico para refletir a mudança
+        }
+      } catch (error) {
+        showNotification(`Erro ao apagar registro: ${error.message}`, "Erro");
+      }
     }
   );
 }
@@ -1491,7 +1601,8 @@ async function promptToResetMaintenance(expenseValue, expenseDesc) {
         );
       }
     },
-    null, // Sem input de texto
+    null, // onCancel,
+    null, // requireTextInput (não queremos que peça para digitar nada)
     `<div class="mt-4"><label class="text-sm">Qual item você trocou?</label><select id="maintenance-reset-select" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 mt-1">${optionsHTML}</select></div>`
   );
 }
@@ -1689,6 +1800,47 @@ export async function acceptJob(jobId) {
       "Não foi possível aceitar a vaga. Ela pode já ter sido pega por outro entregador.",
       "Erro"
     );
+  }
+}
+
+/**
+ * Inicia o fluxo de checkout de assinatura com o Abacate Pay
+ * chamando uma Firebase Cloud Function.
+ */
+export async function createAbacatePayCheckout() {
+  if (!currentUser) return;
+
+  const checkoutButton = document.getElementById("subscribe-btn");
+  checkoutButton.disabled = true;
+  checkoutButton.innerHTML = `<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> Redirecionando...`;
+
+  try {
+    // Inicializa as funções do Firebase (se ainda não tiver feito)
+    const functions = firebase.functions();
+
+    // Chama a Cloud Function que você irá criar
+    const createCheckout = functions.httpsCallable("createAbacatePayCheckout");
+
+    const result = await createCheckout({
+      // Você pode passar dados para a função se precisar
+      userId: currentUser.uid,
+      email: currentUser.email,
+    });
+
+    const { checkout_url } = result.data;
+
+    if (checkout_url) {
+      // Redireciona o usuário para a página de pagamento segura
+      window.location.assign(checkout_url);
+    } else {
+      throw new Error("URL de checkout não recebida.");
+    }
+  } catch (error) {
+    console.error("Erro ao criar checkout:", error);
+    showNotification(`Erro ao iniciar pagamento: ${error.message}`, "Erro");
+    checkoutButton.disabled = false;
+    checkoutButton.innerHTML = `<i data-lucide="gem"></i> Quero ser Apoiador`;
+    lucide.createIcons();
   }
 }
 

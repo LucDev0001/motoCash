@@ -1,15 +1,65 @@
-<div class="sticky top-0 bg-gray-100 dark:bg-gray-900 pt-2 pb-4 z-10 fade-in">
-  <input
-    id="market-search"
-    type="text"
-    placeholder="Buscar..."
-    class="w-full p-3 rounded-full shadow-sm outline-none mb-3 dark:bg-gray-800 dark:border-gray-700"
-  />
+<div class="fade-in">
+  <!-- Barra de Busca -->
+  <div class="sticky top-0 bg-gray-100 dark:bg-gray-900 pt-2 pb-4 z-10">
+    <div class="relative">
+      <input
+        id="market-search"
+        type="text"
+        placeholder="Buscar peças, acessórios..."
+        class="w-full p-3 pl-10 rounded-full shadow-sm outline-none focus:ring-2 focus:ring-accent dark:bg-gray-800 dark:border-gray-700"
+      />
+      <i
+        data-lucide="search"
+        class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+      ></i>
+    </div>
+  </div>
+
+  <!-- Filtros de Categoria -->
+  <div
+    id="market-category-filters"
+    class="flex gap-2 overflow-x-auto scrollbar-hide pb-4"
+  >
+    <button
+      data-category="all"
+      class="market-filter-btn bg-accent text-black font-bold text-sm px-4 py-2 rounded-full whitespace-nowrap"
+    >
+      Todos
+    </button>
+    <button
+      data-category="peca"
+      class="market-filter-btn bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold text-sm px-4 py-2 rounded-full whitespace-nowrap"
+    >
+      Peças
+    </button>
+    <button
+      data-category="acessorio"
+      class="market-filter-btn bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold text-sm px-4 py-2 rounded-full whitespace-nowrap"
+    >
+      Acessórios
+    </button>
+    <button
+      data-category="moto"
+      class="market-filter-btn bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold text-sm px-4 py-2 rounded-full whitespace-nowrap"
+    >
+      Motos
+    </button>
+    <button
+      data-category="outro"
+      class="market-filter-btn bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold text-sm px-4 py-2 rounded-full whitespace-nowrap"
+    >
+      Outros
+    </button>
+  </div>
+
+  <!-- Lista de Anúncios em Grade -->
+  <div id="market-list" class="grid grid-cols-2 gap-3 sm:gap-4 pb-24"></div>
+
+  <!-- Botão Flutuante para Adicionar Anúncio -->
   <button
     id="market-add-btn"
-    class="w-full bg-yellow-500 text-black font-bold py-3 rounded-lg shadow flex justify-center gap-2"
+    class="fixed bottom-24 right-6 bg-accent text-black w-14 h-14 rounded-full shadow-lg flex items-center justify-center transform active:scale-95 transition z-20"
   >
-    <i data-lucide="plus-circle"></i> Criar Anúncio
+    <i data-lucide="plus" class="w-8 h-8 stroke-[3]"></i>
   </button>
 </div>
-<div id="market-list" class="grid grid-cols-1 gap-4 fade-in"></div>

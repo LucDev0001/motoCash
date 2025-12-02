@@ -16,18 +16,25 @@ firebase.initializeApp(firebaseConfig);
 
 let db;
 try {
-  // Inicializa o Firestore primeiro
+  // Inicializa o Firestore
   db = firebase.firestore();
-  // Aplica as configurações
-  firebase.firestore().settings({
-    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
-    experimentalForceLongPolling: true, // Ajuda a evitar alguns avisos no console
-  });
-  // Habilita a persistência
-  db.enablePersistence({ synchronizeTabs: true });
+
+  // Habilita a persistência offline com sincronização entre abas.
+  // Esta é a forma moderna e recomendada, que resolve os avisos do console.
+  db.enablePersistence({ synchronizeTabs: true })
+    .then(() => {
+      console.log("Persistência do Firestore habilitada com sucesso.");
+    })
+    .catch((err) => {
+      if (err.code == "failed-precondition") {
+        console.warn("Múltiplas abas abertas, persistência pode não funcionar.");
+      } else if (err.code == "unimplemented") {
+        console.warn("Navegador não suporta persistência offline.");
+      }
+    });
 } catch (err) {
   console.error("Erro ao habilitar a persistência do Firestore:", err.code);
-  db = firebase.firestore(); // Fallback para inicialização sem persistência
+  db = firebase.firestore(); // Fallback para inicialização normal se a persistência falhar
 }
 
 let auth;

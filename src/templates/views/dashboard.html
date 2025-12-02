@@ -11,7 +11,7 @@
       </button>
       <button
         id="filter-week"
-        class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded bg-gray-900 dark:bg-yellow-500 dark:text-black text-white whitespace-nowrap"
+        class="filter-btn px-3 py-2 text-xs font-bold uppercase rounded bg-gray-900 dark:bg-accent dark:text-black text-white whitespace-nowrap"
       >
         Esta Semana
       </button>
@@ -66,7 +66,7 @@
       </div>
       <button
         id="apply-custom-filter-btn"
-        class="bg-gray-900 dark:bg-yellow-500 dark:text-black text-white p-2 rounded hover:bg-gray-700 h-8 flex items-center"
+        class="bg-gray-900 dark:bg-accent dark:text-black text-white p-2 rounded hover:bg-gray-700 h-8 flex items-center"
       >
         <i data-lucide="check" class="w-4 h-4"></i>
       </button>
@@ -218,9 +218,10 @@
         </div>
         <div
           class="bg-yellow-50 dark:bg-yellow-900/50 p-2 rounded-lg border border-yellow-100 dark:border-yellow-800 flex flex-col justify-between h-24"
+          class="bg-accent/10 dark:bg-accent/20 p-2 rounded-lg border border-accent/20 dark:border-accent/30 flex flex-col justify-between h-24"
         >
           <p
-            class="text-[10px] font-bold text-yellow-600 dark:text-yellow-400 uppercase border-b border-yellow-200 dark:border-yellow-700 pb-1 mb-1"
+            class="text-[10px] font-bold text-accent dark:text-accent uppercase border-b border-accent/20 dark:border-accent/30 pb-1 mb-1"
           >
             iFood
           </p>
@@ -299,5 +300,19 @@
   </div>
   <div class="space-y-2" id="history-list">
     <p class="text-center text-gray-400 py-4">Carregando...</p>
+  </div>
+  <!-- NOVO: Seção de Análise Avançada para Apoiadores -->
+  <div id="pro-analysis-section" class="hidden space-y-4">
+    <div
+      class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 h-64 flex flex-col justify-center items-center relative"
+    >
+      <div class="flex items-center gap-2 self-start absolute top-4 left-4">
+        <i data-lucide="gem" class="w-5 h-5 text-yellow-400"></i>
+        <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm">
+          Análise de Desempenho Pro
+        </h3>
+      </div>
+      <canvas id="weekly-comparison-chart"></canvas>
+    </div>
   </div>
 </div>

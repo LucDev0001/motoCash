@@ -5,11 +5,8 @@ import { renderHub, renderAddJob } from "./ui/hub.ui.js"; // Importa do novo mó
 import { renderAddFinance } from "./ui/finance.ui.js"; // Importa do novo módulo
 import { renderMarketplace, renderAddMarketItem } from "./ui/market.ui.js"; // Importa do novo módulo
 import { renderProfile } from "./ui/profile.ui.js"; // Importa do novo módulo
-import {
-  renderAbout,
-  renderPrivacyPolicy,
-  renderSupport,
-} from "./ui/static.ui.js"; // Importa do novo módulo
+import { renderAbout } from "./ui/about.ui.js"; // Importa do novo módulo
+import { renderPrivacyPolicy, renderSupport } from "./ui/static.ui.js"; // Importa do novo módulo
 import {
   renderNotifications,
   renderAchievements,
@@ -17,10 +14,25 @@ import {
   renderAcceptedJobs,
   renderJobChat,
 } from "./ui/extra.ui.js"; // Importa do novo módulo
+import { renderPublicProfile } from "./ui/publicProfile.ui.js"; // **NOVO**
+import { renderGraxa } from "./ui/graxa.ui.js"; // **NOVO**
 
 import { currentUser } from "./auth.js";
 
-export function router(view) {
+/**
+ * Força a atualização do Service Worker se uma nova versão estiver disponível.
+ * Isso garante que as alterações mais recentes sejam aplicadas.
+ */
+async function checkForUpdates() {
+  if ("serviceWorker" in navigator) {
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (registration && registration.waiting) {
+      registration.waiting.postMessage({ type: "SKIP_WAITING" });
+    }
+  }
+}
+
+export async function router(view, params = {}) {
   unsubscribeListeners.forEach((u) => u());
   unsubscribeListeners.length = 0; // Limpa o array de forma mais eficiente
   const content = document.getElementById("content-area");
@@ -29,6 +41,9 @@ export function router(view) {
     b.classList.remove("text-yellow-600", "font-bold");
     b.classList.add("text-gray-400");
   });
+
+  // **CORREÇÃO**: Verifica por atualizações sempre que uma nova rota é chamada.
+  checkForUpdates();
 
   if (view === "dashboard") {
     const userName = currentUser.displayName?.split(" ")[0] || "Usuário";
@@ -92,6 +107,15 @@ export function router(view) {
   } else if (view === "job-chat") {
     title.innerText = "Negociação";
     renderJobChat(content); // A função já pega o ID da vaga internamente
+  } else if (view === "publicProfile") {
+    title.innerText = "Perfil Público";
+    // Esconde a navegação e o cabeçalho para uma visualização limpa
+    document.getElementById("main-app-header").classList.add("hidden");
+    document.getElementById("main-app-nav").classList.add("hidden");
+    await renderPublicProfile(content, params.userId);
+  } else if (view === "graxa") {
+    title.innerText = "Assistente Graxa";
+    await renderGraxa(content);
   }
   setTimeout(() => lucide.createIcons(), 100);
 }

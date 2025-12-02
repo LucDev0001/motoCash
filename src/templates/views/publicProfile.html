@@ -1,0 +1,56 @@
+<div
+  class="fade-in p-4 min-h-screen flex items-center justify-center bg-gray-900"
+>
+  <!-- Card do Perfil Público -->
+  <div
+    class="bg-gradient-to-br from-gray-800 to-black rounded-2xl shadow-2xl w-full max-w-sm text-white relative overflow-hidden p-6 border border-yellow-500/30"
+  >
+    <!-- Detalhe de fundo -->
+    <div
+      class="absolute -top-10 -right-10 w-40 h-40 bg-yellow-500/10 rounded-full blur-2xl"
+    ></div>
+
+    <!-- Cabeçalho -->
+    <div class="text-center mb-6">
+      <div
+        id="public-profile-image"
+        class="w-24 h-24 rounded-full mx-auto mb-4 bg-gray-700 border-2 border-gray-600 flex items-center justify-center"
+      >
+        <!-- Imagem da moto ou ícone -->
+      </div>
+      <h2 id="public-profile-name" class="text-2xl font-bold">Carregando...</h2>
+      <div class="flex items-center justify-center gap-2 mt-1 text-yellow-400">
+        <i data-lucide="gem" class="w-4 h-4"></i>
+        <span class="text-sm font-semibold">Usuário Apoiador</span>
+      </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="space-y-3 text-center">
+      <div class="bg-gray-700/50 p-3 rounded-lg">
+        <p class="text-xs text-gray-400">Rank de Conquistas</p>
+        <p id="public-profile-rank" class="font-bold text-lg">--</p>
+      </div>
+      <div class="bg-gray-700/50 p-3 rounded-lg">
+        <p class="text-xs text-gray-400">Modelo da Moto</p>
+        <p id="public-profile-moto" class="font-bold text-lg">--</p>
+      </div>
+    </div>
+
+    <!-- Botão de Contato -->
+    <div class="mt-8">
+      <a
+        id="public-profile-contact-btn"
+        href="#"
+        target="_blank"
+        class="w-full bg-green-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-green-600 transition-colors"
+      >
+        <i data-lucide="message-circle"></i> Contratar para Frete
+      </a>
+    </div>
+
+    <p class="text-xs text-gray-600 text-center mt-6">
+      Perfil gerado via AppMotoCash
+    </p>
+  </div>
+</div>

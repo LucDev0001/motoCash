@@ -283,6 +283,70 @@ export function updateDashboardUI(stats, allItems, lineChartData, monthlyGoal) {
   lucide.createIcons();
 }
 
+/**
+ * Busca os dados e renderiza a seção de análise para usuários Pro.
+ */
+async function renderProAnalysis() {
+  const proSection = document.getElementById("pro-analysis-section");
+  if (!proSection) return;
+
+  proSection.classList.remove("hidden");
+
+  // Busca os dados da semana atual e da semana passada
+  const earningsCurrentWeek = await getEarningsForPeriod("week");
+  const earningsLastWeek = await getEarningsForPeriod("last-week");
+
+  const totalCurrentWeek = earningsCurrentWeek.reduce(
+    (sum, item) => sum + item.totalValue,
+    0
+  );
+  const totalLastWeek = earningsLastWeek.reduce(
+    (sum, item) => sum + item.totalValue,
+    0
+  );
+
+  renderWeeklyComparisonChart(totalCurrentWeek, totalLastWeek);
+}
+
+/**
+ * Renderiza o gráfico de comparação de ganhos semanais.
+ * @param {number} currentWeekTotal - Total de ganhos da semana atual.
+ * @param {number} lastWeekTotal - Total de ganhos da semana passada.
+ */
+function renderWeeklyComparisonChart(currentWeekTotal, lastWeekTotal) {
+  const ctx = document
+    .getElementById("weekly-comparison-chart")
+    ?.getContext("2d");
+  if (!ctx) return;
+
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Semana Passada", "Semana Atual"],
+      datasets: [
+        {
+          label: "Ganhos",
+          data: [lastWeekTotal, currentWeekTotal],
+          backgroundColor: [
+            "rgba(255, 205, 86, 0.7)",
+            "rgba(75, 192, 192, 0.7)",
+          ],
+          borderColor: ["rgb(255, 205, 86)", "rgb(75, 192, 192)"],
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true },
+      },
+      plugins: { legend: { display: false } },
+    },
+  });
+}
+
 export function filterDashboard(p) {
   document.getElementById("custom-date-picker").classList.add("hidden");
   document

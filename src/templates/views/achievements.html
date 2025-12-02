@@ -1,4 +1,49 @@
-<div
-  id="achievements-list"
-  class="grid grid-cols-3 gap-4 fade-in pb-10"
-></div>
+<div class="fade-in space-y-6 pb-10">
+  <!-- Card de Nível e Progresso -->
+  <div
+    class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl p-6 text-white relative overflow-hidden"
+  >
+    <div
+      class="absolute -top-10 -right-10 w-40 h-40 bg-yellow-500/10 rounded-full blur-2xl"
+    ></div>
+    <div class="flex items-center gap-4">
+      <div
+        id="rank-icon-container"
+        class="w-16 h-16 rounded-full flex items-center justify-center shrink-0 bg-gray-700/50 border-2 border-gray-600"
+      >
+        <!-- Ícone do Nível -->
+      </div>
+      <div>
+        <h2 id="achievement-rank-title" class="text-2xl font-bold">
+          Carregando...
+        </h2>
+        <p id="achievement-counter" class="text-sm text-gray-400">
+          Calculando seu progresso...
+        </p>
+      </div>
+    </div>
+    <div class="mt-4">
+      <div class="flex justify-between text-xs font-medium text-gray-400 mb-1">
+        <span>Progresso para o próximo nível</span>
+        <span id="xp-counter">0 / 0 XP</span>
+      </div>
+      <div class="w-full bg-gray-700 rounded-full h-3">
+        <div
+          id="achievements-progress-bar"
+          class="bg-gradient-to-r from-yellow-400 to-yellow-500 h-3 rounded-full transition-all duration-500"
+          style="width: 0%"
+        ></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grade de Conquistas -->
+  <div>
+    <h3 class="font-bold text-gray-800 dark:text-gray-200 text-base mb-3 px-1">
+      Suas Medalhas
+    </h3>
+    <div id="achievements-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <!-- As conquistas serão injetadas aqui pelo JS -->
+    </div>
+  </div>
+</div>

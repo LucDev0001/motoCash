@@ -41,6 +41,8 @@ window.approveCompany = approveCompany; // Expondo a função de aprovar
 window.reproveCompany = reproveCompany; // Expondo a função de reprovar
 window.copyToClipboard = copyToClipboard; // Expondo a função de copiar
 window.deleteUser = deleteUser; // Expondo a função de apagar.
+window.editKbEntry = editKbEntry; // **NOVO**
+window.deleteKbEntry = deleteKbEntry; // **NOVO**
 
 window.renderConversationDetails = renderConversationDetails;
 
@@ -111,7 +113,16 @@ function initNavigation() {
     navigateTo("view-settings");
   });
 
-  // Adiciona o listener para a busca de usuários
+  // **NOVO**: Adiciona listener para a tela da Assistente Graxa
+  document.getElementById("nav-graxa-kb").addEventListener("click", (e) => {
+    navigateTo("view-graxa-kb");
+  });
+
+  document
+    .getElementById("nav-graxa-generator")
+    .addEventListener("click", (e) => {
+      navigateTo("view-graxa-generator");
+    });
   document
     .getElementById("user-search-input")
     .addEventListener("keyup", (e) => {
@@ -215,6 +226,12 @@ function navigateTo(viewId) {
   }
   if (viewId === "view-settings") {
     loadAppSettings();
+  }
+  if (viewId === "view-graxa-kb") {
+    initGraxaKbView(); // **NOVO**: Inicializa a view da assistente
+  }
+  if (viewId === "view-graxa-generator") {
+    initGraxaGeneratorView(); // **NOVO**: Inicializa a view do gerador
   }
 }
 
@@ -416,6 +433,19 @@ async function navigateToUserDetails(userId) {
     updateUserActionSection(user);
     document.getElementById("open-notification-modal-btn").onclick = () =>
       openNotificationModal(user);
+
+    // **NOVO**: Adiciona listeners para os botões de gerenciamento de assinatura
+    const expiryInput = document.getElementById("pro-expiry-date");
+    if (user.proExpiryDate) {
+      expiryInput.value = user.proExpiryDate;
+    }
+    document.getElementById("save-subscription-btn").onclick = () =>
+      saveSubscription(userId, expiryInput.value);
+    document.getElementById("remove-subscription-btn").onclick = () =>
+      removeSubscription(userId);
+    document.getElementById("remind-subscription-btn").onclick = () =>
+      remindSubscription(userId, user.proExpiryDate);
+
     document.getElementById("edit-user-details-btn").onclick = () =>
       openUserFormModal(userId);
     document.getElementById("delete-user-details-btn").onclick = () =>
@@ -428,6 +458,89 @@ async function navigateToUserDetails(userId) {
       "user-details-content"
     ).innerHTML = `<p class="text-red-500 text-center">Ocorreu um erro ao carregar os dados.</p>`;
   }
+}
+
+/**
+ * Salva ou atualiza a assinatura de um usuário.
+ * @param {string} userId - O ID do usuário.
+ * @param {string} expiryDate - A data de expiração no formato YYYY-MM-DD.
+ */
+async function saveSubscription(userId, expiryDate) {
+  if (!expiryDate) {
+    return alert("Por favor, selecione uma data de vencimento.");
+  }
+
+  const userRef = db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("users")
+    .doc(userId);
+  await userRef.set(
+    {
+      isPro: true,
+      proExpiryDate: expiryDate,
+    },
+    { merge: true }
+  );
+
+  alert("Assinatura salva com sucesso! O usuário agora é um Apoiador.");
+  logAdminAction("update_subscription", userId, "N/A", {
+    status: "active",
+    expiry: expiryDate,
+  });
+  navigateToUserDetails(userId); // Recarrega os detalhes para mostrar o status atualizado
+}
+
+/**
+ * Remove o status de Apoiador de um usuário.
+ * @param {string} userId - O ID do usuário.
+ */
+async function removeSubscription(userId) {
+  if (
+    !confirm(
+      "Tem certeza que deseja remover o status de Apoiador deste usuário?"
+    )
+  )
+    return;
+
+  const userRef = db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("users")
+    .doc(userId);
+  await userRef.update({
+    isPro: firebase.firestore.FieldValue.delete(),
+    proExpiryDate: firebase.firestore.FieldValue.delete(),
+  });
+
+  alert("Status de Apoiador removido com sucesso.");
+  logAdminAction("remove_subscription", userId, "N/A");
+  navigateToUserDetails(userId); // Recarrega os detalhes
+}
+
+/**
+ * Envia uma notificação de lembrete de vencimento da assinatura.
+ * @param {string} userId - O ID do usuário.
+ * @param {string} expiryDate - A data de vencimento.
+ */
+async function remindSubscription(userId, expiryDate) {
+  if (!expiryDate) {
+    return alert(
+      "Este usuário não tem uma assinatura ativa para ser lembrado."
+    );
+  }
+
+  const title = "Sua assinatura está vencendo!";
+  const message = `Olá! Sua assinatura do Plano Apoiador do AppMotoCash está próxima de vencer em ${new Date(
+    expiryDate + "T12:00:00"
+  ).toLocaleDateString(
+    "pt-BR"
+  )}. Renove para continuar aproveitando os benefícios!`;
+
+  // Reutiliza a função de enviar notificação
+  await sendNotificationToUser(userId, title, message);
+  alert("Lembrete de vencimento enviado para o usuário.");
+  logAdminAction("send_subscription_reminder", userId, "N/A", { message });
 }
 
 /**
@@ -1776,6 +1889,9 @@ function renderAllUsersTable(searchTerm = "") {
       (user.publicProfile?.name?.toLowerCase() || "").includes(searchTerm) ||
       (user.email?.toLowerCase() || "").includes(searchTerm)
   );
+  // Adiciona o listener para o botão de criar usuário
+  document.getElementById("create-user-btn").onclick = () =>
+    openUserFormModal(null, "motoboy");
 
   document.getElementById("user-count-display").textContent =
     filteredUsers.length;
@@ -1785,6 +1901,9 @@ function renderAllUsersTable(searchTerm = "") {
     return;
   }
 
+  // Adiciona o listener para o botão de criar empresa
+  document.getElementById("create-company-btn").onclick = () =>
+    openUserFormModal(null, "company");
   tableBody.innerHTML = filteredUsers
     .map(
       (user) => `
@@ -1829,6 +1948,16 @@ function renderAllUsersTable(searchTerm = "") {
                 </span>`
               }
             </td>
+            <td class="p-3 cursor-pointer" onclick="navigateToUserDetails('${
+              user.id
+            }')">
+              ${getSubscriptionStatus(user).status}
+            </td>
+            <td class="p-3 cursor-pointer" onclick="navigateToUserDetails('${
+              user.id
+            }')">
+              ${getSubscriptionStatus(user).expiryDate}
+            </td>
             <td class="p-3 flex items-center space-x-2">
                 <button title="Editar Usuário" onclick="openUserFormModal('${
                   user.id
@@ -1846,6 +1975,37 @@ function renderAllUsersTable(searchTerm = "") {
     )
     .join("");
   lucide.createIcons(); // Renderiza os ícones recém-adicionados
+}
+/**
+ * Retorna o status formatado da assinatura de um usuário.
+ * @param {object} userData - Os dados do usuário do Firestore.
+ * @returns {{status: string, expiryDate: string}}
+ */
+function getSubscriptionStatus(userData) {
+  if (userData.isPro && userData.proExpiryDate) {
+    const expiry = new Date(userData.proExpiryDate + "T12:00:00"); // Adiciona T12:00:00 para evitar problemas de fuso
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (expiry < today) {
+      return {
+        status:
+          '<span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Expirada</span>',
+        expiryDate: expiry.toLocaleDateString("pt-BR"),
+      };
+    } else {
+      return {
+        status:
+          '<span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Ativa</span>',
+        expiryDate: expiry.toLocaleDateString("pt-BR"),
+      };
+    }
+  }
+  return {
+    status:
+      '<span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">N/A</span>',
+    expiryDate: "-",
+  };
 }
 
 /**
@@ -2350,3 +2510,432 @@ window.removeAdmin = async function (uidToRemove) {
   alert("Administrador removido com sucesso!");
   loadAppSettings(); // Recarrega a lista
 };
+
+// =================================================================================
+// ASSISTENTE GRAXA - BASE DE CONHECIMENTO (KB)
+// =================================================================================
+
+/**
+ * Inicializa a view de gerenciamento da Base de Conhecimento da Graxa.
+ */
+function initGraxaKbView() {
+  listenForKbUpdates();
+
+  const form = document.getElementById("kb-form");
+  form.addEventListener("submit", saveKbEntry);
+
+  const cancelButton = document.getElementById("kb-form-cancel");
+  cancelButton.addEventListener("click", resetKbForm);
+
+  // **NOVO**: Lógica para o upload de JSON
+  const uploadBtn = document.getElementById("kb-upload-btn");
+  const fileInput = document.getElementById("kb-json-upload");
+
+  uploadBtn.addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", handleKbJsonUpload);
+
+  // **NOVO**: Lógica para o upload do JSON dos manuais
+  const pdfUploadBtn = document.getElementById("kb-pdf-upload-btn");
+  const pdfFileInput = document.getElementById("kb-pdf-json-upload");
+  pdfUploadBtn.addEventListener("click", () => pdfFileInput.click());
+  pdfFileInput.addEventListener("change", handlePdfKbJsonUpload);
+
+  // **NOVO**: Adiciona listener para o botão de limpar tudo
+  const clearAllBtn = document.getElementById("kb-clear-all-btn");
+  clearAllBtn.addEventListener("click", clearAllKbEntries);
+}
+
+/**
+ * Ouve por atualizações na coleção da base de conhecimento e renderiza a tabela.
+ */
+function listenForKbUpdates() {
+  db.collection("graxa_kb")
+    .orderBy("question")
+    .onSnapshot((snapshot) => {
+      const tableBody = document.getElementById("kb-table-body");
+      if (snapshot.empty) {
+        tableBody.innerHTML = `<tr><td colspan="3" class="text-center p-8 text-gray-400">Nenhum conhecimento cadastrado.</td></tr>`;
+        return;
+      }
+      tableBody.innerHTML = snapshot.docs
+        .map((doc) => {
+          const entry = doc.data();
+          return `
+          <tr class="text-sm text-gray-700 border-b">
+            <td class="p-3 font-medium">${entry.question}</td>
+            <td class="p-3 text-xs text-gray-500">${entry.keywords}</td>
+            <td class="p-3 flex items-center space-x-2">
+              <button onclick="editKbEntry('${doc.id}')" class="text-blue-600 hover:text-blue-800"><i data-lucide="edit" class="w-4 h-4"></i></button>
+              <button onclick="deleteKbEntry('${doc.id}')" class="text-red-600 hover:text-red-800"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </td>
+          </tr>
+        `;
+        })
+        .join("");
+      lucide.createIcons();
+    });
+}
+
+/**
+ * Salva ou atualiza uma entrada na base de conhecimento.
+ * @param {Event} e - O evento de submit do formulário.
+ */
+async function saveKbEntry(e) {
+  e.preventDefault();
+  const docId = document.getElementById("kb-doc-id").value;
+  const entryData = {
+    question: document.getElementById("kb-question").value,
+    answer: document.getElementById("kb-answer").value,
+    keywords: document.getElementById("kb-keywords").value,
+  };
+
+  const collectionRef = db.collection("graxa_kb");
+
+  try {
+    if (docId) {
+      // Atualiza um documento existente
+      await collectionRef.doc(docId).update(entryData);
+      alert("Conhecimento atualizado com sucesso!");
+    } else {
+      // Adiciona um novo documento
+      await collectionRef.add(entryData);
+      alert("Novo conhecimento adicionado com sucesso!");
+    }
+    resetKbForm();
+  } catch (error) {
+    console.error("Erro ao salvar conhecimento:", error);
+    alert("Ocorreu um erro ao salvar: " + error.message);
+  }
+}
+
+/**
+ * Preenche o formulário para editar uma entrada existente.
+ * @param {string} docId - O ID do documento a ser editado.
+ */
+async function editKbEntry(docId) {
+  const doc = await db.collection("graxa_kb").doc(docId).get();
+  if (!doc.exists) return alert("Erro: Documento não encontrado.");
+
+  const data = doc.data();
+  document.getElementById("kb-doc-id").value = doc.id;
+  document.getElementById("kb-question").value = data.question;
+  document.getElementById("kb-answer").value = data.answer;
+  document.getElementById("kb-keywords").value = data.keywords;
+
+  document.getElementById("kb-form-title").textContent = "Editar Conhecimento";
+  document.getElementById("kb-form-cancel").classList.remove("hidden");
+  window.scrollTo(0, 0); // Rola para o topo para ver o formulário
+}
+
+/**
+ * Apaga uma entrada da base de conhecimento.
+ * @param {string} docId - O ID do documento a ser apagado.
+ */
+async function deleteKbEntry(docId) {
+  if (!confirm("Tem certeza que deseja apagar este conhecimento?")) return;
+  await db.collection("graxa_kb").doc(docId).delete();
+  alert("Conhecimento apagado com sucesso.");
+}
+
+/**
+ * Reseta o formulário da base de conhecimento para o modo de adição.
+ */
+function resetKbForm() {
+  document.getElementById("kb-form").reset();
+  document.getElementById("kb-doc-id").value = "";
+  document.getElementById("kb-form-title").textContent =
+    "Adicionar Novo Conhecimento";
+  document.getElementById("kb-form-cancel").classList.add("hidden");
+}
+
+/**
+ * Lida com o upload de um arquivo JSON para a base de conhecimento.
+ * @param {Event} event - O evento de change do input de arquivo.
+ */
+async function handleKbJsonUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const parsedJson = JSON.parse(e.target.result);
+      let entriesFromFile = [];
+
+      // **CORREÇÃO**: Lógica para extrair dados da estrutura gerada pelo PHP
+      if (Array.isArray(parsedJson)) {
+        // Suporta o formato simples de array
+        entriesFromFile = parsedJson;
+      } else if (parsedJson.general && parsedJson.motos) {
+        // Suporta o formato complexo do gerador_conhecimento.php
+        entriesFromFile = [...parsedJson.general];
+        parsedJson.motos.forEach((moto) => {
+          if (moto.data && Array.isArray(moto.data)) {
+            entriesFromFile.push(...moto.data);
+          }
+        });
+      } else {
+        throw new Error(
+          "Formato de JSON não reconhecido. Deve ser um array de objetos ou a estrutura gerada pelo script PHP."
+        );
+      }
+
+      // **NOVO: Lógica Anti-Duplicatas**
+      // 1. Busca todas as perguntas existentes no banco de dados
+      const existingKbSnap = await db.collection("graxa_kb").get();
+      const existingQuestions = new Set(
+        existingKbSnap.docs.map((doc) => doc.data().question)
+      );
+
+      // 2. Filtra as entradas do arquivo, mantendo apenas as que não existem
+      const newEntries = entriesFromFile.filter(
+        (entry) => !existingQuestions.has(entry.question)
+      );
+
+      const skippedCount = entriesFromFile.length - newEntries.length;
+
+      if (newEntries.length === 0) {
+        return alert(
+          `Nenhum conhecimento novo para importar. ${skippedCount} conhecimento(s) já existente(s) foram ignorados.`
+        );
+      }
+
+      // 3. Valida os campos das novas entradas
+      const validEntries = newEntries.filter(
+        (entry) => entry.question && entry.answer && entry.keywords
+      );
+
+      if (
+        !confirm(
+          `Foram encontrados ${validEntries.length} conhecimentos válidos no arquivo. Deseja adicioná-los à base de dados?` +
+            (skippedCount > 0
+              ? ` (${skippedCount} duplicados foram ignorados)`
+              : "")
+        )
+      ) {
+        return;
+      }
+
+      const batch = db.batch();
+      const collectionRef = db.collection("graxa_kb");
+
+      validEntries.forEach((entry) => {
+        const docRef = collectionRef.doc(); // Cria um novo documento com ID automático
+        batch.set(docRef, entry);
+      });
+
+      await batch.commit();
+      alert(
+        `${validEntries.length} conhecimentos foram importados com sucesso! ${skippedCount} duplicados foram ignorados.`
+      );
+    } catch (error) {
+      console.error("Erro ao importar JSON:", error);
+      alert("Erro ao processar o arquivo JSON: " + error.message);
+    } finally {
+      // Limpa o input para permitir o upload do mesmo arquivo novamente
+      event.target.value = null;
+    }
+  };
+  reader.readAsText(file);
+}
+
+/**
+ * **NOVO**: Lida com o upload do JSON gerado a partir dos PDFs dos manuais.
+ * @param {Event} event - O evento de change do input de arquivo.
+ */
+async function handlePdfKbJsonUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const entries = JSON.parse(e.target.result);
+      if (!Array.isArray(entries)) {
+        throw new Error("O arquivo JSON deve conter um array de objetos.");
+      }
+
+      const validEntries = entries.filter(
+        (entry) => entry.moto && entry.content
+      );
+
+      if (
+        !confirm(
+          `Foram encontrados ${validEntries.length} trechos de manuais no arquivo. Deseja importá-los para a base de conhecimento avançada? (Isso pode demorar um pouco)`
+        )
+      ) {
+        return;
+      }
+
+      alert(
+        "Iniciando importação... Por favor, aguarde a mensagem de sucesso."
+      );
+
+      const batch = db.batch();
+      const collectionRef = db.collection("graxa_manuals_kb"); // Nova coleção
+
+      validEntries.forEach((entry) => {
+        const docRef = collectionRef.doc();
+        batch.set(docRef, entry);
+      });
+
+      await batch.commit();
+      alert(
+        `${validEntries.length} trechos de manuais foram importados com sucesso!`
+      );
+    } catch (error) {
+      alert("Erro ao processar o arquivo JSON dos manuais: " + error.message);
+    } finally {
+      event.target.value = null;
+    }
+  };
+  reader.readAsText(file);
+}
+
+/**
+ * **NOVO**: Apaga todos os documentos da coleção da base de conhecimento.
+ */
+async function clearAllKbEntries() {
+  if (
+    !confirm(
+      "ATENÇÃO: Esta ação é IRREVERSÍVEL e apagará TODA a base de conhecimento da assistente Graxa. Deseja continuar?"
+    )
+  ) {
+    return;
+  }
+
+  try {
+    const snapshot = await db.collection("graxa_kb").get();
+    if (snapshot.empty) {
+      return alert("A base de conhecimento já está vazia.");
+    }
+
+    const batch = db.batch();
+    snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+    alert(`Sucesso! ${snapshot.size} conhecimentos foram apagados.`);
+  } catch (error) {
+    alert("Erro ao limpar a base de conhecimento: " + error.message);
+  }
+}
+
+// =================================================================================
+// GERADOR DE CONHECIMENTO (KB)
+// =================================================================================
+
+const KB_TEMPLATES = [
+  {
+    id: "oleo",
+    q: "Qual o óleo recomendado para a {moto}?",
+    a: "<p>Para a <b>{moto}</b>, recomenda-se verificar o manual do proprietário.</p><p>Geralmente, motos Honda usam <b>10W30 Semissintético</b> e Yamaha <b>10W40 Semissintético</b> (Yamalube).</p><p>Troque a cada 1.000km em uso severo (entregas).</p>",
+    k: "oleo, {moto}, motor, lubrificante",
+  },
+  {
+    id: "pneu",
+    q: "Qual a calibragem do pneu da {moto}?",
+    a: "<p>Manter a calibração da <b>{moto}</b> correta economiza combustível.</p><ul><li><b>Dianteiro:</b> 25 a 28 PSI (verifique no protetor de corrente).</li><li><b>Traseiro:</b> 29 PSI (só) ou 33 PSI (com carga).</li></ul>",
+    k: "pneu, calibragem, libras, ar, {moto}",
+  },
+  {
+    id: "partida",
+    q: "A {moto} não está ligando, o que fazer?",
+    a: "<p>Problemas de partida na <b>{moto}</b>?</p><ol><li>Verifique o botão corta-corrente (vermelho).</li><li>Veja se o descanso lateral está recolhido.</li><li>Cheque se a bateria tem carga (buzina forte?).</li></ol>",
+    k: "partida, eletrica, bateria, defeito, {moto}",
+  },
+  {
+    id: "corrente",
+    q: "De quanto em quanto tempo estico a corrente da {moto}?",
+    a: "<p>Na <b>{moto}</b>, verifique a folga da corrente semanalmente.</p><p>A folga deve ser entre 2,0 e 3,0 cm. Lubrifique sempre que ajustar.</p>",
+    k: "corrente, relacao, folga, {moto}",
+  },
+  {
+    id: "vela",
+    q: "Qual a vela de ignição da {moto}?",
+    a: "<p>A vela da <b>{moto}</b> deve ser trocada a cada 10.000km ou 12.000km para garantir economia e desempenho.</p>",
+    k: "vela, ignicao, falhando, {moto}",
+  },
+  {
+    id: "consumo",
+    q: "Quanto consome uma {moto} por litro?",
+    a: "<p>O consumo da <b>{moto}</b> varia com a mão do piloto.</p><p>Em média, no trabalho de entrega, ela deve fazer entre 30km/l e 40km/l. Se fizer menos que 25km/l, revise filtro de ar e injeção.</p>",
+    k: "consumo, gasolina, km/l, economia, {moto}",
+  },
+];
+
+function initGraxaGeneratorView() {
+  const templatesContainer = document.getElementById(
+    "generator-templates-list"
+  );
+  templatesContainer.innerHTML = KB_TEMPLATES.map(
+    (tpl) => `
+        <label class="flex items-center gap-2 p-2 bg-gray-50 rounded">
+            <input type="checkbox" data-template-id="${tpl.id}" class="generator-template-check h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked>
+            <span class="text-sm">${tpl.q}</span>
+        </label>
+    `
+  ).join("");
+
+  document.getElementById("generate-and-import-btn").onclick =
+    generateAndImportKb;
+}
+
+async function generateAndImportKb() {
+  const logEl = document.getElementById("generator-log");
+  const motosText = document.getElementById("generator-motos-list").value;
+  const motos = motosText
+    .split("\n")
+    .map((m) => m.trim())
+    .filter((m) => m.length > 0);
+
+  const selectedTemplateIds = Array.from(
+    document.querySelectorAll(".generator-template-check:checked")
+  ).map((chk) => chk.dataset.templateId);
+  const selectedTemplates = KB_TEMPLATES.filter((tpl) =>
+    selectedTemplateIds.includes(tpl.id)
+  );
+
+  if (motos.length === 0 || selectedTemplates.length === 0) {
+    return alert(
+      "Por favor, insira pelo menos uma moto e selecione pelo menos um modelo de pergunta."
+    );
+  }
+
+  const generatedEntries = [];
+  motos.forEach((moto) => {
+    selectedTemplates.forEach((tpl) => {
+      const cleanMotoKeywords = moto.toLowerCase().replace(/ /g, ", ");
+      generatedEntries.push({
+        question: tpl.q.replace(/{moto}/g, moto),
+        answer: tpl.a.replace(/{moto}/g, moto),
+        keywords: tpl.k.replace(/{moto}/g, cleanMotoKeywords),
+      });
+    });
+  });
+
+  logEl.textContent = `Gerados ${generatedEntries.length} conhecimentos.\n`;
+  if (
+    !confirm(
+      `Você está prestes a adicionar ${generatedEntries.length} novos conhecimentos à base da Graxa. Deseja continuar?`
+    )
+  ) {
+    logEl.textContent += "Operação cancelada pelo usuário.";
+    return;
+  }
+
+  logEl.textContent += "Iniciando importação para o Firestore...\n";
+  const batch = db.batch();
+  const collectionRef = db.collection("graxa_kb");
+  generatedEntries.forEach((entry) => {
+    const docRef = collectionRef.doc();
+    batch.set(docRef, entry);
+  });
+
+  try {
+    await batch.commit();
+    logEl.textContent += `✅ Sucesso! ${generatedEntries.length} conhecimentos importados.`;
+    alert("Importação concluída com sucesso!");
+  } catch (error) {
+    logEl.textContent += `❌ Erro na importação: ${error.message}`;
+    alert("Ocorreu um erro durante a importação.");
+  }
+}

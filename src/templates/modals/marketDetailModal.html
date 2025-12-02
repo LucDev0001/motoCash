@@ -1,0 +1,76 @@
+<!-- MODAL PARA DETALHES DO ANÚNCIO DO MARKETPLACE -->
+<div
+  id="market-detail-modal"
+  class="absolute inset-0 z-[90] bg-black/80 flex items-center justify-center transition-opacity p-4"
+>
+  <div
+    class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl modal-enter shadow-2xl flex flex-col max-h-[90vh]"
+  >
+    <!-- Imagem do Produto -->
+    <div
+      id="modal-market-image"
+      class="h-56 bg-gray-200 dark:bg-gray-700 rounded-t-xl flex items-center justify-center shrink-0"
+    >
+      <!-- A imagem ou ícone será injetado aqui -->
+    </div>
+
+    <!-- Conteúdo do Anúncio -->
+    <div class="p-6 overflow-y-auto">
+      <span
+        id="modal-market-category"
+        class="text-[10px] bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 px-2 py-0.5 rounded-full self-start mb-2"
+      ></span>
+      <h3
+        id="modal-market-title"
+        class="text-2xl font-bold text-gray-800 dark:text-gray-100"
+      ></h3>
+      <p
+        id="modal-market-price"
+        class="text-3xl font-extrabold text-green-600 dark:text-green-400 my-3"
+      ></p>
+      <p
+        id="modal-market-description"
+        class="text-sm text-gray-600 dark:text-gray-400"
+      ></p>
+    </div>
+
+    <!-- Botão de Ação -->
+    <div
+      id="modal-market-action-container"
+      class="p-6 border-t border-gray-100 dark:border-gray-700 shrink-0"
+    >
+      <!-- Botão para Compradores -->
+      <a
+        id="modal-market-contact-btn"
+        href="#"
+        target="_blank"
+        class="w-full bg-green-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"
+      >
+        <i data-lucide="message-circle"></i> Contatar Vendedor
+      </a>
+      <!-- Botões para o Dono do Anúncio (escondidos por padrão) -->
+      <div
+        id="modal-market-owner-actions"
+        class="hidden grid grid-cols-2 gap-3"
+      >
+        <button
+          id="modal-market-edit-btn"
+          class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"
+        >
+          <i data-lucide="pencil"></i> Editar
+        </button>
+        <button
+          id="modal-market-delete-btn"
+          class="w-full bg-red-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"
+        >
+          <i data-lucide="trash-2"></i> Apagar
+        </button>
+      </div>
+    </div>
+    <button
+      class="absolute top-4 right-4 text-white bg-black/30 rounded-full p-1 close-modal-btn"
+    >
+      <i data-lucide="x"></i>
+    </button>
+  </div>
+</div>

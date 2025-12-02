@@ -1,41 +1,60 @@
-<div
-  class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center fade-in"
->
-  <div class="bg-yellow-500 p-4 rounded-full inline-block mb-4">
-    <i data-lucide="bike" class="w-12 h-12 text-black"></i>
+<div class="fade-in space-y-6 pb-10">
+  <!-- Seção Sobre -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
+    <div class="bg-yellow-500 p-4 rounded-full inline-block mb-4">
+      <i data-lucide="bike" class="w-12 h-12 text-black"></i>
+      <!-- Mantido amarelo por ser a logo -->
+    </div>
+    <h2 class="text-2xl font-bold dark:text-white">AppMotoCash</h2>
+    <p id="app-version" class="text-gray-500 dark:text-gray-400 mb-6">Versão</p>
   </div>
-  <h2 class="text-2xl font-bold dark:text-white">AppMotoCash</h2>
-  <p id="app-version" class="text-gray-500 dark:text-gray-400 mb-6">Versão</p>
 
-  <div class="space-y-2 text-left">
+  <!-- Seção de Links Úteis -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 space-y-2">
+    <h3 class="font-bold text-sm px-2 pb-2">Links Úteis</h3>
     <a
-      href="#"
-      id="support-link"
-      class="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300"
+      href="ajuda.html"
+      target="_blank"
+      class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50"
     >
-      <i data-lucide="help-circle"></i> <span>Suporte e Tutoriais</span>
+      <i data-lucide="help-circle" class="text-gray-500"></i>
+      <span class="font-medium text-gray-700 dark:text-gray-300"
+        >Central de Ajuda</span
+      >
+    </a>
+    <a
+      href="termos_de_uso.html"
+      target="_blank"
+      class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50"
+    >
+      <i data-lucide="file-text" class="text-gray-500"></i>
+      <span class="font-medium text-gray-700 dark:text-gray-300"
+        >Termos de Uso</span
+      >
+    </a>
+    <a
+      href="politicas_e_privacidade.html"
+      target="_blank"
+      class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50"
+    >
+      <i data-lucide="shield" class="text-gray-500"></i>
+      <span class="font-medium text-gray-700 dark:text-gray-300"
+        >Política de Privacidade</span
+      >
     </a>
     <a
       href="mailto:lucianosantosseverino@gmail.com?subject=Bug%20no%20AppMotoCash"
-      class="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300"
+      class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50"
     >
-      <i data-lucide="bug"></i> <span>Reportar um Bug</span>
-    </a>
-    <a
-      href="#"
-      id="privacy-link"
-      class="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300"
-    >
-      <i data-lucide="shield"></i>
-      <span href="../../../politicas_e_privacidade.html"
-        >Política de Privacidade</span
+      <i data-lucide="bug" class="text-gray-500"></i>
+      <span class="font-medium text-gray-700 dark:text-gray-300"
+        >Reportar um Bug</span
       >
     </a>
   </div>
 
-  <div class="border-t dark:border-gray-700 my-6"></div>
-
-  <div>
+  <!-- Seção de Apoio -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-center">
     <h3 class="text-lg font-bold dark:text-white mb-2">💜 Apoie o Projeto</h3>
     <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
       Se este projeto te ajudou, considere apoiar com qualquer valor.
@@ -48,10 +67,34 @@
       >
       <button
         id="copy-pix-btn"
-        class="bg-yellow-500 text-black font-bold px-3 py-1 rounded-md text-xs flex items-center gap-1"
+        class="bg-accent text-black font-bold px-3 py-1 rounded-md text-xs flex items-center gap-1"
       >
         <i data-lucide="copy" class="w-3 h-3"></i> Copiar
       </button>
+    </div>
+  </div>
+
+  <!-- Seção Desenvolvido por -->
+  <div class="text-center pt-4">
+    <p class="text-sm text-gray-500 dark:text-gray-400">Criado por</p>
+    <p class="font-bold text-gray-700 dark:text-gray-200">
+      Santos Codes - Luciano Severino dos Santos
+    </p>
+    <div class="flex justify-center gap-4 mt-3">
+      <a
+        href="https://github.com/LucDev0001"
+        target="_blank"
+        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+      >
+        <i data-lucide="github" class="w-6 h-6"></i>
+      </a>
+      <a
+        href="https://www.linkedin.com/in/lucianodev/"
+        target="_blank"
+        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+      >
+        <i data-lucide="linkedin" class="w-6 h-6"></i>
+      </a>
     </div>
   </div>
 

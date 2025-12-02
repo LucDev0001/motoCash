@@ -1,6 +1,6 @@
 import { auth, db, appId } from "./config.js";
 import { router } from "./router.js";
-import { showVerificationBanner, showLoginError } from "./ui.js";
+import { showVerificationBanner, showLoginError, showToast } from "./ui.js";
 import { handleEmailLogin, handlePasswordReset } from "./api.js";
 
 export let currentUser = null;
@@ -180,9 +180,11 @@ function listenForUserNotifications(uid) {
 
     snapshot.docChanges().forEach((change) => {
       if (change.type === "added") {
-        const notification = change.doc.data();
-        // Não mostra mais o pop-up automaticamente, apenas atualiza o contador.
-        // O usuário verá a notificação na página de notificações.
+        // **NOVO**: Exibe um toast para cada nova notificação.
+        const newNotification = change.doc.data();
+        if (newNotification.title) {
+          showToast(newNotification.title, "bell");
+        }
       }
     });
   });

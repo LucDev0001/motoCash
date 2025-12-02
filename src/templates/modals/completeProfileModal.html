@@ -4,145 +4,173 @@
   class="absolute inset-0 z-[90] bg-black/80 flex items-center justify-center transition-opacity p-4"
 >
   <div
-    class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl p-6 modal-enter shadow-2xl"
+    class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl modal-enter shadow-2xl flex flex-col max-h-[90vh]"
   >
-    <div class="flex justify-between items-center">
-      <h3
-        id="public-profile-modal-title"
-        class="text-lg font-bold text-gray-800 dark:text-gray-100"
-      >
-        Complete seu Perfil Público
-      </h3>
-      <button
-        class="text-gray-500 dark:text-gray-400 -mr-2 -mt-2 close-modal-btn"
-      >
-        <i data-lucide="x"></i>
-      </button>
-    </div>
-    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-      Para ficar online no Hub, preencha seus dados. Eles serão visíveis para as
-      empresas.
-    </p>
-    <form id="public-profile-form" class="space-y-3">
-      <input
-        required
-        id="public-name"
-        placeholder="Nome Completo"
-        class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-      />
-      <!-- Novos seletores dinâmicos para a moto -->
-      <select
-        required
-        id="fipe-brand"
-        class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-      >
-        <option value="">Selecione a Marca...</option>
-      </select>
-      <select
-        required
-        id="fipe-model"
-        class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-        disabled
-      >
-        <option value="">Selecione o Modelo...</option>
-      </select>
-      <div class="grid grid-cols-2 gap-3">
-        <input
-          required
-          id="public-moto-year"
-          type="number"
-          placeholder="Ano"
-          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-        />
-        <input
-          required
-          id="public-moto-color"
-          placeholder="Cor (Ex: Vermelha)"
-          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-        />
-      </div>
-      <input
-        required
-        type="tel"
-        id="public-whatsapp"
-        placeholder="WhatsApp (Ex: 11912345678)"
-        class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-      />
-      <!-- Novo fluxo de busca de imagem -->
-      <div class="border-t dark:border-gray-700 pt-4 space-y-2">
-        <input
-          id="public-moto-image-url"
-          type="url"
-          placeholder="Cole a URL da imagem da sua moto aqui"
-          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded text-sm"
-        />
-        <div
-          id="image-preview-container"
-          class="h-32 w-full bg-gray-100 dark:bg-gray-900 rounded-lg flex items-center justify-center overflow-hidden"
+    <div class="p-6 pb-4 shrink-0">
+      <div class="flex justify-between items-center">
+        <h3
+          id="public-profile-modal-title"
+          class="text-lg font-bold text-gray-800 dark:text-gray-100"
         >
-          <img
-            id="image-preview"
-            src=""
-            class="hidden h-full w-auto object-contain"
-          />
-          <i
-            data-lucide="image"
-            id="image-placeholder-icon"
-            class="w-10 h-10 text-gray-300 dark:text-gray-600"
-          ></i>
-        </div>
-        <p class="text-xs text-gray-400 text-center">
-          Dica: No Google, clique com o botão direito na imagem e escolha
-          "Copiar endereço da imagem".
-        </p>
+          Complete seu Perfil Público
+        </h3>
+        <button class="text-gray-500 dark:text-gray-400 close-modal-btn">
+          <i data-lucide="x"></i>
+        </button>
       </div>
-      <input
-        required
-        id="public-moto-plate"
-        placeholder="Placa da Moto (Ex: BRA2E19)"
-        class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
-      />
-      <div class="grid grid-cols-2 gap-3">
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+        Para ficar online no Hub, preencha seus dados. Eles serão visíveis para
+        as empresas.
+      </p>
+    </div>
+    <div class="overflow-y-auto px-6 pb-6">
+      <form id="public-profile-form" class="space-y-3">
         <input
           required
-          id="public-moto-renavam"
-          placeholder="RENAVAM"
-          type="number"
+          id="public-name"
+          placeholder="Nome Completo"
           class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
         />
+        <!-- Novos seletores dinâmicos para a moto -->
         <select
           required
-          id="public-moto-state"
+          id="fipe-brand"
           class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
         >
-          <option value="">Estado</option>
-          <!-- Opções de estado aqui -->
+          <option value="">Selecione a Marca...</option>
         </select>
-      </div>
-      <div class="flex items-start space-x-2 pt-2">
+        <select
+          required
+          id="fipe-model"
+          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+          disabled
+        >
+          <option value="">Selecione o Modelo...</option>
+        </select>
+        <div class="grid grid-cols-2 gap-3">
+          <input
+            required
+            id="public-moto-year"
+            type="number"
+            placeholder="Ano"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+          />
+          <input
+            required
+            id="public-moto-color"
+            placeholder="Cor (Ex: Vermelha)"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+          />
+        </div>
         <input
-          type="checkbox"
-          id="public-terms-checkbox"
-          class="mt-1 rounded border-gray-600 bg-gray-800 text-yellow-500 focus:ring-yellow-500"
+          required
+          type="tel"
+          id="public-whatsapp"
+          placeholder="WhatsApp (Ex: 11912345678)"
+          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
         />
-        <label for="public-terms-checkbox" class="text-xs text-gray-400">
-          Eu concordo em compartilhar meu nome, modelo e placa da moto no Hub de
-          Entregas, conforme os
-          <a
-            href="termos_de_uso.html"
-            target="_blank"
-            class="underline text-yellow-500"
-            >Termos de Uso</a
-          >.
-        </label>
-      </div>
-      <button
-        type="submit"
-        id="public-profile-submit-btn"
-        class="w-full bg-yellow-500 text-black font-bold py-3 rounded-lg mt-2"
-      >
-        <span>Ficar Online</span>
-      </button>
-    </form>
+        <!-- Novo fluxo de busca de imagem -->
+        <div class="border-t dark:border-gray-700 pt-4 space-y-2">
+          <input
+            id="public-moto-image-url"
+            type="url"
+            placeholder="Cole a URL da imagem da sua moto aqui"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded text-sm"
+          />
+          <div
+            id="image-preview-container"
+            class="h-32 w-full bg-gray-100 dark:bg-gray-900 rounded-lg flex items-center justify-center overflow-hidden"
+          >
+            <img
+              id="image-preview"
+              src=""
+              class="hidden h-full w-auto object-contain"
+            />
+            <i
+              data-lucide="image"
+              id="image-placeholder-icon"
+              class="w-10 h-10 text-gray-300 dark:text-gray-600"
+            ></i>
+          </div>
+          <p class="text-xs text-gray-400 text-center">
+            Dica: No Google, clique com o botão direito na imagem e escolha
+            "Copiar endereço da imagem".
+          </p>
+        </div>
+        <input
+          required
+          id="public-moto-plate"
+          placeholder="Placa da Moto (Ex: BRA2E19)"
+          class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+        />
+        <div class="grid grid-cols-2 gap-3">
+          <input
+            required
+            id="public-moto-renavam"
+            placeholder="RENAVAM"
+            type="number"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+          />
+          <select
+            required
+            id="public-moto-state"
+            class="w-full p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 border rounded"
+          >
+            <option value="">Selecione o Estado</option>
+            <option value="AC">Acre</option>
+            <option value="AL">Alagoas</option>
+            <option value="AP">Amapá</option>
+            <option value="AM">Amazonas</option>
+            <option value="BA">Bahia</option>
+            <option value="CE">Ceará</option>
+            <option value="DF">Distrito Federal</option>
+            <option value="ES">Espírito Santo</option>
+            <option value="GO">Goiás</option>
+            <option value="MA">Maranhão</option>
+            <option value="MT">Mato Grosso</option>
+            <option value="MS">Mato Grosso do Sul</option>
+            <option value="MG">Minas Gerais</option>
+            <option value="PA">Pará</option>
+            <option value="PB">Paraíba</option>
+            <option value="PR">Paraná</option>
+            <option value="PE">Pernambuco</option>
+            <option value="PI">Piauí</option>
+            <option value="RJ">Rio de Janeiro</option>
+            <option value="RN">Rio Grande do Norte</option>
+            <option value="RS">Rio Grande do Sul</option>
+            <option value="RO">Rondônia</option>
+            <option value="RR">Roraima</option>
+            <option value="SC">Santa Catarina</option>
+            <option value="SP">São Paulo</option>
+            <option value="SE">Sergipe</option>
+            <option value="TO">Tocantins</option>
+          </select>
+        </div>
+        <div class="flex items-start space-x-2 pt-2">
+          <input
+            type="checkbox"
+            id="public-terms-checkbox"
+            class="mt-1 rounded border-gray-600 bg-gray-800 text-yellow-500 focus:ring-yellow-500"
+          />
+          <label for="public-terms-checkbox" class="text-xs text-gray-400">
+            Eu concordo em compartilhar meu nome, modelo e placa da moto no Hub
+            de Entregas, conforme os
+            <a
+              href="termos_de_uso.html"
+              target="_blank"
+              class="underline text-yellow-500"
+              >Termos de Uso</a
+            >.
+          </label>
+        </div>
+        <button
+          type="submit"
+          id="public-profile-submit-btn"
+          class="w-full bg-yellow-500 text-black font-bold py-3 rounded-lg mt-2"
+        >
+          <span>Ficar Online</span>
+        </button>
+      </form>
+    </div>
   </div>
 </div>

@@ -1,6 +1,6 @@
 import { db, appId } from "../config.js";
 import { currentUser } from "../auth.js";
-import { calculateAndRenderCostPerKm } from "../api.js";
+import { calculateAndRenderCostPerKm, deleteMaintenanceItem } from "../api.js";
 import {
   openDebitsModal,
   openDocumentsModal,
@@ -76,6 +76,13 @@ export async function renderGarage(c) {
   document
     .getElementById("maintenance-btn")
     .addEventListener("click", openMaintenanceModal);
+
+  // **CORREÇÃO**: Adiciona o event listener para o checklist aqui.
+  // Isso garante que ele seja aplicado sempre que a garagem for renderizada.
+  const checklistContainer = document.getElementById(
+    "maintenance-checklist-container"
+  );
+  checklistContainer.addEventListener("click", handleMaintenanceClick);
 }
 
 function updateGarageHeader(profile) {
@@ -197,7 +204,13 @@ function renderMaintenanceItem(item, odometer) {
   const interval = item.interval || 1;
   const currentKm = odometer || 0;
   const kmSinceService = currentKm - lastService;
-  const progress = Math.min((kmSinceService / interval) * 100, 100);
+
+  // **CORREÇÃO**: Garante que o progresso nunca seja negativo.
+  // Se kmSinceService for negativo, o progresso será 0.
+  const progress = Math.max(
+    0,
+    Math.min((kmSinceService / interval) * 100, 100)
+  );
 
   let progressBarColor = "bg-green-500";
   if (progress > 90) progressBarColor = "bg-red-500";
@@ -239,4 +252,33 @@ function renderMaintenanceItem(item, odometer) {
             </div>
         </div>
     `;
+}
+
+/**
+ * Lida com os cliques nos botões do checklist de manutenção usando delegação de eventos.
+ * @param {Event} event O evento de clique.
+ */
+export function handleMaintenanceClick(event) {
+  const button = event.target.closest("button");
+  if (!button) return;
+
+  const itemId = button.dataset.id;
+  if (!itemId) return;
+
+  if (button.classList.contains("register-service-btn")) {
+    // Abre o modal de manutenção, pré-selecionando o item para registrar um novo serviço.
+    openMaintenanceModal(itemId, "register");
+  } else if (button.classList.contains("history-service-btn")) {
+    // Abre o modal de manutenção, mostrando o histórico do item.
+    openMaintenanceModal(itemId, "history");
+  } else if (button.classList.contains("edit-maintenance-btn")) {
+    // Abre o modal de manutenção para editar a configuração do item.
+    openMaintenanceModal(itemId, "edit");
+  } else if (button.classList.contains("delete-maintenance-btn")) {
+    // Lógica para apagar o item de manutenção.
+    if (confirm("Tem certeza que deseja apagar este item de manutenção?")) {
+      // Chama a função da API para apagar o item do Firestore.
+      deleteMaintenanceItem(itemId);
+    }
+  }
 }

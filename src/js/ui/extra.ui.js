@@ -1,6 +1,5 @@
 import { db, appId } from "../config.js";
 import { currentUser } from "../auth.js";
-import { getAchievements } from "../api.js";
 import { unsubscribeListeners, openProfileModal } from "../ui.js";
 import { router } from "../router.js";
 import * as API from "../api.js";
@@ -58,6 +57,101 @@ export function renderJobsList(jobs) {
 }
 
 // --- NOTIFICATIONS PAGE UI ---
+export async function renderAchievements(c) {
+  c.innerHTML = await fetch("src/templates/views/achievements.html").then(
+    (res) => res.text()
+  );
+
+  API.getAchievements((data) => {
+    const { unlocked, allAchievements } = data;
+    const grid = document.getElementById("achievements-grid");
+    const progressBar = document.getElementById("achievements-progress-bar");
+    const counterEl = document.getElementById("achievement-counter");
+    const rankTitleEl = document.getElementById("achievement-rank-title");
+    const rankIconContainer = document.getElementById("rank-icon-container");
+    const xpCounter = document.getElementById("xp-counter");
+
+    if (!grid) return;
+
+    // Calcula o progresso
+    const totalAchievements = allAchievements.length;
+    const unlockedCount = unlocked.length;
+    const xpPerAchievement = 10;
+    const currentXp = unlockedCount * xpPerAchievement;
+    const totalXp = totalAchievements * xpPerAchievement;
+
+    // Define os Níveis
+    const levels = [
+      { name: "Bronze", icon: "shield", color: "text-orange-400", min: 0 },
+      { name: "Prata", icon: "shield-half", color: "text-slate-400", min: 3 },
+      { name: "Ouro", icon: "shield-check", color: "text-yellow-400", min: 6 },
+      {
+        name: "Diamante",
+        icon: "gem",
+        color: "text-cyan-400",
+        min: 10,
+      },
+    ];
+
+    const currentLevel =
+      [...levels].reverse().find((l) => unlockedCount >= l.min) || levels[0];
+    const nextLevel = levels.find((l) => unlockedCount < l.min);
+
+    // Calcula o progresso para o próximo nível
+    let progressToNextLevel = 0;
+    let xpForNextLevel = totalXp;
+    if (nextLevel) {
+      const xpForCurrentLevel = currentLevel.min * xpPerAchievement;
+      xpForNextLevel = nextLevel.min * xpPerAchievement;
+      const xpNeeded = xpForNextLevel - xpForCurrentLevel;
+      const xpGainedInLevel = currentXp - xpForCurrentLevel;
+      progressToNextLevel = (xpGainedInLevel / xpNeeded) * 100;
+    }
+
+    // Atualiza a UI de progresso
+    rankTitleEl.textContent = `Nível ${currentLevel.name}`;
+    rankIconContainer.innerHTML = `<i data-lucide="${currentLevel.icon}" class="w-8 h-8 ${currentLevel.color}"></i>`;
+    counterEl.textContent = `${unlockedCount} de ${totalAchievements} medalhas`;
+    xpCounter.textContent = `${currentXp} / ${
+      nextLevel ? xpForNextLevel : totalXp
+    } XP`;
+    progressBar.style.width = `${nextLevel ? progressToNextLevel : 100}%`;
+
+    // Renderiza os cards de conquista
+    grid.innerHTML = allAchievements
+      .map((ach) => {
+        const isUnlocked = unlocked.includes(ach.id);
+        return `
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm flex flex-col items-center text-center ${
+          isUnlocked ? "border-2 border-yellow-400/50" : "opacity-50"
+        }">
+          <div class="relative w-20 h-20 flex items-center justify-center">
+            ${
+              isUnlocked
+                ? `<div class="absolute inset-0 bg-yellow-400 rounded-full blur-xl opacity-40 animate-pulse-slow"></div>
+                   <div class="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                      <i data-lucide="${ach.icon}" class="w-8 h-8 text-white"></i>
+                   </div>`
+                : `<div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                      <i data-lucide="lock" class="w-7 h-7 text-gray-400 dark:text-gray-500"></i>
+                   </div>`
+            }
+          </div>
+          <h4 class="font-bold text-sm mt-3 ${
+            isUnlocked ? "text-gray-800 dark:text-gray-100" : "text-gray-500"
+          }">${ach.title}</h4>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${
+            ach.description
+          }</p>
+        </div>
+      `;
+      })
+      .join("");
+
+    lucide.createIcons();
+  });
+}
+
 export async function renderNotifications(c) {
   c.innerHTML = await fetch("src/templates/views/notifications.html").then(
     (res) => res.text()
@@ -127,48 +221,6 @@ export async function renderNotifications(c) {
   });
 
   unsubscribeListeners.push(unsub);
-}
-
-// --- ACHIEVEMENTS UI ---
-export async function renderAchievements(c) {
-  c.innerHTML = await fetch("src/templates/views/achievements.html").then(
-    (res) => res.text()
-  );
-  const unsub = getAchievements(updateAchievementsUI);
-  unsubscribeListeners.push(unsub);
-}
-
-function updateAchievementsUI({ unlocked, allAchievements }) {
-  const listEl = document.getElementById("achievements-list");
-  if (!listEl) return;
-
-  listEl.innerHTML = allAchievements
-    .map((ach) => {
-      const isUnlocked = unlocked.includes(ach.id);
-      return `
-        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm text-center ${
-          !isUnlocked ? "opacity-40" : ""
-        }">
-            <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center ${
-              isUnlocked
-                ? "bg-yellow-100 dark:bg-yellow-900/50"
-                : "bg-gray-100 dark:bg-gray-700"
-            }">
-                <i data-lucide="${ach.icon}" class="w-8 h-8 ${
-        isUnlocked ? "text-yellow-500" : "text-gray-400 dark:text-gray-500"
-      }"></i>
-            </div>
-            <h4 class="text-sm font-bold mt-2 dark:text-gray-200">${
-              ach.title
-            }</h4>
-            <p class="text-xs text-gray-500 dark:text-gray-400">${
-              ach.description
-            }</p>
-        </div>
-        `;
-    })
-    .join("");
-  lucide.createIcons();
 }
 
 // --- HISTÓRICO DE VAGAS UI (NOVO) ---

@@ -1,4 +1,5 @@
 import { initAuth } from "./auth.js";
+import { db } from "./config.js";
 import { router } from "./router.js";
 import {
   toggleTheme,
@@ -6,6 +7,8 @@ import {
   resendVerificationEmail,
   toggleUserOnlineStatus,
 } from "./ui.js";
+
+export let manifest = {}; // Exporta o manifesto para ser usado em outras partes
 
 // --- PWA INSTALL LOGIC ---
 let deferredPrompt;
@@ -121,6 +124,16 @@ function showUpdateToast() {
 // --- INICIALIZAÇÃO E EVENT LISTENERS GLOBAIS ---
 
 async function initApp() {
+  // **NOVO**: Verifica se a URL é de um perfil público
+  const urlParams = new URLSearchParams(window.location.search);
+  const profileId = urlParams.get("profile");
+
+  if (profileId) {
+    // Se for um perfil público, renderiza a página e para a execução
+    router("publicProfile", { userId: profileId });
+    return;
+  }
+
   initTheme();
 
   // Indicador de Status Online/Offline
@@ -158,6 +171,14 @@ async function initApp() {
   const notificationsBtn = document.getElementById("notifications-btn");
   if (notificationsBtn)
     notificationsBtn.addEventListener("click", () => router("notifications"));
+
+  const headerMarketBtn = document.getElementById("header-market-btn");
+  if (headerMarketBtn)
+    headerMarketBtn.addEventListener("click", () => router("market"));
+
+  const headerGraxaBtn = document.getElementById("header-graxa-btn");
+  if (headerGraxaBtn)
+    headerGraxaBtn.addEventListener("click", () => router("graxa"));
 
   const statusToggle = document.getElementById("user-status-toggle");
   if (statusToggle)
