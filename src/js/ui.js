@@ -282,10 +282,25 @@ export function showConfirmation(
 }
 
 export async function showCompleteProfileModal() {
+  // **CORREÇÃO COMPLETA**: A função foi refatorada para incluir a inicialização
+  // dos seletores FIPE, o listener de imagem e a correção do submit do formulário.
   const modal = await openModal("completeProfileModal");
+
+  // 1. Corrige o submit do formulário para não recarregar a página.
   modal
-    .getElementById("public-profile-form")
-    .addEventListener("submit", API.savePublicProfile);
+    .querySelector("#public-profile-form")
+    .addEventListener("submit", (event) => {
+      API.savePublicProfile(event);
+    });
+
+  // 2. Inicializa os seletores de marca/modelo da FIPE.
+  initFipeSelectors();
+
+  // 3. Adiciona o listener para o preview da imagem.
+  const imageUrlInput = modal.querySelector("#public-moto-image-url");
+  imageUrlInput.addEventListener("input", () => {
+    updateImagePreview(imageUrlInput.value, modal);
+  });
 }
 
 export async function openDocumentsModal() {
@@ -521,9 +536,9 @@ export async function openPublicProfileEditor() {
 
     initFipeSelectors(publicProfile.fipeBrandCode, publicProfile.fipeModelCode);
 
-    imageUrlInput.addEventListener("input", () =>
-      updateImagePreview(imageUrlInput.value)
-    );
+    imageUrlInput.addEventListener("input", () => {
+      updateImagePreview(imageUrlInput.value, modal); // **CORREÇÃO**: Passa o modal para a função.
+    });
   } catch (error) {
     console.error("Erro ao carregar perfil público:", error);
     showNotification("Erro ao carregar seus dados. Tente novamente.", "error");

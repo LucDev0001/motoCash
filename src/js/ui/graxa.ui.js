@@ -35,13 +35,51 @@ export async function renderGraxa(container) {
  * Carrega a base de conhecimento e os dados de uso do usuário.
  */
 async function loadInitialData() {
-  // Carrega a base de conhecimento
-  const kbSnap = await db.collection("graxa_kb").get();
-  knowledgeBase = kbSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  // **OTIMIZAÇÃO: Implementa cache para a base de conhecimento**
+  const CACHE_KEY_KB = "graxa_kb_cache";
+  const CACHE_KEY_MANUALS = "graxa_manuals_cache";
+  const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 horas
 
-  // **NOVO**: Carrega a base de conhecimento dos manuais
-  const manualsKbSnap = await db.collection("graxa_manuals_kb").get();
-  manualsKnowledgeBase = manualsKbSnap.docs.map((doc) => doc.data());
+  const now = new Date().getTime();
+
+  // Função auxiliar para buscar e cachear dados
+  async function getCachedOrFetch(key, collectionName) {
+    const cachedItem = localStorage.getItem(key);
+    if (cachedItem) {
+      const { timestamp, data } = JSON.parse(cachedItem);
+      if (now - timestamp < CACHE_DURATION_MS) {
+        console.log(`[Graxa] Usando cache para ${collectionName}`);
+        return data; // Retorna dados do cache se não estiver expirado
+      }
+    }
+
+    // Se o cache não existe ou está expirado, busca no Firestore
+    console.log(`[Graxa] Buscando dados frescos para ${collectionName}`);
+    const snapshot = await db.collection(collectionName).get();
+    const data =
+      collectionName === "graxa_kb"
+        ? snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        : snapshot.docs.map((doc) => doc.data());
+
+    // Salva os novos dados e o timestamp no localStorage
+    localStorage.setItem(key, JSON.stringify({ timestamp: now, data }));
+    return data;
+  }
+
+  try {
+    // Usa a função de cache para carregar as duas bases de conhecimento
+    [knowledgeBase, manualsKnowledgeBase] = await Promise.all([
+      getCachedOrFetch(CACHE_KEY_KB, "graxa_kb"),
+      getCachedOrFetch(CACHE_KEY_MANUALS, "graxa_manuals_kb"),
+    ]);
+  } catch (error) {
+    console.error("Erro ao carregar base de conhecimento da Graxa:", error);
+    addMessage(
+      "bot",
+      "Desculpe, estou com problemas para acessar minha memória. Tente novamente mais tarde."
+    );
+    return; // Interrompe a execução se houver erro
+  }
 
   // Carrega os dados do usuário (status Pro e uso da assistente)
   const userRef = db

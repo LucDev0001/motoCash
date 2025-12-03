@@ -49,18 +49,41 @@ window.renderConversationDetails = renderConversationDetails;
 /**
  * Monitora o estado de autenticação do usuário.
  */
-auth.onAuthStateChanged((user) => {
+auth.onAuthStateChanged(async (user) => {
   if (user) {
-    // Usuário está logado
-    // TODO: Verificar se o usuário é um admin antes de mostrar o dashboard
-    console.log("✅ Admin logado:", user.email);
-    console.log("🔑 Seu UID de Admin é:", user.uid); // Esta linha mostrará seu ID
-    loginScreen.style.display = "none";
-    dashboardScreen.style.display = "block";
-    lucide.createIcons(); // Renderiza os ícones
-    initHeatmap(); // Inicializa o mapa de calor
-    initNavigation(); // Inicializa a navegação da sidebar
-    listenForDashboardUpdates(); // Inicia o listener para dados em tempo real
+    // **CORREÇÃO DE SEGURANÇA: Verifica se o usuário é um admin**
+    try {
+      const settingsRef = db
+        .collection("artifacts")
+        .doc(appId)
+        .collection("config")
+        .doc("app_settings");
+      const docSnap = await settingsRef.get();
+
+      if (docSnap.exists) {
+        const adminUids = docSnap.data().adminUids || [];
+        if (adminUids.includes(user.uid)) {
+          // Usuário é um admin, concede acesso.
+          console.log("✅ Admin verificado:", user.email);
+          loginScreen.style.display = "none";
+          dashboardScreen.style.display = "block";
+          lucide.createIcons();
+          initHeatmap();
+          initNavigation();
+          listenForDashboardUpdates();
+        } else {
+          // Usuário não é admin, nega o acesso.
+          throw new Error("Acesso negado. Permissões insuficientes.");
+        }
+      } else {
+        // Documento de configurações não encontrado.
+        throw new Error("Configurações de admin não encontradas.");
+      }
+    } catch (error) {
+      console.error("Falha na verificação de admin:", error.message);
+      loginError.textContent = "Acesso Negado.";
+      auth.signOut(); // Desloga o usuário não autorizado.
+    }
   } else {
     // Usuário está deslogado
     console.log("Nenhum admin logado.");
@@ -819,59 +842,28 @@ function listenForDashboardUpdates() {
   listenForAdminLogs(); // Agora esta função existe
 }
 
-async function processAndRenderData(usersData) {
-  document.getElementById("table-users-body").innerHTML =
-    '<tr><td colspan="4" class="text-center p-8 text-gray-400">Carregando dados de uso...</td></tr>';
-
+/**
+ * Processa os dados brutos dos usuários para atualizar as métricas do dashboard.
+ * Esta função é otimizada para ser leve e não fazer leituras extras.
+ * @param {Array} usersData - Dados brutos da coleção de usuários.
+ */
+function processAndRenderData(usersData) {
   try {
-    const usersSnapshot = await db
-      .collection("artifacts")
-      .doc(appId)
-      .collection("users")
-      .get(); // Usamos get() aqui para a contagem de registros, que não é em tempo real
-
-    const usersWithRecordCounts = await Promise.all(
-      usersData.map(async (user) => {
-        const doc = usersSnapshot.docs.find((d) => d.id === user.id);
-        if (!doc) return user;
-
-        const earningsPromise = doc.ref.collection("earnings").get();
-        const expensesPromise = doc.ref.collection("expenses").get();
-
-        const [earningsSnap, expensesSnap] = await Promise.all([
-          earningsPromise,
-          expensesPromise,
-        ]);
-
-        const totalRecords = earningsSnap.size + expensesSnap.size;
-
-        return {
-          id: doc.id,
-          ...doc.data(),
-          totalRecords: totalRecords,
-          earnings: earningsSnap.docs.map((d) => d.data()),
-          expenses: expensesSnap.docs.map((d) => d.data()),
-        };
-      })
-    );
-
-    allUsersData = usersWithRecordCounts; // Atualiza o cache global com os dados completos
+    allUsersData = usersData; // Atualiza o cache global com os dados brutos
 
     // --- Métricas Principais ---
-    const totalUsers = usersWithRecordCounts.length;
-    const onlineUsers = usersWithRecordCounts.filter(
-      (u) => u.status?.isOnline
-    ).length;
+    const totalUsers = usersData.length;
+    const onlineUsers = usersData.filter((u) => u.status?.isOnline).length;
 
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const monthlyActiveUsers = usersWithRecordCounts.filter((user) => {
+    const monthlyActiveUsers = usersData.filter((user) => {
       return user.status?.lastSeen?.toDate() >= thirtyDaysAgo;
     }).length;
 
     const oneDayAgo = new Date();
     oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-    const dailyActiveUsers = usersWithRecordCounts.filter((user) => {
+    const dailyActiveUsers = usersData.filter((user) => {
       return user.status?.lastSeen?.toDate() >= oneDayAgo;
     }).length;
 
@@ -879,23 +871,6 @@ async function processAndRenderData(usersData) {
       monthlyActiveUsers > 0
         ? (dailyActiveUsers / monthlyActiveUsers) * 100
         : 0;
-
-    const now = new Date();
-
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const totalRecordsThisMonth = usersWithRecordCounts.reduce((acc, user) => {
-      const userRecordsThisMonth = [...user.earnings, ...user.expenses].filter(
-        (record) => {
-          const recordDate = new Date(record.date + "T00:00:00");
-          return recordDate >= startOfMonth;
-        }
-      ).length;
-      return acc + userRecordsThisMonth;
-    }, 0);
-
-    const mostActiveUser = usersWithRecordCounts.sort(
-      (a, b) => b.totalRecords - a.totalRecords
-    )[0];
 
     document.getElementById("metric-total-users").textContent = totalUsers;
     document.getElementById("metric-online-users").textContent = onlineUsers;
@@ -906,52 +881,21 @@ async function processAndRenderData(usersData) {
       "metric-dau-mau-ratio"
     ).textContent = `${dauMauRatio.toFixed(1)}%`;
 
-    document.getElementById("metric-total-records").textContent =
-      totalRecordsThisMonth;
-    document.getElementById("metric-most-active-user").textContent =
-      mostActiveUser?.publicProfile?.name || mostActiveUser?.email || "N/A";
-
-    // --- Tabela de Ranking de Atividade ---
-    const usersTableBody = document.getElementById("table-users-body");
-    usersTableBody.innerHTML = ""; // Limpa a tabela
-
-    // Ordena por total de registros e pega os 10 mais ativos
-    const topUsers = usersWithRecordCounts
-      .sort((a, b) => b.totalRecords - a.totalRecords)
-      .slice(0, 10);
-
-    if (topUsers.length === 0) {
-      usersTableBody.innerHTML =
-        '<tr><td colspan="4" class="text-center p-8 text-gray-400">Nenhum usuário encontrado.</td></tr>';
-    } else {
-      topUsers.forEach((user) => {
-        const row = `
-        <tr class="text-sm text-gray-700 border-b">
-            <td class="p-3">${user.publicProfile?.name || "Não informado"}</td>
-            <td class="p-3">${user.email || user.id}</td>
-            <td class="p-3 font-bold">${user.totalRecords}</td>
-            <td class="p-3">
-                <span class="px-2 py-1 text-xs font-bold rounded-full ${
-                  user.status?.isOnline
-                    ? "bg-green-100 text-green-700"
-                    : "bg-gray-200 text-gray-600"
-                }">
-                    ${user.status?.isOnline ? "Online" : "Offline"}
-                </span>
-            </td>
-        </tr>
-      `;
-        usersTableBody.innerHTML += row;
-      });
-    }
+    // Métricas que exigem mais processamento podem ser atualizadas com menos frequência
+    // ou movidas para uma função separada chamada sob demanda.
+    // Por enquanto, vamos remover as mais pesadas do listener em tempo real.
+    document.getElementById("metric-total-records").textContent = "···";
+    document.getElementById("metric-most-active-user").textContent = "···";
+    document.getElementById("table-users-body").innerHTML =
+      '<tr><td colspan="4" class="text-center p-8 text-gray-400">Dados de ranking movidos para a aba "Usuários".</td></tr>';
 
     // --- Renderiza os Gráficos ---
-    renderNewUsersChart(usersWithRecordCounts);
-    renderRecordsActivityChart(usersWithRecordCounts);
-    renderUserHeatmap(usersWithRecordCounts);
-    await renderLocationReports(usersWithRecordCounts); // Adicionado await para garantir que os dados de localização sejam processados
-    renderCategoryDistributionChart(usersWithRecordCounts);
-    renderAllUsersTable(); // Renderiza a tabela completa na view de usuários
+    renderNewUsersChart(usersData);
+    renderUserHeatmap(usersData);
+    // Gráficos mais pesados podem ser movidos para suas respectivas abas também.
+    // renderRecordsActivityChart(usersData);
+    // renderCategoryDistributionChart(usersData);
+    // await renderLocationReports(usersData);
   } catch (error) {
     console.error("Erro ao carregar dados do dashboard:", error);
     alert(
@@ -959,8 +903,59 @@ async function processAndRenderData(usersData) {
     );
   } finally {
     // Garante que a animação do botão de refresh pare, mesmo se houver erro.
-    const btnIcon = document.querySelector("#refresh-data-btn i");
+    const btnIcon = document.querySelector("#refresh-dashboard-btn i");
     if (btnIcon) btnIcon.classList.remove("animate-spin");
+  }
+}
+
+/**
+ * **NOVA FUNÇÃO**
+ * Carrega os dados completos dos usuários (incluindo contagem de registros)
+ * e renderiza a tabela na aba "Usuários".
+ * Esta função é chamada apenas quando o admin acessa a aba de usuários.
+ */
+async function loadAndRenderAllUsers() {
+  const tableBody = document.getElementById("all-users-table-body");
+  if (!tableBody) return;
+
+  tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-gray-400">Carregando usuários e processando dados...</td></tr>`;
+
+  try {
+    const usersSnapshot = await db
+      .collection("artifacts")
+      .doc(appId)
+      .collection("users")
+      .get();
+
+    const usersWithRecordCounts = await Promise.all(
+      usersSnapshot.docs.map(async (doc) => {
+        const earningsPromise = doc.ref.collection("earnings").get();
+        const expensesPromise = doc.ref.collection("expenses").get();
+
+        const [earningsSnap, expensesSnap] = await Promise.all([
+          earningsPromise,
+          expensesPromise,
+        ]);
+
+        return {
+          id: doc.id,
+          ...doc.data(),
+          totalRecords: earningsSnap.size + expensesSnap.size,
+        };
+      })
+    );
+
+    // Ordena por total de registros para a renderização
+    usersWithRecordCounts.sort((a, b) => b.totalRecords - a.totalRecords);
+
+    // Atualiza o cache global com os dados completos
+    allUsersData = usersWithRecordCounts;
+
+    // Renderiza a tabela com os dados completos
+    renderAllUsersTable();
+  } catch (error) {
+    console.error("Erro ao carregar lista de usuários:", error);
+    tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-red-500">Erro ao carregar usuários.</td></tr>`;
   }
 }
 
