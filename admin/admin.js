@@ -68,7 +68,6 @@ auth.onAuthStateChanged(async (user) => {
           loginScreen.style.display = "none";
           dashboardScreen.style.display = "block";
           lucide.createIcons();
-          initHeatmap();
           initNavigation();
           listenForDashboardUpdates();
         } else {
@@ -76,8 +75,22 @@ auth.onAuthStateChanged(async (user) => {
           throw new Error("Acesso negado. Permissões insuficientes.");
         }
       } else {
-        // Documento de configurações não encontrado.
-        throw new Error("Configurações de admin não encontradas.");
+        // **CORREÇÃO DE EMERGÊNCIA**: Se o documento de config não existe,
+        // verifica se o usuário é o admin "mestre" e cria o documento.
+        const masterAdminUid = "SzH8GsUtuNPJCRvkMkBclnStVr73"; // UID de Luciano
+        if (user.uid === masterAdminUid) {
+          console.warn(
+            "Documento de configurações não encontrado. Criando um novo com o admin mestre."
+          );
+          await settingsRef.set({ adminUids: [masterAdminUid] });
+          // Recarrega a página para que o próximo login funcione com o doc recém-criado.
+          alert(
+            "Configuração inicial de admin criada. A página será recarregada. Por favor, faça login novamente."
+          );
+          window.location.reload();
+        } else {
+          throw new Error("Configurações de admin não encontradas.");
+        }
       }
     } catch (error) {
       console.error("Falha na verificação de admin:", error.message);
@@ -228,6 +241,11 @@ function navigateTo(viewId) {
   if (viewId === "view-companies") {
     listenForCompaniesUpdates();
   }
+  // **CORREÇÃO**: Chama a função para carregar a lista de usuários ao entrar na view.
+  if (viewId === "view-users") {
+    // A função loadAndRenderAllUsers já existe e faz o trabalho pesado.
+    loadAndRenderAllUsers();
+  }
   if (viewId === "view-approvals") {
     listenForPendingCompanies();
   }
@@ -243,8 +261,9 @@ function navigateTo(viewId) {
     listenForAdminLogs();
   }
   if (viewId === "view-dashboard") {
-    // Re-inicializa o mapa de calor apenas quando a aba do dashboard é selecionada
+    // **CORREÇÃO**: Inicializa e renderiza o mapa de calor apenas quando a view está visível.
     initHeatmap();
+    renderUserHeatmap(allUsersData); // Re-renderiza com os dados atuais
     listenForDashboardUpdates();
   }
   if (viewId === "view-settings") {
@@ -831,6 +850,7 @@ function listenForDashboardUpdates() {
 
       // Processa e renderiza os dados
       await processAndRenderData(usersData);
+      await calculateAndRenderHeavyMetrics(); // **NOVO**: Calcula as métricas pesadas separadamente
     },
     (error) => {
       console.error("Erro no listener do dashboard:", error);
@@ -881,21 +901,9 @@ function processAndRenderData(usersData) {
       "metric-dau-mau-ratio"
     ).textContent = `${dauMauRatio.toFixed(1)}%`;
 
-    // Métricas que exigem mais processamento podem ser atualizadas com menos frequência
-    // ou movidas para uma função separada chamada sob demanda.
-    // Por enquanto, vamos remover as mais pesadas do listener em tempo real.
-    document.getElementById("metric-total-records").textContent = "···";
-    document.getElementById("metric-most-active-user").textContent = "···";
-    document.getElementById("table-users-body").innerHTML =
-      '<tr><td colspan="4" class="text-center p-8 text-gray-400">Dados de ranking movidos para a aba "Usuários".</td></tr>';
-
     // --- Renderiza os Gráficos ---
     renderNewUsersChart(usersData);
     renderUserHeatmap(usersData);
-    // Gráficos mais pesados podem ser movidos para suas respectivas abas também.
-    // renderRecordsActivityChart(usersData);
-    // renderCategoryDistributionChart(usersData);
-    // await renderLocationReports(usersData);
   } catch (error) {
     console.error("Erro ao carregar dados do dashboard:", error);
     alert(
@@ -903,6 +911,104 @@ function processAndRenderData(usersData) {
     );
   } finally {
     // Garante que a animação do botão de refresh pare, mesmo se houver erro.
+    const btnIcon = document.querySelector("#refresh-dashboard-btn i");
+    if (btnIcon) btnIcon.classList.remove("animate-spin");
+  }
+}
+
+/**
+ * **NOVO**: Calcula e renderiza as métricas que exigem mais processamento.
+ * Esta função é chamada sob demanda para não sobrecarregar o listener em tempo real.
+ */
+async function calculateAndRenderHeavyMetrics() {
+  // Mostra estado de carregamento
+  document.getElementById("metric-total-records").textContent = "···";
+  document.getElementById("metric-most-active-user").textContent = "···";
+  document.getElementById("table-users-body").innerHTML =
+    '<tr><td colspan="4" class="text-center p-8 text-gray-400">Calculando ranking...</td></tr>';
+
+  try {
+    // Busca todos os registros de ganhos e despesas de todos os usuários
+    const earningsPromises = allUsersData.map((user) =>
+      db
+        .collection("artifacts")
+        .doc(appId)
+        .collection("users")
+        .doc(user.id)
+        .collection("earnings")
+        .get()
+    );
+    const expensesPromises = allUsersData.map((user) =>
+      db
+        .collection("artifacts")
+        .doc(appId)
+        .collection("users")
+        .doc(user.id)
+        .collection("expenses")
+        .get()
+    );
+
+    const allEarningsSnapshots = await Promise.all(earningsPromises);
+    const allExpensesSnapshots = await Promise.all(expensesPromises);
+
+    let allRecords = [];
+    const userRecordCounts = {};
+
+    allUsersData.forEach((user, index) => {
+      const earnings = allEarningsSnapshots[index].docs.map((doc) => ({
+        ...doc.data(),
+        type: "earning",
+      }));
+      const expenses = allExpensesSnapshots[index].docs.map((doc) => ({
+        ...doc.data(),
+        type: "expense",
+      }));
+
+      const userRecords = [...earnings, ...expenses];
+      allRecords.push(...userRecords);
+
+      userRecordCounts[user.id] = {
+        count: userRecords.length,
+        name: user.publicProfile?.name || user.email,
+        email: user.email,
+        status: user.status,
+      };
+    });
+
+    // 1. Calcula Total de Registros no Mês
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const monthlyRecords = allRecords.filter((record) => {
+      const recordDate = new Date(record.date + "T00:00:00"); // Adiciona T00:00:00 para evitar problemas de fuso
+      return recordDate >= thirtyDaysAgo;
+    }).length;
+    document.getElementById("metric-total-records").textContent =
+      monthlyRecords;
+
+    // 2. Calcula Usuário Mais Ativo
+    const sortedUsers = Object.values(userRecordCounts).sort(
+      (a, b) => b.count - a.count
+    );
+    const mostActiveUser = sortedUsers[0];
+    if (mostActiveUser) {
+      document.getElementById("metric-most-active-user").textContent =
+        mostActiveUser.name;
+    }
+
+    // 3. Renderiza a tabela de Ranking de Atividade
+    const top5Users = sortedUsers.slice(0, 5);
+    renderUsersRankingTable(top5Users);
+
+    // 4. Renderiza o gráfico de atividade de registros
+    renderRecordsActivityChart(allRecords);
+  } catch (error) {
+    console.error("Erro ao calcular métricas pesadas:", error);
+    document.getElementById("metric-total-records").textContent = "Erro";
+    document.getElementById("metric-most-active-user").textContent = "Erro";
+    document.getElementById("table-users-body").innerHTML =
+      '<tr><td colspan="4" class="text-center p-8 text-red-500">Erro ao calcular ranking.</td></tr>';
+  } finally {
+    // Garante que a animação do botão de refresh pare
     const btnIcon = document.querySelector("#refresh-dashboard-btn i");
     if (btnIcon) btnIcon.classList.remove("animate-spin");
   }
@@ -929,18 +1035,29 @@ async function loadAndRenderAllUsers() {
 
     const usersWithRecordCounts = await Promise.all(
       usersSnapshot.docs.map(async (doc) => {
-        const earningsPromise = doc.ref.collection("earnings").get();
-        const expensesPromise = doc.ref.collection("expenses").get();
+        // **CORREÇÃO**: A sintaxe correta para a v8 do SDK é .get() em query.
+        const earningsQuery = db
+          .collection("artifacts")
+          .doc(appId)
+          .collection("users")
+          .doc(doc.id)
+          .collection("earnings");
+        const expensesQuery = db
+          .collection("artifacts")
+          .doc(appId)
+          .collection("users")
+          .doc(doc.id)
+          .collection("expenses");
 
-        const [earningsSnap, expensesSnap] = await Promise.all([
-          earningsPromise,
-          expensesPromise,
+        const [earningsCountSnap, expensesCountSnap] = await Promise.all([
+          earningsQuery.get(),
+          expensesQuery.get(),
         ]);
 
         return {
           id: doc.id,
           ...doc.data(),
-          totalRecords: earningsSnap.size + expensesSnap.size,
+          totalRecords: earningsCountSnap.size + expensesCountSnap.size,
         };
       })
     );
@@ -2217,12 +2334,13 @@ function renderUserHeatmap(users) {
 
 /**
  * Renderiza o gráfico de atividade de registros.
- * @param {Array} users - Lista de todos os usuários com seus registros.
+ * @param {Array} allRecords - Lista de todos os registros (ganhos e despesas).
  */
-function renderRecordsActivityChart(users) {
+function renderRecordsActivityChart(allRecords) {
   const chartCanvas = document.getElementById("chart-records-activity");
   if (window.myRecordsChart) window.myRecordsChart.destroy(); // Destroi gráfico antigo
-  const ctx = chartCanvas.getContext("2d");
+  const ctx = chartCanvas?.getContext("2d");
+  if (!ctx) return;
 
   const labels = [];
   const data = [];
@@ -2238,16 +2356,10 @@ function renderRecordsActivityChart(users) {
     const startOfDay = new Date(date.setHours(0, 0, 0, 0));
     const endOfDay = new Date(date.setHours(23, 59, 59, 999));
 
-    let recordsOnDay = 0;
-    users.forEach((user) => {
-      const userRecordsOnDay = [...user.earnings, ...user.expenses].filter(
-        (record) => {
-          const recordDate = new Date(record.date + "T00:00:00");
-          return recordDate >= startOfDay && recordDate <= endOfDay;
-        }
-      ).length;
-      recordsOnDay += userRecordsOnDay;
-    });
+    const recordsOnDay = allRecords.filter((record) => {
+      const recordDate = new Date(record.date + "T00:00:00");
+      return recordDate >= startOfDay && recordDate <= endOfDay;
+    }).length;
 
     data.push(recordsOnDay);
   }
@@ -2276,6 +2388,41 @@ function renderRecordsActivityChart(users) {
       },
     },
   });
+}
+
+/**
+ * **NOVO**: Renderiza a tabela de ranking de atividade no dashboard.
+ * @param {Array} topUsers - Lista dos usuários mais ativos.
+ */
+function renderUsersRankingTable(topUsers) {
+  const tableBody = document.getElementById("table-users-body");
+  if (!tableBody) return;
+
+  if (topUsers.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-gray-400">Nenhum usuário com atividade.</td></tr>`;
+    return;
+  }
+
+  tableBody.innerHTML = topUsers
+    .map(
+      (user) => `
+        <tr class="text-sm text-gray-700 border-b">
+            <td class="p-3 font-medium">${user.name}</td>
+            <td class="p-3">${user.email}</td>
+            <td class="p-3 font-bold text-center">${user.count}</td>
+            <td class="p-3">
+                <span class="px-2 py-1 text-xs font-bold rounded-full ${
+                  user.status?.isOnline
+                    ? "bg-green-100 text-green-700"
+                    : "bg-gray-200 text-gray-600"
+                }">
+                    ${user.status?.isOnline ? "Online" : "Offline"}
+                </span>
+            </td>
+        </tr>
+    `
+    )
+    .join("");
 }
 
 // Helper Functions for User Management
@@ -2529,13 +2676,6 @@ function initGraxaKbView() {
   uploadBtn.addEventListener("click", () => fileInput.click());
   fileInput.addEventListener("change", handleKbJsonUpload);
 
-  // **NOVO**: Lógica para o upload do JSON dos manuais
-  const pdfUploadBtn = document.getElementById("kb-pdf-upload-btn");
-  const pdfFileInput = document.getElementById("kb-pdf-json-upload");
-  pdfUploadBtn.addEventListener("click", () => pdfFileInput.click());
-  pdfFileInput.addEventListener("change", handlePdfKbJsonUpload);
-
-  // **NOVO**: Adiciona listener para o botão de limpar tudo
   const clearAllBtn = document.getElementById("kb-clear-all-btn");
   clearAllBtn.addEventListener("click", clearAllKbEntries);
 }
@@ -2549,7 +2689,7 @@ function listenForKbUpdates() {
     .onSnapshot((snapshot) => {
       const tableBody = document.getElementById("kb-table-body");
       if (snapshot.empty) {
-        tableBody.innerHTML = `<tr><td colspan="3" class="text-center p-8 text-gray-400">Nenhum conhecimento cadastrado.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-gray-400">Nenhum conhecimento cadastrado.</td></tr>`;
         return;
       }
       tableBody.innerHTML = snapshot.docs
@@ -2558,10 +2698,15 @@ function listenForKbUpdates() {
           return `
           <tr class="text-sm text-gray-700 border-b">
             <td class="p-3 font-medium">${entry.question}</td>
+            <td class="p-3 font-mono text-xs">${entry.source || "geral"}</td>
             <td class="p-3 text-xs text-gray-500">${entry.keywords}</td>
             <td class="p-3 flex items-center space-x-2">
-              <button onclick="editKbEntry('${doc.id}')" class="text-blue-600 hover:text-blue-800"><i data-lucide="edit" class="w-4 h-4"></i></button>
-              <button onclick="deleteKbEntry('${doc.id}')" class="text-red-600 hover:text-red-800"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+              <button onclick="editKbEntry('${
+                doc.id
+              }')" class="text-blue-600 hover:text-blue-800"><i data-lucide="edit" class="w-4 h-4"></i></button>
+              <button onclick="deleteKbEntry('${
+                doc.id
+              }')" class="text-red-600 hover:text-red-800"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
             </td>
           </tr>
         `;
@@ -2582,6 +2727,7 @@ async function saveKbEntry(e) {
     question: document.getElementById("kb-question").value,
     answer: document.getElementById("kb-answer").value,
     keywords: document.getElementById("kb-keywords").value,
+    source: "manual", // Fonte padrão para edições/criações manuais
   };
 
   const collectionRef = db.collection("graxa_kb");
@@ -2655,23 +2801,9 @@ async function handleKbJsonUpload(event) {
   reader.onload = async (e) => {
     try {
       const parsedJson = JSON.parse(e.target.result);
-      let entriesFromFile = [];
-
-      // **CORREÇÃO**: Lógica para extrair dados da estrutura gerada pelo PHP
-      if (Array.isArray(parsedJson)) {
-        // Suporta o formato simples de array
-        entriesFromFile = parsedJson;
-      } else if (parsedJson.general && parsedJson.motos) {
-        // Suporta o formato complexo do gerador_conhecimento.php
-        entriesFromFile = [...parsedJson.general];
-        parsedJson.motos.forEach((moto) => {
-          if (moto.data && Array.isArray(moto.data)) {
-            entriesFromFile.push(...moto.data);
-          }
-        });
-      } else {
+      if (!Array.isArray(parsedJson)) {
         throw new Error(
-          "Formato de JSON não reconhecido. Deve ser um array de objetos ou a estrutura gerada pelo script PHP."
+          "Formato de JSON inválido. O arquivo deve conter um array de objetos."
         );
       }
 
@@ -2683,7 +2815,7 @@ async function handleKbJsonUpload(event) {
       );
 
       // 2. Filtra as entradas do arquivo, mantendo apenas as que não existem
-      const newEntries = entriesFromFile.filter(
+      const newEntries = parsedJson.filter(
         (entry) => !existingQuestions.has(entry.question)
       );
 
@@ -2696,18 +2828,30 @@ async function handleKbJsonUpload(event) {
       }
 
       // 3. Valida os campos das novas entradas
-      const validEntries = newEntries.filter(
+      let validEntries = newEntries.filter(
         (entry) => entry.question && entry.answer && entry.keywords
       );
 
+      // **NOVO**: Pergunta pela fonte do conhecimento
+      const defaultFileName = file.name.replace(".json", "").replace(/_/g, "-");
+      const source =
+        prompt(
+          "Qual a 'fonte' deste conhecimento? (Ex: manual-cg-160, leis-transito, geral)",
+          defaultFileName
+        ) || "importado";
+
+      // Adiciona a fonte a cada entrada válida
+      validEntries = validEntries.map((entry) => ({ ...entry, source }));
+
       if (
         !confirm(
-          `Foram encontrados ${validEntries.length} conhecimentos válidos no arquivo. Deseja adicioná-los à base de dados?` +
+          `Foram encontrados ${validEntries.length} conhecimentos válidos no arquivo para a fonte '${source}'. Deseja importá-los?` +
             (skippedCount > 0
-              ? ` (${skippedCount} duplicados foram ignorados)`
+              ? `\n(${skippedCount} duplicados foram ignorados)`
               : "")
         )
       ) {
+        event.target.value = null; // Limpa o input
         return;
       }
 
@@ -2721,66 +2865,13 @@ async function handleKbJsonUpload(event) {
 
       await batch.commit();
       alert(
-        `${validEntries.length} conhecimentos foram importados com sucesso! ${skippedCount} duplicados foram ignorados.`
+        `${validEntries.length} conhecimentos da fonte '${source}' foram importados com sucesso! ${skippedCount} duplicados foram ignorados.`
       );
     } catch (error) {
       console.error("Erro ao importar JSON:", error);
       alert("Erro ao processar o arquivo JSON: " + error.message);
     } finally {
       // Limpa o input para permitir o upload do mesmo arquivo novamente
-      event.target.value = null;
-    }
-  };
-  reader.readAsText(file);
-}
-
-/**
- * **NOVO**: Lida com o upload do JSON gerado a partir dos PDFs dos manuais.
- * @param {Event} event - O evento de change do input de arquivo.
- */
-async function handlePdfKbJsonUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    try {
-      const entries = JSON.parse(e.target.result);
-      if (!Array.isArray(entries)) {
-        throw new Error("O arquivo JSON deve conter um array de objetos.");
-      }
-
-      const validEntries = entries.filter(
-        (entry) => entry.moto && entry.content
-      );
-
-      if (
-        !confirm(
-          `Foram encontrados ${validEntries.length} trechos de manuais no arquivo. Deseja importá-los para a base de conhecimento avançada? (Isso pode demorar um pouco)`
-        )
-      ) {
-        return;
-      }
-
-      alert(
-        "Iniciando importação... Por favor, aguarde a mensagem de sucesso."
-      );
-
-      const batch = db.batch();
-      const collectionRef = db.collection("graxa_manuals_kb"); // Nova coleção
-
-      validEntries.forEach((entry) => {
-        const docRef = collectionRef.doc();
-        batch.set(docRef, entry);
-      });
-
-      await batch.commit();
-      alert(
-        `${validEntries.length} trechos de manuais foram importados com sucesso!`
-      );
-    } catch (error) {
-      alert("Erro ao processar o arquivo JSON dos manuais: " + error.message);
-    } finally {
       event.target.value = null;
     }
   };

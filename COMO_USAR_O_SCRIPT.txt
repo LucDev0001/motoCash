@@ -1,0 +1,61 @@
+Guia Rápido: Como usar o script para gerar JSON de manuais de moto
+===================================================================
+
+Este guia explica como executar o script `pdf_to_graxa.py` para converter
+um manual de moto em PDF para um arquivo JSON que a assistente Graxa consegue ler.
+
+
+Pré-requisitos:
+----------------
+
+1.  **Python Instalado:** Você precisa ter o Python instalado no seu computador.
+    Para verificar, abra um terminal (ou Prompt de Comando) e digite:
+    `python3 --version`
+    (Em alguns sistemas mais antigos ou no Windows, o comando pode ser `python --version`. O erro que você viu indica que no seu caso é `python3`).
+
+
+Passo a Passo:
+--------------
+
+1.  **Criar e Ativar um Ambiente Virtual:**
+    O seu sistema protege a instalação principal do Python. Para instalar as dependências do script de forma segura, vamos criar um ambiente isolado.
+    
+    a. **Navegue até a pasta do projeto** no seu terminal:
+       `cd /opt/lampp/htdocs/motoCash/`
+
+    b. **Crie o ambiente virtual** (isso só precisa ser feito uma vez):
+       `python3 -m venv .venv`
+
+    c. **Ative o ambiente** (você precisará fazer isso toda vez que for rodar o script em um novo terminal):
+       `source .venv/bin/activate`
+       (Você verá `(.venv)` no início da linha do seu terminal, indicando que o ambiente está ativo).
+
+2.  **Instalar as Dependências (dentro do ambiente ativo):**
+    Com o ambiente ativo, execute o comando para instalar as bibliotecas. Agora ele vai funcionar:
+    `pip install pdfplumber google-generativeai`
+
+2.  **Colocar o PDF na Pasta:**
+    Copie o arquivo PDF do manual que você quer processar para dentro da pasta
+    principal do projeto (`/opt/lampp/htdocs/motoCash/`).
+
+3.  **Configurar o Script:**
+    Abra o arquivo `pdf_to_graxa.py` em um editor de código e edite as 3 últimas linhas:
+    - `ARQUIVO_PDF`: Coloque o nome exato do seu arquivo PDF (ex: "manual_fazer250.pdf").
+    - `NOME_MOTO`: Dê um nome para a moto (ex: "Fazer 250 FZ25").
+    - `NOME_ARQUIVO_SAIDA`: Defina o nome do arquivo JSON que será gerado (ex: "fazer-250-fz25.json").
+
+4.  **Executar o Script:**
+    No seu terminal, ainda dentro da pasta do projeto, execute o comando:
+    `python pdf_to_graxa.py`
+    (Com o ambiente virtual ativo, você pode usar `python` em vez de `python3`).
+    O script vai começar a processar o PDF e se comunicar com a IA. Aguarde a mensagem "✨ Sucesso!".
+
+5.  **Mover o Arquivo Gerado:**
+    Após a execução, um novo arquivo JSON terá sido criado. Mova este arquivo para a pasta:
+    `src/data/manuals/`
+
+6.  **(Opcional) Desativar o Ambiente:**
+    Quando terminar, você pode desativar o ambiente virtual digitando:
+    `deactivate`
+
+Pronto! A Graxa agora terá o conhecimento do novo manual.

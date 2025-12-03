@@ -109,3 +109,43 @@ nav {
     opacity: 0.7;
   }
 }
+
+/* Adicione ao final de /src/css/styles.css */
+
+@keyframes slide-in-bottom {
+  0% {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-bottom {
+  animation: slide-in-bottom 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes typing-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-4px);
+  }
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #a1a1aa; /* zinc-400 */
+  border-radius: 50%;
+  animation: typing-bounce 1.2s infinite ease-in-out;
+}
+
+.dark .typing-dot {
+  background-color: #71717a; /* zinc-500 */
+}

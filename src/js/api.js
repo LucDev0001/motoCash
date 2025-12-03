@@ -286,7 +286,7 @@ export async function setUserOnlineStatus(isOnline) {
 }
 
 export function savePublicProfile(event) {
-  event.preventDefault();
+  if (event) event.preventDefault();
   if (!currentUser) return;
 
   const name = document.getElementById("public-name").value;
@@ -673,6 +673,19 @@ export function loadDashboardData(p, shiftFilter, updateCallback) {
     currentStats = stats;
     updateCallback(stats, filtered, lineChartData, monthlyGoal);
 
+    // **CORREÇÃO**: Verifica se o usuário é Apoiador para mostrar a Análise Pro
+    const isPro = userDoc.data()?.isPro || false;
+    const proAnalysisSection = document.getElementById("pro-analysis-section");
+    if (proAnalysisSection) {
+      if (isPro) {
+        proAnalysisSection.classList.remove("hidden");
+        // Chama a função para renderizar o gráfico avançado
+        renderProAnalysisChart();
+      } else {
+        proAnalysisSection.classList.add("hidden");
+      }
+    }
+
     // Lógica para notificar meta atingida
     if (
       p === "month" &&
@@ -722,6 +735,61 @@ export function loadDashboardData(p, shiftFilter, updateCallback) {
     earningsUnsub();
     expensesUnsub();
   };
+}
+
+/**
+ * **NOVO**: Renderiza o gráfico de análise avançada para usuários Pro.
+ * Compara os ganhos da semana atual com a semana anterior.
+ */
+async function renderProAnalysisChart() {
+  const chartCanvas = document.getElementById("chart-pro-analysis");
+  if (!chartCanvas) return;
+  if (window.myProChart) window.myProChart.destroy();
+
+  const ctx = chartCanvas.getContext("2d");
+
+  // Busca os dados das duas semanas em paralelo
+  const [currentWeekEarnings, lastWeekEarnings] = await Promise.all([
+    getEarningsForPeriod("week"),
+    getEarningsForPeriod("last-week"),
+  ]);
+
+  const processWeekData = (earnings) => {
+    const dailyTotals = [0, 0, 0, 0, 0, 0, 0]; // Seg a Dom
+    earnings.forEach((earning) => {
+      const dayOfWeek = new Date(earning.date + "T12:00:00").getDay(); // 0=Dom, 1=Seg
+      const index = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Ajusta para Seg=0, Dom=6
+      dailyTotals[index] += earning.totalValue;
+    });
+    return dailyTotals;
+  };
+
+  const currentWeekData = processWeekData(currentWeekEarnings);
+  const lastWeekData = processWeekData(lastWeekEarnings);
+
+  window.myProChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+      datasets: [
+        {
+          label: "Semana Passada",
+          data: lastWeekData,
+          backgroundColor: "rgba(107, 114, 128, 0.5)", // Cinza
+          borderColor: "rgba(107, 114, 128, 1)",
+          borderWidth: 1,
+        },
+        {
+          label: "Semana Atual",
+          data: currentWeekData,
+          backgroundColor: "rgba(251, 191, 36, 0.8)", // Amarelo
+          borderColor: "rgba(251, 191, 36, 1)",
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: { responsive: true, maintainAspectRatio: false },
+  });
 }
 
 // --- CRUD API ---
@@ -1295,15 +1363,28 @@ export async function saveOdometer() {
     .set({ odometer: parseInt(odometer) }, { merge: true });
   showNotification("Quilometragem salva!", "Sucesso");
 }
+/**
+ * Salva um novo item de manutenção ou atualiza um existente.
+ * Pode ser chamado por um formulário (com evento) ou pela Graxa (com prefillData).
+ * @param {Event|null} e - O evento do formulário, se houver.
+ * @param {object|null} prefillData - Dados pré-preenchidos vindos da Graxa.
+ */
+export async function saveMaintenanceItem(e, prefillData = null) {
+  if (e) e.preventDefault();
 
-export async function saveMaintenanceItem(e) {
-  e.preventDefault();
-  const id = document.getElementById("maintenance-item-id").value;
-  const name = document.getElementById("maintenance-item-name").value;
-  const interval = parseInt(
-    document.getElementById("maintenance-item-interval").value
-  );
-  const category = document.getElementById("maintenance-item-category").value;
+  let id, name, interval, category;
+
+  if (prefillData) {
+    ({ name, interval, category } = prefillData);
+    interval = parseInt(interval);
+  } else {
+    id = document.getElementById("maintenance-item-id").value;
+    name = document.getElementById("maintenance-item-name").value;
+    interval = parseInt(
+      document.getElementById("maintenance-item-interval").value
+    );
+    category = document.getElementById("maintenance-item-category").value;
+  }
 
   const userRef = db
     .collection("artifacts")
@@ -1333,7 +1414,9 @@ export async function saveMaintenanceItem(e) {
   }
 
   await userRef.set({ maintenanceItems: items }, { merge: true });
-  closeModal();
+  if (!prefillData) {
+    closeModal(); // Fecha o modal apenas se a ação veio do formulário
+  }
   showNotification("Item de manutenção salvo!", "Sucesso");
 }
 

@@ -1,0 +1,312 @@
+[
+  {
+    "question": "Qual o óleo lubrificante recomendado para o motor da motocicleta?",
+    "answer": "<p>O óleo lubrificante recomendado para o motor da motocicleta é o <strong>ÓLEO GENUÍNO HONDA SAE 10W-30 SL JASO MA</strong>, que é semissintético de última geração e formulado com aditivos de alta tecnologia.</p>",
+    "keywords": "óleo, lubrificante, motor, recomendado, honda, 10w-30, sl, jaso ma, semissintético, tecnologia"
+  },
+  {
+    "question": "Qual óleo alternativo posso usar se o óleo genuíno Honda não estiver disponível?",
+    "answer": "<p>Na indisponibilidade do óleo genuíno Honda, você poderá usar o óleo recomendado <strong>Mobil Super Moto Authentic 10W-30</strong>.</p>",
+    "keywords": "óleo, substituto, alternativo, mobil, 10w-30, honda, indisponibilidade"
+  },
+  {
+    "question": "Com que frequência devo verificar o nível de óleo do motor?",
+    "answer": "<p>Você deve verificar o nível de óleo do motor <strong>diariamente</strong>, antes de pilotar a motocicleta, e adicionar se necessário.</p>",
+    "keywords": "óleo, nível, verificar, frequência, motor, diariamente"
+  },
+  {
+    "question": "Qual o período de garantia da motocicleta Honda?",
+    "answer": "<p>A Honda garante a motocicleta nova por <strong>36 (trinta e seis) meses</strong>, a contar da data de entrega ao cliente, contra defeitos de material ou fabricação, englobando a garantia legal de 90 dias.</p>",
+    "keywords": "garantia, período, duração, meses"
+  },
+  {
+    "question": "Onde devem ser realizados os reparos em garantia?",
+    "answer": "<p>Os reparos em garantia deverão ser executados em qualquer <strong>Concessionária de motocicletas Honda no território nacional</strong>.</p>",
+    "keywords": "garantia, reparos, onde, concessionária"
+  },
+  {
+    "question": "Qual a validade da garantia da bateria?",
+    "answer": "<p>A garantia da bateria terá validade de <strong>1 ano sem limite de quilometragem</strong>, a partir da data de entrega da motocicleta ao cliente.</p>",
+    "keywords": "garantia, bateria, validade, duração, quilometragem"
+  },
+  {
+    "question": "O que é necessário apresentar para acionar a garantia?",
+    "answer": "<p>Para qualquer reclamação ou serviço dentro da garantia, é necessário apresentar o <strong>manual do Proprietário/Certificado de Garantia</strong>.</p>",
+    "keywords": "garantia, acionar, documentos, manual, certificado"
+  },
+  {
+    "question": "Quais são as responsabilidades do proprietário para manter a garantia?",
+    "answer": "<p>O proprietário deve:</p><ul><li>Efetuar as inspeções e manutenções recomendadas.</li><li>Notificar imediatamente a concessionária Honda após constatar alguma irregularidade.</li><li>Apresentar o Certificado de Garantia ao solicitar reparos.</li><li>Garantir que as revisões periódicas estipuladas na tabela de manutenção sejam executadas e o certificado preenchido e assinado pela concessionária.</li></ul>",
+    "keywords": "garantia, responsabilidades, proprietário, manutenção, inspeções, notificação, certificado, revisões"
+  },
+  {
+    "question": "As despesas de mão de obra para as revisões são gratuitas?",
+    "answer": "<p>As despesas de mão de obra para a <strong>1ª e 2ª revisão serão gratuitas</strong> se realizadas dentro do período programado.</p>",
+    "keywords": "revisão, mão de obra, gratuita, custo, 1ª revisão, 2ª revisão"
+  },
+  {
+    "question": "Quais itens de manutenção não são cobertos pela garantia e são responsabilidade do proprietário?",
+    "answer": "<p>Os itens de manutenção não cobertos pela garantia incluem:</p><ul><li>Calços de ajuste de válvulas, juntas, guarnições, retentores, anéis de vedação e velas de ignição.</li><li>Custos de filtros, lubrificantes, combustíveis e materiais de limpeza.</li><li>Serviços de ajuste e limpeza não inclusos nas revisões gratuitas.</li></ul>",
+    "keywords": "garantia, não coberto, manutenção, proprietário, custos, filtros, lubrificantes, velas, juntas, retentores"
+  },
+  {
+    "question": "Quais componentes com desgaste natural têm cobertura de garantia?",
+    "answer": "<p>Componentes que sofrem desgaste natural, como pneus, lâmpadas e peças do sistema de freio, estão cobertos pela garantia legal de <strong>90 (noventa) dias</strong> para problemas decorrentes de defeitos de peças, fabricação ou montagem. Após este período, todas as despesas são de responsabilidade do proprietário.</p>",
+    "keywords": "garantia, desgaste natural, pneus, lâmpadas, freio, cobertura, 90 dias, peças"
+  },
+  {
+    "question": "Danos por oxidação ou corrosão são cobertos pela garantia?",
+    "answer": "<p>Não, <strong>oxidação/corrosão</strong> provenientes da utilização, maresia, exposição a ambiente corrosivo, lavagem incorreta ou com produtos agressivos não são cobertos pela garantia.</p>",
+    "keywords": "garantia, oxidação, corrosão, maresia, lavagem, não coberto"
+  },
+  {
+    "question": "O uso de combustíveis ou lubrificantes não especificados anula a garantia?",
+    "answer": "<p>Não, danos ocasionados pelo uso de <strong>combustíveis ou lubrificantes não especificados ou de baixa qualidade</strong> não são cobertos pela garantia.</p>",
+    "keywords": "garantia, combustível, lubrificante, não especificado, baixa qualidade, danos"
+  },
+  {
+    "question": "Danos ao sistema elétrico por acessórios não originais são cobertos pela garantia?",
+    "answer": "<p>Não, <strong>danos ao sistema elétrico</strong> decorrentes do uso de acessórios não originais (alarmes, rastreadores, farol auxiliar, lâmpadas xenon) ou auxílio externo para partida não são cobertos pela garantia.</p>",
+    "keywords": "garantia, sistema elétrico, acessórios não originais, alarme, rastreador, farol xenon, não coberto"
+  },
+  {
+    "question": "Em quais situações a garantia da motocicleta pode ser cancelada?",
+    "answer": "<p>A garantia pode ser cancelada se:</p><ul><li>Ocorrer decurso do prazo legal.</li><li>Não houver o cumprimento das recomendações dos manuais ou termo de Garantia.</li><li>Ocorrer adulteração do hodômetro.</li><li>A motocicleta for utilizada além da capacidade estabelecida (excesso de passageiros, carga, reboque).</li><li>Ocorrerem sinistros por fenômenos naturais ou agente externo (incêndios, imersão, acidentes, roubos).</li><li>Reparos ou revisões forem efetuadas fora das concessionárias Honda no território nacional.</li><li>Qualquer revisão não for executada dentro do prazo estipulado (com tolerância específica para cada revisão).</li><li>For constatada utilização não prevista, como em competições.</li><li>Forem feitas alterações de característica não autorizadas pelo fabricante.</li><li>For constatado uso de peças ou acessórios não originais que afetem a qualidade e segurança.</li></ul>",
+    "keywords": "garantia, cancelamento, extinção, regras, hodômetro, revisões, acessórios, peças não originais, acidentes, uso indevido"
+  },
+  {
+    "question": "Quais são os períodos e tolerâncias para as revisões com mão de obra gratuita?",
+    "answer": "<p>As duas primeiras revisões (1.000 km e 6.000 km) terão mão de obra gratuita. Os prazos são:</p><ul><li><strong>1.000 km:</strong> de 900 km até 1.100 km ou 6 meses, o que ocorrer primeiro.</li><li><strong>6.000 km:</strong> de 5.400 km até 6.600 km ou 12 meses, o que ocorrer primeiro.</li></ul><p>Há tolerância de 1 dia útil quando o prazo do término coincide com sábado, domingo ou feriado.</p>",
+    "keywords": "revisões, mão de obra gratuita, quilometragem, meses, tolerância, 1000 km, 6000 km, prazo"
+  },
+  {
+    "question": "Quais os riscos de usar combustível de baixa qualidade ou adulterado?",
+    "answer": "<p>O uso de combustível de baixa qualidade ou adulterado pode:</p><ul><li>Diminuir o desempenho da motocicleta.</li><li>Aumentar o consumo de combustível e óleo.</li><li>Comprometer a vida útil do motor e, em casos extremos, causar seu travamento.</li></ul><p>Defeitos decorrentes desse uso não são cobertos pela garantia.</p>",
+    "keywords": "combustível, adulterado, baixa qualidade, riscos, desempenho, consumo, motor, garantia"
+  },
+  {
+    "question": "Vibrações na motocicleta são cobertas pela garantia?",
+    "answer": "<p>Não, vibrações <strong>não são caracterizadas como anomalias</strong> e são uma característica de qualquer veículo automotor, portanto, não são cobertas pela garantia.</p>",
+    "keywords": "vibrações, garantia, anomalia, não coberto"
+  },
+  {
+    "question": "Como devo lavar a motocicleta para evitar danos?",
+    "answer": "<p>Para lavar a motocicleta, recomenda-se:</p><ul><li>Nunca usar equipamentos de alta pressão.</li><li>Pulverizar água em formato de leque aberto sob baixa pressão, a uma distância mínima de 1,2 m.</li><li>Utilizar somente <strong>água e xampu neutro</strong>.</li><li>Nunca usar solventes químicos ou produtos de limpeza abrasivos, nem lã de aço nas rodas.</li><li>Lavar com movimentos circulares usando um pano macio.</li><li>Secar com um pano diferente do usado na lavagem.</li></ul>",
+    "keywords": "limpeza, lavagem, cuidados, xampu neutro, alta pressão, solventes, lã de aço, pano macio"
+  },
+  {
+    "question": "Quais cuidados devo ter ao deixar a motocicleta inativa por muito tempo?",
+    "answer": "<p>Ao deixar a motocicleta inativa por muito tempo, você deve:</p><ul><li>Drenar o tanque de combustível e pulverizar seu interior com óleo anticorrosivo em spray.</li><li>Remover a bateria e carregá-la uma vez por mês, mantendo-a em lugar protegido.</li><li>Seguir rigorosamente as recomendações de limpeza e conservação.</li></ul>",
+    "keywords": "motocicleta inativa, conservação, bateria, tanque, combustível, óleo anticorrosivo"
+  },
+  {
+    "question": "Quais são as condições para a garantia Honda ser concedida?",
+    "answer": "<p>A garantia Honda é concedida por 3 anos sem limite de quilometragem, desde que:</p><ul><li>Todas as revisões periódicas sejam executadas em uma concessionária Honda no território nacional.</li><li>Não sejam instalados acessórios não originais.</li><li>Não sejam feitas alterações não previstas ou não autorizadas pelo fabricante nas características da motocicleta.</li></ul>",
+    "keywords": "garantia, condições, revisões, acessórios não originais, alterações, fabricante"
+  },
+  {
+    "question": "Quais cuidados devo ter para amaciar o motor nos primeiros 500 km?",
+    "answer": "<p>Nos primeiros 500 km de uso, para amaciar o motor e prolongar sua vida útil e desempenho, você deve:</p><ul><li>Evitar acelerações bruscas.</li><li>Nunca forçar o motor com aceleração total em baixa rotação.</li><li>Não pilotar por longos períodos em velocidade constante.</li><li>Evitar operar o motor em rotações muito baixas ou altas.</li><li>Acionar os freios de modo suave, evitando freadas bruscas.</li></ul><p>Essas recomendações se aplicam a toda a vida útil do motor.</p>",
+    "keywords": "motor, amaciamento, 500 km, cuidados, aceleração, rotação, freios, vida útil"
+  },
+  {
+    "question": "Qual a melhor forma de frear a motocicleta para máxima eficiência?",
+    "answer": "<p>Para máxima eficiência da frenagem, acione os <strong>freios dianteiro e traseiro simultaneamente</strong>. Evite frenagens bruscas e reduções repentinas de marchas, que podem dificultar o controle.</p>",
+    "keywords": "frear, frenagem, freios, dianteiro, traseiro, simultaneamente, eficiência"
+  },
+  {
+    "question": "Quais cuidados devo ter ao frear em superfícies molhadas ou de areia/terra?",
+    "answer": "<p>Em superfícies molhadas ou de areia e terra, tenha cuidado, pois os pneus derrapam mais facilmente e a distância de frenagem é maior.</p>",
+    "keywords": "frear, superfícies molhadas, areia, terra, derrapagem, frenagem"
+  },
+  {
+    "question": "Devo usar o freio-motor em declives acentuados?",
+    "answer": "<p>Sim, utilize o <strong>freio-motor</strong> em declives acentuados, reduzindo as marchas com a utilização intermitente dos freios dianteiro e traseiro, para evitar o superaquecimento e a redução da eficiência dos freios.</p>",
+    "keywords": "freio-motor, declives, freios, superaquecimento, marchas"
+  },
+  {
+    "question": "Como funciona o sistema de freio combinado (CBS) da motocicleta?",
+    "answer": "<p>O sistema CBS atua simultaneamente nos freios dianteiro e traseiro quando o <strong>pedal do freio traseiro é acionado com mais intensidade</strong>. Isso proporciona uma frenagem equilibrada e segura, distribuindo a força de frenagem e reduzindo a chance de travamento das rodas.</p>",
+    "keywords": "cbs, freio combinado, como funciona, pedal de freio, dianteiro, traseiro, frenagem, travamento"
+  },
+  {
+    "question": "A alavanca do freio dianteiro também aciona o freio traseiro no sistema CBS?",
+    "answer": "<p>Não, a alavanca do freio dianteiro <strong>aciona apenas o freio dianteiro</strong>, independentemente da força aplicada, mesmo com o sistema CBS.</p>",
+    "keywords": "cbs, freio dianteiro, alavanca, acionamento, freio traseiro"
+  },
+  {
+    "question": "O que devo fazer se os freios ficarem molhados pela chuva?",
+    "answer": "<p>Se os freios ficarem molhados, <strong>acione-os enquanto pilota em velocidade baixa</strong> para ajudar a secá-los.</p>",
+    "keywords": "chuva, freios molhados, secar freios, pilotagem"
+  },
+  {
+    "question": "Quais cuidados devo ter ao abastecer a motocicleta?",
+    "answer": "<p>Ao abastecer, você deve:</p><ul><li>Desligar o motor e manter faíscas, chamas e cigarros afastados.</li><li>Usar somente <strong>gasolina ou etanol comum de boa qualidade (sem aditivo)</strong>.</li><li>Não usar combustível deteriorado ou contaminado.</li><li>Evitar a entrada de poeira e água no tanque.</li></ul>",
+    "keywords": "abastecer, combustível, gasolina, etanol, cuidados, aditivo, qualidade"
+  },
+  {
+    "question": "Qual o procedimento correto para estacionar a motocicleta?",
+    "answer": "<p>Para estacionar corretamente, você deve:</p><ol><li>Parar a motocicleta, colocar a transmissão em ponto morto e desligar o motor.</li><li>Abaixar o cavalete lateral e inclinar a motocicleta para a esquerda até apoiá-la.</li><li>Girar o guidão totalmente para a esquerda (girar para a direita diminui a estabilidade).</li><li>Posicionar o interruptor de ignição em <strong>LOCK</strong> e remover a chave.</li></ol><p>Estacione em local plano, firme, bem ventilado e abrigado.</p>",
+    "keywords": "estacionar, procedimento, cavalete, guidão, lock, chave, segurança"
+  },
+  {
+    "question": "Como posso prevenir o furto da motocicleta?",
+    "answer": "<p>Para prevenir furtos, você deve:</p><ul><li>Travar sempre a coluna de direção e nunca esquecer a chave no interruptor de ignição.</li><li>Certificar-se de que a documentação da motocicleta esteja em ordem e atualizada.</li><li>Estacionar em locais fechados, sempre que possível.</li><li>Manter o manual do proprietário preenchido com seus dados e sempre na motocicleta.</li></ul>",
+    "keywords": "furto, prevenir, segurança, chave, documentação, estacionamento, manual"
+  },
+  {
+    "question": "A Honda autoriza a instalação de dispositivos antifurto como alarmes ou rastreadores?",
+    "answer": "<p>Não, a Honda <strong>não autoriza a utilização de dispositivos antifurto</strong> (alarmes, corta-ignição, rastreadores, etc.), pois a instalação desses acessórios pode alterar o circuito elétrico original e danificar a unidade do ECM, e esses danos não são cobertos pela garantia.</p>",
+    "keywords": "antifurto, alarme, rastreador, corta-ignição, acessórios não originais, garantia, proibido"
+  },
+  {
+    "question": "Qual o intervalo recomendado para a troca do óleo do motor?",
+    "answer": "<p>O óleo do motor deve ser trocado a cada <strong>6.000 km ou uma vez por ano</strong>, o que ocorrer primeiro.</p>",
+    "keywords": "óleo, motor, troca, intervalo, frequência, 6000 km, 1 ano"
+  },
+  {
+    "question": "Qual a frequência de verificação, ajuste e lubrificação da corrente de transmissão?",
+    "answer": "<p>A corrente de transmissão deve ser verificada, ajustada e lubrificada <strong>a cada 1.000 km</strong>.</p>",
+    "keywords": "corrente de transmissão, lubrificação, ajuste, verificação, frequência, 1000 km"
+  },
+  {
+    "question": "Qual o intervalo recomendado para a troca do filtro de ar úmido?",
+    "answer": "<p>O filtro de ar úmido (tipo viscoso) deve ser trocado a cada <strong>18.000 km</strong>.</p>",
+    "keywords": "filtro de ar, troca, intervalo, frequência, 18000 km, viscoso"
+  },
+  {
+    "question": "Qual o intervalo recomendado para verificar e trocar a vela de ignição?",
+    "answer": "<p>A vela de ignição deve ser verificada e trocada a cada <strong>12.000 km</strong>.</p>",
+    "keywords": "vela de ignição, verificar, troca, intervalo, frequência, 12000 km"
+  },
+  {
+    "question": "Qual o intervalo recomendado para verificar a folga das válvulas?",
+    "answer": "<p>A folga das válvulas deve ser verificada a cada <strong>6.000 km</strong>.</p>",
+    "keywords": "folga das válvulas, verificar, intervalo, frequência, 6000 km"
+  },
+  {
+    "question": "Qual o intervalo recomendado para verificar o nível e trocar o fluido de freio?",
+    "answer": "<p>O nível do fluido de freio deve ser verificado a cada <strong>6.000 km</strong>, e o fluido deve ser trocado a cada <strong>2 anos</strong>.</p>",
+    "keywords": "fluido de freio, nível, troca, intervalo, frequência, 6000 km, 2 anos"
+  },
+  {
+    "question": "Com que frequência devo verificar e calibrar os pneus?",
+    "answer": "<p>Os pneus devem ser verificados e calibrados <strong>a cada 1.000 km ou semanalmente</strong>, o que ocorrer primeiro, e sempre com os pneus frios.</p>",
+    "keywords": "pneus, calibrar, verificar, frequência, 1000 km, semanalmente, pressão"
+  },
+  {
+    "question": "Qual o intervalo recomendado para trocar o fluido da suspensão dianteira?",
+    "answer": "<p>O fluido da suspensão dianteira deve ser trocado a cada <strong>24.000 km</strong>.</p>",
+    "keywords": "suspensão dianteira, fluido, troca, intervalo, frequência, 24000 km"
+  },
+  {
+    "question": "Qual a capacidade de óleo do motor na troca?",
+    "answer": "<p>A capacidade de óleo do motor na troca é de <strong>1,0 litro</strong>.</p>",
+    "keywords": "óleo, motor, capacidade, litros, troca"
+  },
+  {
+    "question": "Qual a folga recomendada para o eletrodo da vela de ignição?",
+    "answer": "<p>A folga recomendada para o eletrodo da vela de ignição é de <strong>0,80 – 0,90 mm</strong>.</p>",
+    "keywords": "vela de ignição, folga, eletrodo, milímetros"
+  },
+  {
+    "question": "Qual a vela de ignição recomendada?",
+    "answer": "<p>A vela de ignição recomendada é a <strong>NGK CPR8EA-9</strong>.</p>",
+    "keywords": "vela de ignição, recomendada, ngk, cpr8ea-9"
+  },
+  {
+    "question": "Qual o fluido de freio recomendado para a motocicleta?",
+    "answer": "<p>O fluido de freio recomendado é o <strong>Mobil Super Moto Brake Fluid DOT4</strong>.</p>",
+    "keywords": "fluido de freio, recomendado, mobil, dot4"
+  },
+  {
+    "question": "Qual a folga recomendada para a corrente de transmissão?",
+    "answer": "<p>A folga recomendada para a corrente de transmissão é de <strong>15 – 25 mm</strong>.</p>",
+    "keywords": "corrente de transmissão, folga, milímetros"
+  },
+  {
+    "question": "Qual lubrificante devo usar na corrente de transmissão?",
+    "answer": "<p>O lubrificante recomendado é o <strong>Lubrificante para correntes</strong>. Caso não esteja disponível, pode-se usar óleo para transmissão <strong>SAE 80 ou 90</strong>.</p>",
+    "keywords": "lubrificante, corrente de transmissão, óleo, sae 80, sae 90"
+  },
+  {
+    "question": "Qual a folga recomendada para a alavanca da embreagem?",
+    "answer": "<p>A folga recomendada para a alavanca da embreagem é de <strong>10 – 20 mm</strong>.</p>",
+    "keywords": "embreagem, alavanca, folga, milímetros"
+  },
+  {
+    "question": "Qual a folga recomendada no flange da manopla do acelerador?",
+    "answer": "<p>A folga recomendada no flange da manopla do acelerador é de <strong>2 – 5 mm</strong>.</p>",
+    "keywords": "acelerador, manopla, folga, milímetros"
+  },
+  {
+    "question": "Qual a pressão recomendada para o pneu dianteiro?",
+    "answer": "<p>A pressão recomendada para o pneu dianteiro é de <strong>175 kPa (1,75 kgf/cm², 25 psi)</strong>.</p>",
+    "keywords": "pneu dianteiro, pressão, kpa, kgf/cm², psi"
+  },
+  {
+    "question": "Qual a pressão recomendada para o pneu traseiro?",
+    "answer": "<p>A pressão recomendada para o pneu traseiro é de:</p><ul><li><strong>200 kPa (2,00 kgf/cm², 29 psi)</strong> para somente o piloto.</li><li><strong>225 kPa (2,25 kgf/cm², 33 psi)</strong> para piloto e passageiro.</li></ul>",
+    "keywords": "pneu traseiro, pressão, piloto, passageiro, kpa, kgf/cm², psi"
+  },
+  {
+    "question": "Qual a profundidade mínima da banda de rodagem do pneu dianteiro?",
+    "answer": "<p>A profundidade mínima da banda de rodagem do pneu dianteiro é de <strong>1,5 mm</strong>.</p>",
+    "keywords": "pneu dianteiro, profundidade, banda de rodagem, mínimo, milímetros"
+  },
+  {
+    "question": "Qual a profundidade mínima da banda de rodagem do pneu traseiro?",
+    "answer": "<p>A profundidade mínima da banda de rodagem do pneu traseiro é de <strong>2,0 mm</strong>.</p>",
+    "keywords": "pneu traseiro, profundidade, banda de rodagem, mínimo, milímetros"
+  },
+  {
+    "question": "Qual a capacidade total do tanque de combustível?",
+    "answer": "<p>A capacidade total do tanque de combustível é de <strong>16,1 litros</strong>.</p>",
+    "keywords": "tanque de combustível, capacidade, litros"
+  },
+  {
+    "question": "Qual a capacidade da reserva do tanque de combustível?",
+    "answer": "<p>A capacidade da reserva do tanque de combustível é de <strong>3,1 litros</strong>.</p>",
+    "keywords": "reserva, tanque de combustível, capacidade, litros"
+  },
+  {
+    "question": "Qual a capacidade máxima de carga da motocicleta?",
+    "answer": "<p>A capacidade máxima de carga da motocicleta é de <strong>161 kg</strong> (incluindo piloto, passageiro, bagagem e acessórios).</p>",
+    "keywords": "capacidade de carga, peso, máximo, piloto, passageiro, bagagem, acessórios, kg"
+  },
+  {
+    "question": "Para quantos passageiros a motocicleta foi projetada?",
+    "answer": "<p>Esta motocicleta foi projetada para transportar <strong>piloto e um passageiro</strong>.</p>",
+    "keywords": "passageiros, capacidade, piloto, um passageiro"
+  },
+  {
+    "question": "Em que tipo de estradas a motocicleta foi projetada para ser pilotada?",
+    "answer": "<p>Esta motocicleta foi projetada para ser pilotada somente em <strong>estradas pavimentadas</strong>.</p>",
+    "keywords": "estradas, pavimentadas, pilotagem, tipo de via"
+  },
+  {
+    "question": "Quais são as regras de segurança obrigatórias para condutores e passageiros de motocicletas?",
+    "answer": "<p>As regras de segurança obrigatórias incluem:</p><ul><li>Usar sempre o <strong>capacete, com viseira ou óculos protetores</strong> (para condutor e passageiro).</li><li>O condutor deve segurar o guidão com as duas mãos.</li><li>Usar <strong>vestuário de proteção</strong>, conforme especificações do Contran (para condutor e passageiro).</li><li>É proibido o transporte de <strong>menores de 7 anos</strong>.</li></ul>",
+    "keywords": "segurança, regras, capacete, viseira, óculos, vestuário, proteção, guidão, passageiro, menores de 7 anos"
+  },
+  {
+    "question": "O capacete é obrigatório para o condutor e passageiro?",
+    "answer": "<p>Sim, é obrigatório o uso de <strong>capacete de segurança</strong> para o condutor e o passageiro, devidamente afivelado e no tamanho adequado. Para capacetes abertos, é obrigatório o uso de viseiras ou óculos de proteção.</p>",
+    "keywords": "capacete, obrigatório, condutor, passageiro, viseira, óculos de proteção"
+  },
+  {
+    "question": "Qual a rotação de marcha lenta recomendada?",
+    "answer": "<p>A rotação de marcha lenta recomendada é de <strong>1.400 ± 100 rpm</strong> (em temperatura normal de funcionamento).</p>",
+    "keywords": "marcha lenta, rotação, rpm"
+  },
+  {
+    "question": "Qual o valor recomendado de monóxido de carbono (CO) em marcha lenta?",
+    "answer": "<p>O valor recomendado de monóxido de carbono (CO) é <strong>abaixo de 0,2%</strong> em marcha lenta.</p>",
+    "keywords": "monóxido de carbono, co, marcha lenta, poluição, emissões"
+  },
+  {
+    "question": "Qual o valor recomendado de hidrocarbonetos (HC) em marcha lenta?",
+    "answer": "<p>O valor recomendado de hidrocarbonetos (HC) é <strong>abaixo de 100 ppm</strong> em marcha lenta.</p>",
+    "keywords": "hidrocarbonetos, hc, marcha lenta, poluição, emissões"
+  }
+]

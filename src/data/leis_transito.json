@@ -1,0 +1,32 @@
+[
+  {
+    "question": "Qual a multa por andar sem capacete?",
+    "answer": "<p>Andar sem capacete (ou com capacete irregular) é uma infração <strong>gravíssima</strong>.</p><ul><li><strong>Multa:</strong> R$ 293,47.</li><li><strong>Pontos:</strong> 7 pontos na CNH.</li><li><strong>Penalidade:</strong> Suspensão do direito de dirigir e recolhimento da CNH.</li></ul><p>A regra vale tanto para o piloto quanto para o garupa. A segurança vem sempre em primeiro lugar!</p>",
+    "keywords": "multa, capacete, sem, valor, pontos, cnh, infração, gravíssima"
+  },
+  {
+    "question": "Posso andar no corredor entre os carros?",
+    "answer": "<p>Sim, mas com muita atenção. O Código de Trânsito Brasileiro (CTB) permite que motos circulem entre as faixas quando o trânsito estiver lento ou parado.</p><p><strong>Regras de Ouro:</strong></p><ul><li>Ande em velocidade compatível com a segurança.</li><li>Dê preferência aos veículos de emergência.</li><li>Sinalize suas intenções com antecedência.</li></ul><p>Lembre-se: o corredor é um local de risco. Prudência sempre!</p>",
+    "keywords": "corredor, lei, pode, andar, entre, carros, trânsito, permitido"
+  },
+  {
+    "question": "Qual a multa por excesso de velocidade?",
+    "answer": "<p>A multa por excesso de velocidade depende do quanto você ultrapassou o limite:</p><ul><li><strong>Até 20% acima do limite:</strong> Infração média, multa de R$ 130,16 e 4 pontos na CNH.</li><li><strong>De 20% a 50% acima do limite:</strong> Infração grave, multa de R$ 195,23 e 5 pontos na CNH.</li><li><strong>Acima de 50% do limite:</strong> Infração gravíssima (x3), multa de R$ 880,41, 7 pontos, suspensão imediata da CNH e apreensão do documento.</li></ul>",
+    "keywords": "multa, velocidade, radar, acima, limite, valor, pontos, correr"
+  },
+  {
+    "question": "Posso usar o celular enquanto piloto?",
+    "answer": "<p>Não. Usar o celular enquanto pilota é infração <strong>gravíssima</strong> se você estiver segurando ou manuseando o aparelho.</p><ul><li><strong>Multa:</strong> R$ 293,47.</li><li><strong>Pontos:</strong> 7 pontos na CNH.</li></ul><p>Se o celular estiver fixado no guidão (em um suporte) para uso como GPS, a prática é permitida, desde que você não o manuseie com a moto em movimento.</p>",
+    "keywords": "multa, celular, telefone, pilotando, usando, gps, suporte, valor"
+  },
+  {
+    "question": "Quais as regras para baú de motofrete?",
+    "answer": "<p>Para motofrete, as regras do CONTRAN são mais rígidas:</p><ul><li><strong>Baú:</strong> Deve ter faixas refletivas e não pode exceder as dimensões da moto.</li><li><strong>Placa:</strong> A placa da moto deve ser vermelha (categoria aluguel).</li><li><strong>Curso:</strong> O piloto deve ter o curso especializado de motofretista.</li><li><strong>Idade:</strong> Mínimo de 21 anos e 2 anos de habilitação na categoria A.</li></ul><p>Rodar irregularmente pode gerar multas e apreensão do veículo.</p>",
+    "keywords": "motofrete, baú, placa, vermelha, curso, lei, regras, motoboy"
+  },
+  {
+    "question": "Qual a multa por avançar o sinal vermelho?",
+    "answer": "<p>Avançar o sinal vermelho do semáforo é uma infração <strong>gravíssima</strong>.</p><ul><li><strong>Multa:</strong> R$ 293,47.</li><li><strong>Pontos:</strong> 7 pontos na CNH.</li></ul><p>É uma das infrações que mais causam acidentes graves. Sempre respeite a sinalização.</p>",
+    "keywords": "multa, sinal, vermelho, farol, semáforo, avançar, passar, valor"
+  }
+]

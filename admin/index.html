@@ -804,15 +804,10 @@
             <!-- NOVO: Seção de Upload de JSON -->
             <div class="mt-8 p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
               <h3 class="font-bold text-lg text-blue-800">Importar Conhecimentos em Massa</h3>
-              <div class="flex items-center gap-4 mt-2">
+              <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-2">
                 <input type="file" id="kb-json-upload" class="hidden" accept=".json">
                 <button id="kb-upload-btn" class="bg-blue-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2">
                   <i data-lucide="upload-cloud"></i> Upar Arquivo JSON
-                </button>
-                <!-- NOVO: Botão para a base de conhecimento dos manuais -->
-                <input type="file" id="kb-pdf-json-upload" class="hidden" accept=".json">
-                <button id="kb-pdf-upload-btn" class="bg-green-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
-                  <i data-lucide="book-open"></i> Importar Manuais (JSON)
                 </button>
                 <div class="text-xs text-blue-700">
                   <p><strong>Dica:</strong> Peça para uma IA (como ChatGPT ou Gemini) gerar um arquivo JSON para você com o seguinte prompt:</p>
@@ -854,6 +849,7 @@
                   <thead>
                     <tr class="text-sm font-bold text-gray-500 border-b">
                       <th class="p-3">Pergunta/Título</th>
+                      <th class="p-3">Fonte</th>
                       <th class="p-3">Palavras-chave</th>
                       <th class="p-3">Ações</th>
                     </tr>

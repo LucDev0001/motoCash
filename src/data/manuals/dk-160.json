@@ -1,0 +1,77 @@
+[
+  {
+    "question": "Quais as regras de amaciamento da DK160?",
+    "answer": "<p>O amaciamento correto nos primeiros <strong>500 km</strong> é crucial para a vida útil da sua DK160.</p><ul><li><strong>Limite de Aceleração:</strong> Evite rotações na faixa vermelha. O ideal é não passar de 75% da aceleração total.</li><li><strong>Evite Velocidade Constante:</strong> Varie a velocidade e as marchas para que os componentes se ajustem corretamente.</li><li><strong>Aqueça o Motor:</strong> Deixe o motor funcionar em marcha lenta por alguns minutos antes de pilotar.</li><li><strong>Primeira Revisão:</strong> A revisão de 1.000 km é a mais importante. Não deixe de fazer!</li></ul>",
+    "keywords": "amaciamento, amaciar, motor, novo, dk160, primeiros, km"
+  },
+  {
+    "question": "Qual a calibragem correta do pneu da DK160?",
+    "answer": "<p>A pressão correta dos pneus da DK160 é essencial para segurança e estabilidade.</p><ul><li><strong>Pneu Dianteiro:</strong> 29 PSI.</li><li><strong>Pneu Traseiro:</strong> 33 PSI.</li></ul><p>Lembre-se de verificar a pressão com os pneus frios.</p>",
+    "keywords": "pneu, calibragem, libras, pressao, calibrar, psi, dk160"
+  },
+  {
+    "question": "Qual o óleo recomendado para a DK160?",
+    "answer": "<p>O óleo recomendado é o <strong>SAE 10W-40</strong>. A JTZ recomenda o uso de óleos Motul, como o <strong>Motul 5100 10W40 (semissintético)</strong> para uso diário ou o <strong>Motul 7100 10W40 (100% sintético)</strong> para alta performance.</p><p>A capacidade de óleo é de <strong>1100 mL</strong> para troca comum e <strong>1200 mL</strong> se trocar o filtro de óleo.</p>",
+    "keywords": "oleo, óleo, motor, troca, recomendado, motul, 10w40, dk160, quantidade"
+  },
+  {
+    "question": "Como verificar o nível do óleo da DK160?",
+    "answer": "<ol><li>Coloque a moto no cavalete central em local plano.</li><li>Ligue o motor por alguns minutos e depois desligue.</li><li>Aguarde alguns minutos, remova a vareta de óleo, limpe-a e insira novamente <strong>sem rosqueá-la</strong>.</li><li>Retire a vareta e verifique se o nível está entre as marcas de nível alto e baixo.</li></ol>",
+    "keywords": "verificar, checar, medir, nível, oleo, óleo, motor, dk160"
+  },
+  {
+    "question": "Qual a capacidade do tanque de combustível da DK160?",
+    "answer": "<p>O tanque de combustível da DK160 tem capacidade total de <strong>16,5 litros</strong>. Quando o último segmento do marcador de combustível começar a piscar, restam aproximadamente <strong>2 litros</strong>.</p>",
+    "keywords": "tanque, combustivel, gasolina, capacidade, litros, dk160"
+  },
+  {
+    "question": "Como funciona o painel da DK160?",
+    "answer": "<p>O painel da DK160 possui:</p><ul><li><strong>Tacômetro:</strong> Mostra a rotação do motor (RPM). Evite a faixa vermelha.</li><li><strong>Velocímetro:</strong> Mostra a velocidade em KM/h.</li><li><strong>Indicador de Marcha:</strong> Mostra a marcha engatada (1 a 5 e N para neutro).</li><li><strong>Hodômetro:</strong> Pressione 'SEL' para alternar entre 'TOTAL' (distância total) e 'TRIP' (distância parcial). Para zerar o 'TRIP', segure 'SEL' por 2 segundos.</li><li><strong>Indicador de Troca de Óleo:</strong> Acende quando é hora de trocar o óleo.</li></ul>",
+    "keywords": "painel, velocimetro, hodometro, tacometro, contagiros, luzes, dk160"
+  },
+  {
+    "question": "Como ajustar a folga da corrente da DK160?",
+    "answer": "<p>A folga da corrente de transmissão da DK160 deve ser ajustada para ficar entre <strong>10mm e 20mm</strong>.</p><p>Uma corrente muito frouxa pode sair da roda, e uma muito apertada desgasta os componentes. Verifique e lubrifique a cada 1.000 km.</p>",
+    "keywords": "corrente, folga, ajustar, esticar, transmissao, relação, dk160"
+  },
+  {
+    "question": "Qual a vela de ignição da DK160?",
+    "answer": "<p>A vela de ignição padrão para a DK160 é a <strong>NGK CPR8EA-9</strong>. É recomendado trocá-la a cada 10.000 ou 12.000 km para garantir bom desempenho e economia.</p>",
+    "keywords": "vela, ignição, ngk, cpr8ea-9, faísca, falhando, dk160"
+  },
+  {
+    "question": "Qual a potência e cilindrada da DK160?",
+    "answer": "<p>A DK160 possui:</p><ul><li><strong>Cilindrada:</strong> 162 cc.</li><li><strong>Potência Máxima:</strong> 14,94 CV a 8.000 rpm.</li></ul>",
+    "keywords": "potencia, cavalos, cv, cilindrada, cc, motor, dk160"
+  },
+  {
+    "question": "Quando devo trocar o filtro de ar da DK160?",
+    "answer": "<p>O filtro de ar da DK160 é de papel oleoso e <strong>não deve ser limpo</strong>, apenas trocado. A troca deve ser feita a cada <strong>6.000 km</strong>.</p><p>Se você pilota em locais com muita poeira ou chuva, a troca deve ser feita com mais frequência para não prejudicar o motor.</p>",
+    "keywords": "filtro, ar, troca, quando, limpar, dk160"
+  },
+  {
+    "question": "Como ajustar o amortecedor traseiro da DK160?",
+    "answer": "<p>O amortecedor traseiro da DK160 tem 5 posições de ajuste de pré-carga da mola.</p><ul><li><strong>Posição 1:</strong> Mais macio (para piloto sozinho).</li><li><strong>Posição 5:</strong> Mais rígido (para piloto com garupa ou carga).</li></ul><p>A moto sai de fábrica na posição 2. Lembre-se de ajustar os dois amortecedores para a mesma posição.</p>",
+    "keywords": "amortecedor, suspensão, traseiro, ajuste, regular, mola, dk160"
+  },
+  {
+    "question": "Qual o fluido de freio usado na DK160?",
+    "answer": "<p>A DK160 utiliza fluido de freio <strong>DOT3 ou DOT4</strong>. É muito importante usar apenas o fluido especificado e de um recipiente lacrado para não danificar o sistema de freios.</p><p>O fluido deve ser trocado a cada 2 anos.</p>",
+    "keywords": "fluido, freio, oleo, dot3, dot4, sangria, dk160"
+  },
+  {
+    "question": "A DK160 tem freio combinado (CBS)?",
+    "answer": "<p>Sim, a DK160 possui sistema de freios combinados (CBS) no freio traseiro. Isso significa que ao acionar o pedal do freio traseiro, o freio dianteiro também é acionado parcialmente, distribuindo a força de frenagem e aumentando a segurança.</p><p>Para uma frenagem mais eficaz, o manual recomenda usar os dois freios (manete e pedal) simultaneamente.</p>",
+    "keywords": "freio, cbs, combinado, traseiro, dianteiro, dk160"
+  },
+  {
+    "question": "Quais os fusíveis da DK160?",
+    "answer": "<p>A caixa de fusíveis fica próxima à bateria e contém três fusíveis principais e três de reserva:</p><ul><li>1 fusível de <strong>10A</strong></li><li>1 fusível de <strong>15A</strong></li><li>1 fusível de <strong>20A</strong></li></ul><p>Se ocorrer uma falha elétrica, verifique os fusíveis primeiro. Nunca use um fusível de amperagem diferente da especificada.</p>",
+    "keywords": "fusivel, fusiveis, queima, eletrica, painel, apagou, dk160"
+  },
+  {
+    "question": "A moto não liga, o que verificar?",
+    "answer": "<p>Se a sua DK160 não dá partida, verifique estes pontos:</p><ol><li>O interruptor corta-corrente (botão vermelho no punho direito) está na posição 'ON' (j)?</li><li>A moto está em Neutro (luz 'N' acesa no painel)?</li><li>O cavalete lateral está totalmente recolhido?</li><li>Você está segurando o manete da embreagem ao dar a partida?</li><li>Tem combustível suficiente no tanque?</li></ol><p>Se tudo isso estiver certo e a moto não ligar, pode ser um problema na bateria ou no sistema de ignição. Consulte um mecânico.</p>",
+    "keywords": "nao, liga, partida, motor, girando, problema, dk160"
+  }
+]
