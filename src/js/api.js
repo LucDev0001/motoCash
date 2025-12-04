@@ -10,6 +10,7 @@ import {
 
 export let allLoadedItems = [];
 export let currentStats = {};
+let proChartInstance = null;
 
 /**
  * **NOVO**: Busca os ganhos de um usuário para um período específico.
@@ -746,7 +747,9 @@ export function loadDashboardData(p, shiftFilter, updateCallback) {
 async function renderProAnalysisChart() {
   const chartCanvas = document.getElementById("chart-pro-analysis"); // O ID estava correto na sua versão, mas pode ter sido alterado. Garantindo o ID correto.
   if (!chartCanvas) return;
-  if (window.myProChart) window.myProChart.destroy();
+  if (proChartInstance) {
+    proChartInstance.destroy();
+  }
 
   const ctx = chartCanvas.getContext("2d");
 
@@ -769,7 +772,7 @@ async function renderProAnalysisChart() {
   const currentWeekData = processWeekData(currentWeekEarnings);
   const lastWeekData = processWeekData(lastWeekEarnings);
 
-  window.myProChart = new Chart(ctx, {
+  proChartInstance = new Chart(ctx, {
     // **MELHORIA**: Alterado para 'bar' para melhor comparação diária.
     type: "bar",
     data: {

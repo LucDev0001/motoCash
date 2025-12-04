@@ -17,6 +17,7 @@ firebase.initializeApp(firebaseConfig);
 const firestore = firebase.firestore();
 
 // Nova forma de habilitar a persistência, evitando o warning de depreciação.
+// Nova forma de habilitar a persistência, evitando o warning de depreciação.
 firestore
   .enablePersistence({ synchronizeTabs: true })
   .then(() => {
