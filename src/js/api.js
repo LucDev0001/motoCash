@@ -44,8 +44,7 @@ export async function getEarningsForPeriod(period) {
   } else if (period === "month") {
     startDate = new Date(now.getFullYear(), now.getMonth(), 1);
     endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  }
-  else {
+  } else {
     return []; // Outros períodos podem ser implementados aqui
   }
 
@@ -806,7 +805,7 @@ export function loadDashboardData(p, shiftFilter, updateCallback) {
 async function renderProAnalysisChart() {
   const chartCanvas = document.getElementById("chart-pro-analysis");
   if (!chartCanvas) return;
-  
+
   // Destrói a instância anterior do gráfico, se existir
   if (proChartInstance) {
     proChartInstance.destroy();
@@ -864,9 +863,14 @@ async function renderProAnalysisChart() {
   const variationEl = document.getElementById("pro-analysis-variation");
   if (variationEl) {
     if (totalLastWeek > 0) {
-      const variation = ((totalCurrentWeek - totalLastWeek) / totalLastWeek) * 100;
-      variationEl.textContent = `${variation > 0 ? "+" : ""}${variation.toFixed(1)}%`;
-      variationEl.className = `font-bold text-lg ${variation >= 0 ? "text-green-400" : "text-red-400"}`;
+      const variation =
+        ((totalCurrentWeek - totalLastWeek) / totalLastWeek) * 100;
+      variationEl.textContent = `${variation > 0 ? "+" : ""}${variation.toFixed(
+        1
+      )}%`;
+      variationEl.className = `font-bold text-lg ${
+        variation >= 0 ? "text-green-400" : "text-red-400"
+      }`;
     } else {
       variationEl.textContent = "N/A";
       variationEl.className = "font-bold text-lg text-gray-400";
@@ -878,7 +882,15 @@ async function renderProAnalysisChart() {
     const maxEarning = Math.max(...currentWeekData);
     if (maxEarning > 0) {
       const bestDayIndex = currentWeekData.indexOf(maxEarning);
-      const days = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+      const days = [
+        "Segunda",
+        "Terça",
+        "Quarta",
+        "Quinta",
+        "Sexta",
+        "Sábado",
+        "Domingo",
+      ];
       bestDayEl.textContent = days[bestDayIndex];
     } else {
       bestDayEl.textContent = "N/A";
@@ -1080,11 +1092,15 @@ export function saveEdit(e) {
     });
 }
 
-export function submitFinance(e) {
-  e.preventDefault();
+export function submitFinance(e, prefillData = null) {
+  if (e) e.preventDefault();
   const btn = document.getElementById("btn-save-fin");
-  btn.innerText = "Salvando...";
-  btn.disabled = true;
+
+  // Se o botão existir na UI, atualiza o estado dele
+  if (btn) {
+    btn.innerText = "Salvando...";
+    btn.disabled = true;
+  }
 
   // Validation logic here...
 
@@ -1108,16 +1124,25 @@ export function submitFinance(e) {
     return val ? parseInt(val) : 0;
   };
 
-  if (cat === "loja_fixa") {
-    const d = safeFloat("fin-daily");
-    const f = safeFloat("fin-fee");
-    const ex = safeFloat("fin-extra");
-    cnt = safeInt("fin-loja-count");
-    tot = d + cnt * f + ex;
-    det = { daily: d, fee: f, extra: ex, count: cnt };
+  if (prefillData) {
+    // Dados vêm da Graxa
+    tot = prefillData.totalValue;
+    cnt = prefillData.count || 1;
+    // A categoria já vem no prefillData, mas mantemos a lógica para consistência
+    // det não é preenchido pela Graxa por enquanto
   } else {
-    tot = safeFloat("fin-total");
-    cnt = safeInt("fin-count");
+    // Dados vêm do formulário da UI
+    if (cat === "loja_fixa") {
+      const d = safeFloat("fin-daily");
+      const f = safeFloat("fin-fee");
+      const ex = safeFloat("fin-extra");
+      cnt = safeInt("fin-loja-count");
+      tot = d + cnt * f + ex;
+      det = { daily: d, fee: f, extra: ex, count: cnt };
+    } else {
+      tot = safeFloat("fin-total");
+      cnt = safeInt("fin-count");
+    }
   }
 
   // More validation logic here...
@@ -1149,21 +1174,36 @@ export function submitFinance(e) {
     })
     .catch((e) => {
       showNotification(`Erro ao salvar: ${e.message}`, "Erro");
-      btn.innerText = "Salvar Lançamento";
-      btn.disabled = false;
+      if (btn) {
+        btn.innerText = "Salvar Lançamento";
+        btn.disabled = false;
+      }
     });
 }
 
-export function submitExpense(e) {
-  e.preventDefault();
+export function submitExpense(e, prefillData = null) {
+  if (e) e.preventDefault();
   const btn = document.getElementById("btn-save-exp");
-  btn.innerText = "Salvando...";
-  btn.disabled = true;
+  if (btn) {
+    btn.innerText = "Salvando...";
+    btn.disabled = true;
+  }
 
-  const date = document.getElementById("fin-date-expense").value;
-  const category = document.getElementById("exp-category").value;
-  const totalValue = parseFloat(document.getElementById("exp-total").value);
-  const observation = document.getElementById("exp-desc").value;
+  let date, category, totalValue, observation;
+
+  if (prefillData) {
+    // Dados vêm da Graxa
+    date = new Date().toISOString().split("T")[0]; // Usa a data de hoje
+    category = prefillData.category;
+    totalValue = prefillData.totalValue;
+    observation = prefillData.observation;
+  } else {
+    // Dados vêm do formulário da UI
+    date = document.getElementById("fin-date-expense").value;
+    category = document.getElementById("exp-category").value;
+    totalValue = parseFloat(document.getElementById("exp-total").value);
+    observation = document.getElementById("exp-desc").value;
+  }
 
   if (isNaN(totalValue) || totalValue <= 0) {
     showNotification(
@@ -1171,8 +1211,10 @@ export function submitExpense(e) {
       "Valor Inválido"
     );
     btn.innerText = "Salvar Despesa";
-    btn.disabled = false;
-    return;
+    if (btn) {
+      btn.disabled = false;
+    }
+    return; // Interrompe a execução
   }
 
   // **NOVO: Lógica para resetar contador de manutenção**
@@ -1198,8 +1240,10 @@ export function submitExpense(e) {
     })
     .catch((e) => {
       showNotification(`Erro ao salvar despesa: ${e.message}`, "Erro");
-      btn.innerText = "Salvar Despesa";
-      btn.disabled = false;
+      if (btn) {
+        btn.innerText = "Salvar Despesa";
+        btn.disabled = false;
+      }
     });
 }
 

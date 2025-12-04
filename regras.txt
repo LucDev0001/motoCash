@@ -133,5 +133,13 @@ service cloud.firestore {
       // Apenas admins podem criar, editar ou apagar.
       allow write: if isAdmin();
     }
+
+    // Coleção para logs e aprendizado da Graxa
+    match /artifacts/moto-manager-v1/graxa_logs/{logId} {
+        // Qualquer usuário autenticado pode criar um log (ex: pergunta não respondida)
+        allow create: if isUserAuthenticated();
+        // Apenas admins podem ler os logs para treinar a IA
+        allow read, list, delete: if isAdmin();
+    }
   }
 }

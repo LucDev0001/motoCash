@@ -15,7 +15,6 @@ import { db, appId } from "../config.js";
 import { currentUser } from "../auth.js";
 import * as API from "../api.js";
 
-
 // --- STATE MANAGEMENT ---
 let knowledgeBase = [];
 let userUsage = { count: 0, lastQuestionDate: "" };
@@ -51,12 +50,15 @@ let UISuggestionsCallback;
  * @param {Function} typingIndicator - Função para mostrar/esconder o indicador de digitação.
  * @param {Function} renderSuggestions - Função para renderizar botões de sugestão.
  */
-export function registerUICallbacks(addMessage, typingIndicator, renderSuggestions) {
+export function registerUICallbacks(
+  addMessage,
+  typingIndicator,
+  renderSuggestions
+) {
   UIMessageCallback = addMessage;
   UITypingIndicatorCallback = typingIndicator;
   UISuggestionsCallback = renderSuggestions;
 }
-
 
 // ==================================================================
 // ==                    CORE PUBLIC FUNCTIONS                     ==
@@ -80,23 +82,51 @@ export async function loadInitialData() {
       }
     }
     const data = await fetcher();
-    localStorage.setItem(CACHE_KEY_PREFIX + key, JSON.stringify({ timestamp: Date.now(), data }));
+    localStorage.setItem(
+      CACHE_KEY_PREFIX + key,
+      JSON.stringify({ timestamp: Date.now(), data })
+    );
     return data;
   }
 
   try {
     // Carrega todas as bases de conhecimento em paralelo
-    const [firestoreKb, manualsKb, transitLawData, helpCenterData, userDoc] = await Promise.all([
-      getCachedOrFetch("kb", () => db.collection("graxa_kb").get().then(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() })))),
-      getCachedOrFetch("manuals_kb", () => db.collection("graxa_manuals_kb").get().then(snap => snap.docs.map(doc => doc.data()))),
-      fetch(`src/data/leis_transito.json`).then(res => res.json()),
-      fetch(`src/data/ajuda.json`).then(res => res.json()),
-      db.collection("artifacts").doc(appId).collection("users").doc(currentUser.uid).get()
-    ]);
-    
+    const [firestoreKb, manualsKb, transitLawData, helpCenterData, userDoc] =
+      await Promise.all([
+        getCachedOrFetch("kb", () =>
+          db
+            .collection("graxa_kb")
+            .get()
+            .then((snap) =>
+              snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+            )
+        ),
+        getCachedOrFetch("manuals_kb", () =>
+          db
+            .collection("graxa_manuals_kb")
+            .get()
+            .then((snap) => snap.docs.map((doc) => doc.data()))
+        ),
+        fetch(`src/data/leis_transito.json`).then((res) => res.json()),
+        fetch(`src/data/ajuda.json`).then((res) => res.json()),
+        db
+          .collection("artifacts")
+          .doc(appId)
+          .collection("users")
+          .doc(currentUser.uid)
+          .get(),
+      ]);
+
     // Constrói a base de conhecimento principal
-    const helpArticles = Object.values(helpCenterData).flatMap(cat => cat.articles.map(art => ({ ...art, source: "Central de Ajuda" })));
-    knowledgeBase = [...firestoreKb, ...manualsKb, ...transitLawData, ...helpArticles];
+    const helpArticles = Object.values(helpCenterData).flatMap((cat) =>
+      cat.articles.map((art) => ({ ...art, source: "Central de Ajuda" }))
+    );
+    knowledgeBase = [
+      ...firestoreKb,
+      ...manualsKb,
+      ...transitLawData,
+      ...helpArticles,
+    ];
 
     // Processa os dados do usuário
     userData = userDoc.data() || {};
@@ -109,20 +139,32 @@ export async function loadInitialData() {
     if (motoModel) {
       const fileName = motoModel.toLowerCase().replace(/[\/ ]/g, "-") + ".json";
       try {
-        const manualData = await fetch(`src/data/manuals/${fileName}`).then(res => res.json());
+        const manualData = await fetch(`src/data/manuals/${fileName}`).then(
+          (res) => res.json()
+        );
         // Adiciona um identificador de contexto para dar prioridade na busca
-        const contextualizedManualData = manualData.map(item => ({...item, context: 'user_moto'}));
+        const contextualizedManualData = manualData.map((item) => ({
+          ...item,
+          context: "user_moto",
+        }));
         knowledgeBase.push(...contextualizedManualData);
-        console.log(`[Graxa] Manual específico '${fileName}' carregado com sucesso!`);
+        console.log(
+          `[Graxa] Manual específico '${fileName}' carregado com sucesso!`
+        );
       } catch (error) {
-        console.log(`[Graxa] Manual para '${motoModel}' não encontrado. Usando base genérica.`);
+        console.log(
+          `[Graxa] Manual para '${motoModel}' não encontrado. Usando base genérica.`
+        );
       }
     }
-    
+
     return true; // Sucesso
   } catch (error) {
     console.error("[Graxa] Erro crítico ao carregar dados iniciais:", error);
-    UIMessageCallback?.("bot", "Desculpe, estou com um problema para inicializar. Tente recarregar a página.");
+    UIMessageCallback?.(
+      "bot",
+      "Desculpe, estou com um problema para inicializar. Tente recarregar a página."
+    );
     return false; // Falha
   }
 }
@@ -137,7 +179,10 @@ export async function processUserQuestion(question) {
   // Atualiza a contagem de uso para não-apoiadores
   if (!isPro) {
     userUsage.count++;
-    db.collection("artifacts").doc(appId).collection("users").doc(currentUser.uid)
+    db.collection("artifacts")
+      .doc(appId)
+      .collection("users")
+      .doc(currentUser.uid)
       .set({ graxaUsage: userUsage }, { merge: true });
   }
 
@@ -146,24 +191,27 @@ export async function processUserQuestion(question) {
     await handleConversationStep(question);
     return; // A conversa está ativa, não faz mais nada.
   }
-  
+
   UITypingIndicatorCallback?.(true);
 
   // Tenta processar a pergunta como uma "intenção" de alta prioridade (ação, consulta, etc.)
   const intentResult = await processIntent(question);
-  
+
   // Se a intenção retornou um comando de ação, repassa para a UI
-  if (intentResult && (intentResult.type === 'ui_action' || intentResult.type === 'navigate')) {
-      UITypingIndicatorCallback?.(false);
-      return intentResult;
+  if (
+    intentResult &&
+    (intentResult.type === "ui_action" || intentResult.type === "navigate")
+  ) {
+    UITypingIndicatorCallback?.(false);
+    return intentResult;
   }
-  
+
   // Se a intenção foi processada mas não era um comando (ex: uma resposta de texto), para aqui.
   if (intentResult) {
-      UITypingIndicatorCallback?.(false);
-      return;
+    UITypingIndicatorCallback?.(false);
+    return;
   }
-  
+
   // Se não for uma intenção específica, busca a resposta na base de conhecimento
   await findAnswer(question);
   UITypingIndicatorCallback?.(false);
@@ -181,7 +229,6 @@ export function isLimitReached() {
   }
   return userUsage.count >= DAILY_LIMIT;
 }
-
 
 // ==================================================================
 // ==                PROACTIVITY & PERSONALITY                     ==
@@ -212,17 +259,21 @@ export async function generateProactiveGreeting() {
         const kmSinceLastService = odometer - (item.lastServiceKm || 0);
         const progress = (kmSinceLastService / item.interval) * 100;
         if (progress >= 90) {
-          proactiveMessage = `A manutenção de <strong>${item.name}</strong> está próxima (${Math.round(progress)}% atingido). Quer ver os detalhes na sua garagem?`;
+          proactiveMessage = `A manutenção de <strong>${
+            item.name
+          }</strong> está próxima (${Math.round(
+            progress
+          )}% atingido). Quer ver os detalhes na sua garagem?`;
           break;
         }
       }
     }
   }
 
-  const finalMessage = proactiveMessage 
+  const finalMessage = proactiveMessage
     ? `${greeting}, ${userName}! ${proactiveMessage}`
     : `${greeting}, ${userName}! Eu sou a Graxa, sua assistente. Como posso ajudar?`;
-    
+
   UIMessageCallback?.("bot", finalMessage);
 }
 
@@ -236,7 +287,6 @@ function getTimeBasedGreeting() {
   if (hour >= 12 && hour < 18) return "Boa tarde";
   return "Boa noite";
 }
-
 
 // ==================================================================
 // ==               INTENT PROCESSING & NLU                        ==
@@ -265,25 +315,34 @@ async function processIntent(question) {
  * @param {string} question - A pergunta do usuário.
  */
 async function findAnswer(question) {
-  const userMotoContext = userData.publicProfile?.fipeModelText?.toLowerCase() || '';
+  const userMotoContext =
+    userData.publicProfile?.fipeModelText?.toLowerCase() || "";
 
-  const results = knowledgeBase.map(item => {
-    // Normaliza tanto a pergunta do item quanto a do usuário
-    const normalizedItemQuestion = item.question.toLowerCase();
-    const normalizedUserQuestion = question.toLowerCase();
-    
-    // Calcula a similaridade
-    const score = calculateStringSimilarity(normalizedItemQuestion, normalizedUserQuestion);
-    
-    // **REQUISITO 2: CONTEXTO DINÂMICO DE MOTO**
-    // Aumenta a pontuação se o contexto da resposta for a moto do usuário
-    let contextualScore = score;
-    if (item.context === 'user_moto' || (userMotoContext && normalizedItemQuestion.includes(userMotoContext))) {
-      contextualScore *= 1.5; // Bônus de 50% por relevância de contexto
-    }
-    
-    return { score: contextualScore, item };
-  }).sort((a, b) => b.score - a.score); // Ordena da maior para a menor pontuação
+  const results = knowledgeBase
+    .map((item) => {
+      // Normaliza tanto a pergunta do item quanto a do usuário
+      const normalizedItemQuestion = item.question.toLowerCase();
+      const normalizedUserQuestion = question.toLowerCase();
+
+      // Calcula a similaridade
+      const score = calculateStringSimilarity(
+        normalizedItemQuestion,
+        normalizedUserQuestion
+      );
+
+      // **REQUISITO 2: CONTEXTO DINÂMICO DE MOTO**
+      // Aumenta a pontuação se o contexto da resposta for a moto do usuário
+      let contextualScore = score;
+      if (
+        item.context === "user_moto" ||
+        (userMotoContext && normalizedItemQuestion.includes(userMotoContext))
+      ) {
+        contextualScore *= 1.5; // Bônus de 50% por relevância de contexto
+      }
+
+      return { score: contextualScore, item };
+    })
+    .sort((a, b) => b.score - a.score); // Ordena da maior para a menor pontuação
 
   const bestMatch = results[0];
 
@@ -294,7 +353,6 @@ async function findAnswer(question) {
     startConversation("log_unanswered_question", {}, question);
   }
 }
-
 
 // ==================================================================
 // ==                         UTILITIES                            ==
@@ -310,17 +368,23 @@ async function findAnswer(question) {
  */
 function calculateStringSimilarity(a, b) {
   if (!a || !b) return 0;
-  const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
+  const matrix = Array(b.length + 1)
+    .fill(null)
+    .map(() => Array(a.length + 1).fill(null));
 
-  for (let i = 0; i <= a.length; i++) { matrix[0][i] = i; }
-  for (let j = 0; j <= b.length; j++) { matrix[j][0] = j; }
+  for (let i = 0; i <= a.length; i++) {
+    matrix[0][i] = i;
+  }
+  for (let j = 0; j <= b.length; j++) {
+    matrix[j][0] = j;
+  }
 
   for (let j = 1; j <= b.length; j++) {
     for (let i = 1; i <= a.length; i++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
       matrix[j][i] = Math.min(
-        matrix[j][i - 1] + 1,      // Deletion
-        matrix[j - 1][i] + 1,      // Insertion
+        matrix[j][i - 1] + 1, // Deletion
+        matrix[j - 1][i] + 1, // Insertion
         matrix[j - 1][i - 1] + cost // Substitution
       );
     }
@@ -339,11 +403,11 @@ function calculateStringSimilarity(a, b) {
  */
 function parseCurrency(text) {
   const sanitized = text
-    .replace(/\./g, '')       // Remove pontos de milhar
-    .replace(/,/g, '.')       // Troca vírgula por ponto decimal
-    .replace(/R\$|reais|real|conto|pila/gi, '') // Remove símbolos e gírias
+    .replace(/\./g, "") // Remove pontos de milhar
+    .replace(/,/g, ".") // Troca vírgula por ponto decimal
+    .replace(/R\$|reais|real|conto|pila/gi, "") // Remove símbolos e gírias
     .trim();
-  
+
   const value = parseFloat(sanitized);
   return isNaN(value) ? null : value;
 }
@@ -355,34 +419,45 @@ function parseCurrency(text) {
  * @returns {Promise<{totalEarnings: number, totalExpenses: number}>}
  */
 async function getFinancialSummaryForPeriod(period) {
-    if (!currentUser) return { totalEarnings: 0, totalExpenses: 0 };
-    const [earnings, expenses] = await Promise.all([
-        API.getEarningsForPeriod(period),
-        // Supondo que exista uma função análoga para despesas
-        API.getExpensesForPeriod(period) 
-    ]);
+  if (!currentUser) return { totalEarnings: 0, totalExpenses: 0 };
+  const [earnings, expenses] = await Promise.all([
+    API.getEarningsForPeriod(period),
+    // Supondo que exista uma função análoga para despesas
+    API.getExpensesForPeriod(period),
+  ]);
 
-    const totalEarnings = earnings.reduce((sum, item) => sum + item.totalValue, 0);
-    const totalExpenses = expenses.reduce((sum, item) => sum + item.totalValue, 0);
+  const totalEarnings = earnings.reduce(
+    (sum, item) => sum + item.totalValue,
+    0
+  );
+  const totalExpenses = expenses.reduce(
+    (sum, item) => sum + item.totalValue,
+    0
+  );
 
-    return { totalEarnings, totalExpenses };
+  return { totalEarnings, totalExpenses };
 }
 
 /**
  * Oferece uma dica aleatória de forma proativa.
  */
 function giveRandomTip() {
-    if (Math.random() < 0.4) { // 40% de chance
-        const tips = knowledgeBase.filter(item => item.keywords && item.keywords.includes('dica'));
-        if (tips.length > 0) {
-            const randomTip = tips[Math.floor(Math.random() * tips.length)];
-            setTimeout(() => {
-                UIMessageCallback?.("bot", `💡 A propósito, uma dica rápida: ${randomTip.answer}`);
-            }, 1500);
-        }
+  if (Math.random() < 0.4) {
+    // 40% de chance
+    const tips = knowledgeBase.filter(
+      (item) => item.keywords && item.keywords.includes("dica")
+    );
+    if (tips.length > 0) {
+      const randomTip = tips[Math.floor(Math.random() * tips.length)];
+      setTimeout(() => {
+        UIMessageCallback?.(
+          "bot",
+          `💡 A propósito, uma dica rápida: ${randomTip.answer}`
+        );
+      }, 1500);
     }
+  }
 }
-
 
 // ==================================================================
 // ==             CONVERSATION FLOWS & INTENT LIST                 ==
@@ -394,12 +469,15 @@ function giveRandomTip() {
 const intents = [
   // --- Intenções de Conversa Social e Personalidade ---
   {
-    name: 'greeting',
+    name: "greeting",
     regex: /^(oi|olá|e aí|salve|bom dia|boa tarde|boa noite)$/i,
     action: async () => {
-      UIMessageCallback?.("bot", `${getTimeBasedGreeting()}! Em que posso ajudar?`);
+      UIMessageCallback?.(
+        "bot",
+        `${getTimeBasedGreeting()}! Em que posso ajudar?`
+      );
       return true;
-    }
+    },
   },
   {
     name: "thanks",
@@ -408,54 +486,74 @@ const intents = [
       UIMessageCallback?.("bot", "De nada! Se precisar, é só chamar. 👍");
       giveRandomTip();
       return true;
-    }
+    },
   },
   {
-    name: 'what_can_you_do',
+    name: "what_can_you_do",
     regex: /o que voc(ê|e) (sabe|pode|consegue) fazer\??/i,
     action: async () => {
-        UIMessageCallback?.("bot", `Eu posso te ajudar de várias formas! Você pode me pedir para:
+      UIMessageCallback?.(
+        "bot",
+        `Eu posso te ajudar de várias formas! Você pode me pedir para:
         <ul class="list-disc list-inside mt-2 space-y-1">
             <li>Registrar <strong>ganhos e despesas</strong>.</li>
             <li>Consultar seu <strong>saldo financeiro</strong>.</li>
             <li>Navegar pelo <strong>app</strong> (ex: "ir para garagem").</li>
             <li>Tirar dúvidas sobre <strong>manutenção e leis</strong>.</li>
-        </ul>`);
-        return true;
-    }
+        </ul>`
+      );
+      return true;
+    },
   },
   // --- Intenções de Ação e Navegação (Requisito 3) ---
   {
-    name: 'navigate',
-    regex: /(?:me leve para|ir para|abrir|mostrar|quero ver) (?:a tela de|minha|meus|o)? ?(.*?)$/i,
+    name: "navigate",
+    regex:
+      /(?:me leve para|ir para|abrir|mostrar|quero ver) (?:a tela de|minha|meus|o)? ?(.*?)$/i,
     action: async (matches) => {
-        const destination = matches[1].toLowerCase().trim().replace(/s$/, ''); // Remove 's' plural
-        const routes = {
-            'início': 'dashboard', 'painel': 'dashboard',
-            'garagem': 'garage',
-            'finanças': 'finance', 'ganhos': 'finance', 'despesas': 'finance',
-            'classificados': 'market', 'mercado': 'market',
-            'perfil': 'profile'
-        };
-        if (routes[destination]) {
-            UIMessageCallback?.("bot", `Ok, te levando para a tela de ${destination}.`);
-            return { type: 'navigate', route: routes[destination] }; // Retorna o comando
-        }
-        return false;
-    }
+      const destination = matches[1].toLowerCase().trim().replace(/s$/, ""); // Remove 's' plural
+      const routes = {
+        início: "dashboard",
+        painel: "dashboard",
+        garagem: "garage",
+        finanças: "finance",
+        ganho: "finance",
+        despesa: "finance",
+        conquista: "achievements",
+        classificados: "market",
+        mercado: "market",
+        perfil: "profile",
+      };
+      if (routes[destination]) {
+        UIMessageCallback?.(
+          "bot",
+          `Ok, te levando para a tela de ${destination}.`
+        );
+        return { type: "navigate", route: routes[destination] }; // Retorna o comando
+      }
+      return false;
+    },
   },
   {
-    name: 'open_maintenance_modal',
+    name: "open_maintenance_modal",
     regex: /adicionar (item de )?manuten(ç|c)(ã|a)o/i,
     action: async () => {
-      UIMessageCallback?.("bot", "Claro. Abrindo a tela para adicionar um novo item de manutenção.");
-      return { type: 'ui_action', function: 'openMaintenanceModal', params: [null, 'add'] }; // Retorna o comando
-    }
+      UIMessageCallback?.(
+        "bot",
+        "Claro. Abrindo a tela para adicionar um novo item de manutenção."
+      );
+      return {
+        type: "ui_action",
+        function: "openMaintenanceModal",
+        params: [null, "add"],
+      }; // Retorna o comando
+    },
   },
   // --- Inteligência Financeira e de Manutenção (Requisito 4) ---
   {
     name: "query_finances",
-    regex: /(?:quanto|qual foi) (?:eu )?(ganhei|gastei|meu saldo) (hoje|esta semana|neste m(ê|e)s)/i,
+    regex:
+      /(?:quanto|qual foi) (?:eu )?(ganhei|gastei|meu saldo) (hoje|esta semana|neste m(ê|e)s)/i,
     action: async (matches) => {
       const queryType = matches[1]; // ganhei, gastei, meu saldo
       const periodWord = matches[2]; // hoje, esta semana, neste mês
@@ -464,133 +562,218 @@ const intents = [
       if (periodWord === "hoje") period = "day";
       if (periodWord.includes("semana")) period = "week";
       if (periodWord.includes("mês")) period = "month";
-      
-      UIMessageCallback?.("bot", `Calculando seu ${queryType.replace('meu ','')} para ${periodWord}...`);
+
+      UIMessageCallback?.(
+        "bot",
+        `Calculando seu ${queryType.replace("meu ", "")} para ${periodWord}...`
+      );
       const summary = await getFinancialSummaryForPeriod(period);
       const balance = summary.totalEarnings - summary.totalExpenses;
-      
+
       let response = "";
-      if (queryType === 'ganhei') response = `Seus ganhos ${periodWord} somam <strong>R$ ${summary.totalEarnings.toFixed(2)}</strong>.`;
-      if (queryType === 'gastei') response = `Suas despesas ${periodWord} somam <strong>R$ ${summary.totalExpenses.toFixed(2)}</strong>.`;
-      if (queryType === 'meu saldo') response = `Seu saldo ${periodWord} é de <strong class="${balance >= 0 ? 'text-green-500' : 'text-red-500'}">R$ ${balance.toFixed(2)}</strong>.`;
-      
+      if (queryType === "ganhei")
+        response = `Seus ganhos ${periodWord} somam <strong>R$ ${summary.totalEarnings.toFixed(
+          2
+        )}</strong>.`;
+      if (queryType === "gastei")
+        response = `Suas despesas ${periodWord} somam <strong>R$ ${summary.totalExpenses.toFixed(
+          2
+        )}</strong>.`;
+      if (queryType === "meu saldo")
+        response = `Seu saldo ${periodWord} é de <strong class="${
+          balance >= 0 ? "text-green-500" : "text-red-500"
+        }">R$ ${balance.toFixed(2)}</strong>.`;
+
       UIMessageCallback?.("bot", response);
       return true;
-    }
+    },
   },
   {
     name: "query_maintenance_due",
-    regex: /(?:quando vence|falta quanto para|como est(á|a)) (?:o|a)? (.*?)\??$/i,
+    regex:
+      /(?:quando vence|falta quanto para|como est(á|a)) (?:o|a)? (.*?)\??$/i,
     action: async (matches) => {
-        const itemNameQuery = matches[2].toLowerCase().trim().replace(/a |o |da |do /g, '');
-        const item = userData.maintenanceItems?.find(i => i.name.toLowerCase().includes(itemNameQuery));
-        
-        if (item) {
-            const odometer = userData.odometer || 0;
-            if (odometer === 0) {
-              UIMessageCallback?.("bot", `Para calcular, primeiro preciso que você atualize sua quilometragem atual na Garagem.`);
-              return true;
-            }
-            const kmSinceService = odometer - (item.lastServiceKm || 0);
-            const remainingKm = item.interval - kmSinceService;
-            
-            if (remainingKm > 0) {
-                UIMessageCallback?.("bot", `Faltam aproximadamente <strong>${Math.round(remainingKm)} km</strong> para a próxima manutenção de <strong>${item.name}</strong>.`);
-            } else {
-                UIMessageCallback?.("bot", `A manutenção de <strong>${item.name}</strong> está <strong>atrasada</strong> em ${Math.abs(Math.round(remainingKm))} km! É bom fazer o quanto antes.`);
-            }
-        } else {
-            return false; // Deixa o findAnswer tentar achar algo se não for um item de manutenção
+      const itemNameQuery = matches[2]
+        .toLowerCase()
+        .trim()
+        .replace(/a |o |da |do /g, "");
+      const item = userData.maintenanceItems?.find((i) =>
+        i.name.toLowerCase().includes(itemNameQuery)
+      );
+
+      if (item) {
+        const odometer = userData.odometer || 0;
+        if (odometer === 0) {
+          UIMessageCallback?.(
+            "bot",
+            `Para calcular, primeiro preciso que você atualize sua quilometragem atual na Garagem.`
+          );
+          return true;
         }
-        return true;
-    }
+        const kmSinceService = odometer - (item.lastServiceKm || 0);
+        const remainingKm = item.interval - kmSinceService;
+
+        if (remainingKm > 0) {
+          UIMessageCallback?.(
+            "bot",
+            `Faltam aproximadamente <strong>${Math.round(
+              remainingKm
+            )} km</strong> para a próxima manutenção de <strong>${
+              item.name
+            }</strong>.`
+          );
+        } else {
+          UIMessageCallback?.(
+            "bot",
+            `A manutenção de <strong>${
+              item.name
+            }</strong> está <strong>atrasada</strong> em ${Math.abs(
+              Math.round(remainingKm)
+            )} km! É bom fazer o quanto antes.`
+          );
+        }
+      } else {
+        return false; // Deixa o findAnswer tentar achar algo se não for um item de manutenção
+      }
+      return true;
+    },
   },
   // --- Tratamento Robusto de Valores (Requisito 5) ---
   {
-      name: "add_financial_entry",
-      regex: /(?:adicione|registre|lance|gastei|ganhei) (.*?)$/i,
-      action: async (matches) => {
-          const text = matches[1];
-          const value = parseCurrency(text);
-          if (!value) return false;
+    name: "add_financial_entry",
+    regex: /(?:adicione|registre|lance|gastei|ganhei) (.*?)$/i,
+    action: async (matches) => {
+      const text = matches[1];
+      const value = parseCurrency(text);
+      if (!value) return false;
 
-          const isExpense = /(despesa|gastei|com)/i.test(matches[0]);
-          let description = text.replace(/R\$ ?|reais|real|contos?/gi, '').replace(/[0-9,\.]/g, '').trim();
-          
-          if (isExpense) {
-              let category = 'outros';
-              if (/gasolina|combust.vel/i.test(description)) category = "combustivel";
-              if (/manuten..o|pe.a/i.test(description)) category = "manutencao";
-              if (/almo.o|comida|lanche/i.test(description)) category = "alimentacao";
-              startConversation('confirm_expense', { value, description, category });
-          } else {
-              let category = "app_entrega";
-              if (/ifood|rappi/i.test(description)) category = "app_entrega";
-              if (/uber|99/i.test(description)) category = "app_passageiro";
-              startConversation('confirm_earning', { value, description, category });
-          }
-          return true;
+      const isExpense = /(despesa|gastei|com)/i.test(matches[0]);
+      let description = text
+        .replace(/R\$ ?|reais|real|contos?/gi, "")
+        .replace(/[0-9,\.]/g, "")
+        .trim();
+
+      if (isExpense) {
+        let category = "outros";
+        if (/gasolina|combust.vel/i.test(description)) category = "combustivel";
+        if (/manuten..o|pe.a/i.test(description)) category = "manutencao";
+        if (/almo.o|comida|lanche/i.test(description)) category = "alimentacao";
+        startConversation("confirm_expense", { value, description, category });
+      } else {
+        let category = "app_entrega";
+        if (/ifood|rappi/i.test(description)) category = "app_entrega";
+        if (/uber|99/i.test(description)) category = "app_passageiro";
+        startConversation("confirm_earning", { value, description, category });
       }
+      return true;
+    },
   },
 ];
-
 
 // --- FLUXOS DE CONVERSA ---
 
 const CONVERSATION_FLOWS = {
   confirm_expense: {
-    steps: [{
-      question: (data) => `Ok. Registrar uma despesa de <strong>R$ ${data.value.toFixed(2)}</strong> (${data.description}) na categoria <strong>${data.category}</strong>. Confirma?`,
-      key: "confirmation",
-      type: "confirmation",
-      options: [{ value: "yes", text: "Sim" }, { value: "no", text: "Não" }],
-    }],
+    steps: [
+      {
+        question: (data) =>
+          `Ok. Registrar uma despesa de <strong>R$ ${data.value.toFixed(
+            2
+          )}</strong> (${data.description}) na categoria <strong>${
+            data.category
+          }</strong>. Confirma?`,
+        key: "confirmation",
+        type: "confirmation",
+        options: [
+          { value: "yes", text: "Sim" },
+          { value: "no", text: "Não" },
+        ],
+      },
+    ],
     finalize: async (data) => {
       if (data.confirmation === "yes") {
-        await API.submitExpense(null, { category: data.category, totalValue: data.value, observation: data.description });
-        UIMessageCallback?.("bot", "Ok, despesa registrada!");
+        await API.submitExpense(null, {
+          category: data.category,
+          totalValue: data.value,
+          observation: data.description,
+        });
+        UIMessageCallback?.(
+          "bot",
+          "Ok, despesa registrada! Você pode vê-la no seu painel."
+        );
       } else {
         UIMessageCallback?.("bot", "Entendido, operação cancelada.");
       }
     },
   },
   confirm_earning: {
-    steps: [{
-      question: (data) => `Beleza. Registrar um ganho de <strong>R$ ${data.value.toFixed(2)}</strong> (${data.description}). Certo?`,
-      key: "confirmation",
-      type: "confirmation",
-      options: [{ value: "yes", text: "Sim" }, { value: "no", text: "Não" }],
-    }],
+    steps: [
+      {
+        question: (data) =>
+          `Beleza. Registrar um ganho de <strong>R$ ${data.value.toFixed(
+            2
+          )}</strong> (${data.description}). Certo?`,
+        key: "confirmation",
+        type: "confirmation",
+        options: [
+          { value: "yes", text: "Sim" },
+          { value: "no", text: "Não" },
+        ],
+      },
+    ],
     finalize: async (data) => {
       if (data.confirmation === "yes") {
-        await API.submitFinance(null, { category: data.category, totalValue: data.value, count: 1 });
-        UIMessageCallback?.("bot", "Show! Ganho registrado com sucesso.");
+        await API.submitFinance(null, {
+          category: data.category,
+          totalValue: data.value,
+          count: 1,
+        });
+        UIMessageCallback?.(
+          "bot",
+          "Show! Ganho registrado com sucesso. Já está no seu painel."
+        );
       } else {
         UIMessageCallback?.("bot", "Ok, operação cancelada.");
       }
     },
   },
   log_unanswered_question: {
-    steps: [{
-      question: "Desculpe, não encontrei uma resposta para isso. Quer que eu registre sua pergunta para que eu possa aprender sobre o assunto no futuro?",
-      key: "confirmation",
-      type: "confirmation",
-      options: [{ value: "yes", text: "Sim, por favor" }, { value: "no", text: "Não, obrigado" }],
-    }],
+    steps: [
+      {
+        question:
+          "Desculpe, não encontrei uma resposta para isso. Quer que eu registre sua pergunta para que eu possa aprender sobre o assunto no futuro?",
+        key: "confirmation",
+        type: "confirmation",
+        options: [
+          { value: "yes", text: "Sim, por favor" },
+          { value: "no", text: "Não, obrigado" },
+        ],
+      },
+    ],
     finalize: async (data, originalQuestion) => {
       if (data.confirmation === "yes") {
         try {
-          await db.collection("artifacts").doc(appId).collection("graxa_unanswered_questions").add({
-            question: originalQuestion,
-            userId: currentUser.uid,
-            timestamp: new Date(),
-          });
-          UIMessageCallback?.("bot", "Obrigado! Sua pergunta foi enviada para minha equipe. Eles vão me ensinar sobre isso em breve.");
+          await db
+            .collection("artifacts")
+            .doc(appId)
+            .collection("graxa_logs")
+            .add({
+              question: originalQuestion,
+              userId: currentUser.uid,
+              timestamp: new Date(),
+            });
+          UIMessageCallback?.(
+            "bot",
+            "Obrigado! Sua pergunta foi enviada para minha equipe. Eles vão me ensinar sobre isso em breve."
+          );
         } catch (error) {
           console.error("Erro ao registrar pergunta não respondida:", error);
         }
       } else {
-        UIMessageCallback?.("bot", "Tudo bem. Se precisar de outra coisa, é só chamar.");
+        UIMessageCallback?.(
+          "bot",
+          "Tudo bem. Se precisar de outra coisa, é só chamar."
+        );
       }
     },
   },
@@ -634,7 +817,10 @@ async function handleConversationStep(answer) {
     askNextQuestion();
   } else {
     UITypingIndicatorCallback?.(true);
-    await flow.finalize(conversationState.data, conversationState.originalQuestion);
+    await flow.finalize(
+      conversationState.data,
+      conversationState.originalQuestion
+    );
     UITypingIndicatorCallback?.(false);
     resetConversation();
   }
@@ -642,12 +828,15 @@ async function handleConversationStep(answer) {
 
 function askNextQuestion() {
   const flow = CONVERSATION_FLOWS[conversationState.intent];
-  if(!flow) return resetConversation();
+  if (!flow) return resetConversation();
   const step = flow.steps[conversationState.currentStep];
-  
+
   // A pergunta pode ser uma função que usa os dados já coletados
-  const questionText = typeof step.question === 'function' ? step.question(conversationState.data) : step.question;
-  
+  const questionText =
+    typeof step.question === "function"
+      ? step.question(conversationState.data)
+      : step.question;
+
   UIMessageCallback?.("bot", questionText);
 
   if (step.type === "select" || step.type === "confirmation") {
@@ -661,6 +850,11 @@ function askNextQuestion() {
 }
 
 function resetConversation() {
-  conversationState = { isConversing: false, intent: null, data: {}, currentStep: 0 };
+  conversationState = {
+    isConversing: false,
+    intent: null,
+    data: {},
+    currentStep: 0,
+  };
   UISuggestionsCallback?.(null);
 }
