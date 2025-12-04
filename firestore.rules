@@ -57,14 +57,6 @@ service cloud.firestore {
           allow get, list: if isAdmin();
         }
       }
-
-      // --- Dados da Assistente Graxa (Perguntas não respondidas) ---
-      match /graxa_unanswered_questions/{questionId} {
-        // Qualquer usuário autenticado pode criar (reportar) uma pergunta.
-        allow create: if isUserAuthenticated();
-        // Ninguém pode ler, para manter a privacidade das perguntas.
-        allow read, update, delete: if false;
-      }
     }
 
     // ==================================================================

@@ -38,7 +38,14 @@ export async function getEarningsForPeriod(period) {
     startDate.setDate(now.getDate() - daysToLastMonday);
     endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 6);
-  } else {
+  } else if (period === "day") {
+    startDate = new Date(now);
+    endDate = new Date(now);
+  } else if (period === "month") {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  }
+  else {
     return []; // Outros períodos podem ser implementados aqui
   }
 
@@ -59,6 +66,58 @@ export async function getEarningsForPeriod(period) {
     return earningsSnap.docs.map((doc) => doc.data());
   } catch (error) {
     console.error(`Erro ao buscar ganhos para o período ${period}:`, error);
+    return [];
+  }
+}
+
+export async function getExpensesForPeriod(period) {
+  if (!currentUser) return [];
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  let startDate, endDate;
+
+  if (period === "week") {
+    const dayOfWeek = now.getDay();
+    const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    startDate = new Date(now);
+    startDate.setDate(now.getDate() - diff);
+    endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+  } else if (period === "last-week") {
+    const dayOfWeek = now.getDay();
+    const daysToLastMonday = dayOfWeek === 0 ? 13 : dayOfWeek - 1 + 7;
+    startDate = new Date(now);
+    startDate.setDate(now.getDate() - daysToLastMonday);
+    endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+  } else if (period === "day") {
+    startDate = new Date(now);
+    endDate = new Date(now);
+  } else if (period === "month") {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  } else {
+    return []; // Outros períodos podem ser implementados aqui
+  }
+
+  const startDateString = startDate.toISOString().split("T")[0];
+  const endDateString = endDate.toISOString().split("T")[0];
+
+  try {
+    const expensesSnap = await db
+      .collection("artifacts")
+      .doc(appId)
+      .collection("users")
+      .doc(currentUser.uid)
+      .collection("expenses")
+      .where("date", ">=", startDateString)
+      .where("date", "<=", endDateString)
+      .get();
+
+    return expensesSnap.docs.map((doc) => doc.data());
+  } catch (error) {
+    console.error(`Erro ao buscar despesas para o período ${period}:`, error);
     return [];
   }
 }
@@ -745,8 +804,10 @@ export function loadDashboardData(p, shiftFilter, updateCallback) {
  * Compara os ganhos da semana atual com a semana anterior.
  */
 async function renderProAnalysisChart() {
-  const chartCanvas = document.getElementById("chart-pro-analysis"); // O ID estava correto na sua versão, mas pode ter sido alterado. Garantindo o ID correto.
+  const chartCanvas = document.getElementById("chart-pro-analysis");
   if (!chartCanvas) return;
+  
+  // Destrói a instância anterior do gráfico, se existir
   if (proChartInstance) {
     proChartInstance.destroy();
   }
@@ -773,7 +834,6 @@ async function renderProAnalysisChart() {
   const lastWeekData = processWeekData(lastWeekEarnings);
 
   proChartInstance = new Chart(ctx, {
-    // **MELHORIA**: Alterado para 'bar' para melhor comparação diária.
     type: "bar",
     data: {
       labels: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
@@ -781,14 +841,14 @@ async function renderProAnalysisChart() {
         {
           label: "Semana Passada",
           data: lastWeekData,
-          backgroundColor: "rgba(107, 114, 128, 0.5)", // Tailwind gray-500
+          backgroundColor: "rgba(107, 114, 128, 0.5)",
           borderColor: "rgba(107, 114, 128, 1)",
           borderWidth: 1,
         },
         {
           label: "Semana Atual",
           data: currentWeekData,
-          backgroundColor: "rgba(251, 191, 36, 0.8)", // Tailwind amber-400
+          backgroundColor: "rgba(251, 191, 36, 0.8)",
           borderColor: "rgba(251, 191, 36, 1)",
           borderWidth: 1,
         },
@@ -797,50 +857,34 @@ async function renderProAnalysisChart() {
     options: { responsive: true, maintainAspectRatio: false },
   });
 
-  // **NOVO: Calcula e renderiza as métricas adicionais da Análise Pro**
+  // Calcula e renderiza as métricas adicionais da Análise Pro
   const totalCurrentWeek = currentWeekData.reduce((a, b) => a + b, 0);
   const totalLastWeek = lastWeekData.reduce((a, b) => a + b, 0);
 
-  // Variação percentual
   const variationEl = document.getElementById("pro-analysis-variation");
   if (variationEl) {
     if (totalLastWeek > 0) {
-      const variation =
-        ((totalCurrentWeek - totalLastWeek) / totalLastWeek) * 100;
-      variationEl.textContent = `${variation > 0 ? "+" : ""}${variation.toFixed(
-        1
-      )}%`;
-      variationEl.className = `font-bold text-lg ${
-        variation >= 0 ? "text-green-400" : "text-red-400"
-      }`;
+      const variation = ((totalCurrentWeek - totalLastWeek) / totalLastWeek) * 100;
+      variationEl.textContent = `${variation > 0 ? "+" : ""}${variation.toFixed(1)}%`;
+      variationEl.className = `font-bold text-lg ${variation >= 0 ? "text-green-400" : "text-red-400"}`;
     } else {
       variationEl.textContent = "N/A";
       variationEl.className = "font-bold text-lg text-gray-400";
     }
   }
 
-  // Melhor dia da semana
   const bestDayEl = document.getElementById("pro-analysis-best-day");
   if (bestDayEl) {
     const maxEarning = Math.max(...currentWeekData);
     if (maxEarning > 0) {
       const bestDayIndex = currentWeekData.indexOf(maxEarning);
-      const days = [
-        "Segunda",
-        "Terça",
-        "Quarta",
-        "Quinta",
-        "Sexta",
-        "Sábado",
-        "Domingo",
-      ];
+      const days = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
       bestDayEl.textContent = days[bestDayIndex];
     } else {
       bestDayEl.textContent = "N/A";
     }
   }
 
-  // Ganho médio por dia
   const avgEarningEl = document.getElementById("pro-analysis-avg-earning");
   if (avgEarningEl) {
     const daysWithEarnings = currentWeekData.filter((d) => d > 0).length;

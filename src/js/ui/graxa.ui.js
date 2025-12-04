@@ -1,3 +1,4 @@
+import { router } from "../router.js";
 import { openMaintenanceModal } from "../ui.js";
 import * as GraxaService from "../services/graxa.service.js";
 
@@ -71,20 +72,26 @@ async function handleUserQuestion(e) {
   const question = input.value.trim();
   if (!question) return;
 
-  // Se estiver em uma conversa, o service lida com a lógica
-  // Se não, verifica o limite antes de processar
-  if (
-    !GraxaService.state.conversationState.isConversing &&
-    GraxaService.isLimitReached()
-  ) {
-    checkUsageLimit(); // Apenas para garantir que a UI esteja atualizada
+  // A verificação de limite agora é feita dentro do serviço,
+  // mas podemos manter uma checagem inicial aqui para evitar processamento desnecessário.
+  if (GraxaService.isLimitReached()) {
+    checkUsageLimit();
     return;
   }
 
   input.value = "";
-  await GraxaService.processUserQuestion(question);
+  const action = await GraxaService.processUserQuestion(question);
 
-  // Após cada pergunta, re-verifica o limite
+  // Após processar, a UI verifica se há uma ação a ser executada
+  if (action) {
+    if (action.type === 'navigate') {
+      router(action.route);
+    } else if (action.type === 'ui_action' && action.function === 'openMaintenanceModal') {
+      openMaintenanceModal(...action.params);
+    }
+  }
+
+  // Após cada pergunta, re-verifica o limite no caso de a pergunta ter sido a última
   if (GraxaService.isLimitReached()) {
     checkUsageLimit();
   }
