@@ -1,24 +1,53 @@
-const CACHE_NAME = "motomanager-v2.0.7"; // Versão incrementada para forçar a atualização do cache
+const CACHE_NAME = "motocash-v2.1.0"; // Versão incrementada para forçar a atualização do cache
+const DATA_CACHE_NAME = "motocash-data-v2.1.0";
 
 // Lista de arquivos essenciais para o App Shell.
 const assetsToCache = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./src/templates/views/achievements.html", // Adiciona o novo template
   "./src/css/styles.css",
-  "./ajuda.html",
-  "./src/data/ajuda.json", // Adiciona o novo arquivo de dados
-  "./termos_de_uso.html",
-  "./politicas_e_privacidade.html",
   "./Icon-192.png",
   "./Icon-512.png",
   "./assets/notification.mp3",
-  "./icons/add.png", // Ícone do atalho "Adicionar Transação"
-  "./icons/garage.png", // Ícone do atalho "Minha Garagem"
-  // Os arquivos de CDN (Tailwind, Leaflet, Firebase, etc.)
-  // e imagens de screenshots/atalhos foram removidos.
-  // O cache do navegador é mais eficiente para eles e isso evita a falha do Service Worker.
+  // Ícones para atalhos
+  "./icons/add.png",
+  "./icons/garage.png",
+  // Templates de Views (essencial para navegação offline)
+  "./src/templates/views/about.html",
+  "./src/templates/views/accepted-jobs.html",
+  "./src/templates/views/achievements.html",
+  "./src/templates/views/add-job.html",
+  "./src/templates/views/dashboard.html",
+  "./src/templates/views/finance.html",
+  "./src/templates/views/garage.html",
+  "./src/templates/views/graxa.html",
+  "./src/templates/views/history-jobs.html",
+  "./src/templates/views/hub.html",
+  "./src/templates/views/job-chat.html",
+  "./src/templates/views/market-add.html",
+  "./src/templates/views/market.html",
+  "./src/templates/views/notifications.html",
+  "./src/templates/views/privacy.html",
+  "./src/templates/views/profile.html",
+  "./src/templates/views/publicProfile.html",
+  "./src/templates/views/support.html",
+  // Templates de Modais (essencial para interações offline)
+  "./src/templates/modals/completeProfileModal.html",
+  "./src/templates/modals/debitsModal.html",
+  "./src/templates/modals/documentsModal.html",
+  "./src/templates/modals/editModal.html",
+  "./src/templates/modals/maintenanceModal.html",
+  "./src/templates/modals/marketDetailModal.html",
+  "./src/templates/modals/notificationModal.html",
+  "./src/templates/modals/odometerModal.html",
+  "./src/templates/modals/proPlanModal.html",
+  "./src/templates/modals/serviceHistoryModal.html",
+  "./src/templates/modals/serviceRecordModal.html",
+  "./src/templates/modals/shareModal.html",
+  // Arquivos de dados para a assistente Graxa
+  "./src/data/ajuda.json",
+  "./src/data/leis_transito.json",
 ];
 
 // Evento de Instalação: Salva os assets em cache.
@@ -28,7 +57,11 @@ self.addEventListener("install", (event) => {
     caches
       .open(CACHE_NAME)
       .then((cache) => {
-        console.log("[Service Worker] Adicionando assets ao cache");
+        console.log(
+          "[SW] Adicionando App Shell ao cache:",
+          assetsToCache.length,
+          "arquivos"
+        );
         return cache.addAll(assetsToCache);
       })
       .catch((err) => {
@@ -43,12 +76,17 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log("[Service Worker] Limpando cache antigo:", cacheName);
-            return caches.delete(cacheName);
-          }
-        })
+        cacheNames
+          .filter(
+            (cacheName) =>
+              cacheName !== CACHE_NAME && cacheName !== DATA_CACHE_NAME
+          )
+          .map((cacheName) => {
+            if (cacheName !== CACHE_NAME) {
+              console.log("[Service Worker] Limpando cache antigo:", cacheName);
+              return caches.delete(cacheName);
+            }
+          })
       );
     })
   );
@@ -59,22 +97,49 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const requestUrl = new URL(event.request.url);
 
-  // Ignora requisições que não são GET, ou que são para domínios externos (APIs, etc.)
-  // ou para o Firebase (para garantir dados em tempo real).
+  // Estratégia para a API da FIPE e manuais JSON: Stale-While-Revalidate
+  // Responde rápido com o cache, mas busca uma nova versão em segundo plano.
   if (
-    event.request.method !== "GET" ||
-    requestUrl.origin !== self.location.origin ||
-    requestUrl.hostname.includes("firebase")
+    requestUrl.hostname.includes("parallelum.com.br") ||
+    requestUrl.pathname.startsWith("/src/data/manuals/")
   ) {
-    return;
+    event.respondWith(
+      caches.open(DATA_CACHE_NAME).then((cache) => {
+        return cache.match(event.request).then((cachedResponse) => {
+          const fetchPromise = fetch(event.request).then((networkResponse) => {
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+          });
+          // Retorna o cache imediatamente se existir, senão espera a rede.
+          return cachedResponse || fetchPromise;
+        });
+      })
+    );
+    return; // Encerra aqui para esta estratégia
   }
 
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Se encontrar no cache, retorna a resposta do cache. Senão, busca na rede.
-      return response || fetch(event.request);
-    })
-  );
+  // Estratégia para o App Shell (arquivos locais): Cache First
+  // Se o arquivo está no cache, serve a partir dele. Senão, busca na rede.
+  // Ignora requisições que não são GET e as do Firebase para garantir dados em tempo real.
+  if (
+    requestUrl.origin === self.location.origin &&
+    event.request.method === "GET"
+  ) {
+    // Não faz cache de requisições do Firebase
+    if (requestUrl.pathname.includes("firestore.googleapis.com")) {
+      return;
+    }
+
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        if (response) {
+          return response; // Encontrado no cache
+        }
+        // Não encontrado no cache, busca na rede
+        return fetch(event.request);
+      })
+    );
+  }
 });
 
 let monitoringInterval = null;

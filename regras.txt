@@ -1,0 +1,137 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==================================================================
+    // FUNÇÕES AUXILIARES DE SEGURANÇA
+    // ==================================================================
+    function isAdmin() {
+      // Um usuário é admin se seu UID estiver na lista de admins do app.
+      return request.auth.uid in get(/databases/$(database)/documents/artifacts/moto-manager-v1/config/app_settings).data.adminUids;
+    }
+
+    function isOwner(userId) {
+      // Verifica se o usuário autenticado é o dono do documento.
+      return request.auth.uid == userId;
+    }
+
+    function isUserAuthenticated() {
+      // Verifica se há um usuário autenticado na requisição.
+      return request.auth != null;
+    }
+
+    // ==================================================================
+    // REGRAS PARA A COLEÇÃO PRINCIPAL 'artifacts'
+    // ==================================================================
+    match /artifacts/moto-manager-v1 {
+
+      // --- Configurações do App e Logs de Admin ---
+      match /config/app_settings {
+        // Qualquer pessoa pode ler as configurações (para verificar modo manutenção).
+        allow read: if true;
+        // Apenas um admin pode escrever as configurações.
+        allow write: if isAdmin();
+      }
+
+      match /admin_logs/{logId} {
+        // Apenas admins podem ler os logs.
+        allow read: if isAdmin();
+        // Apenas admins podem criar logs.
+        allow create: if isAdmin();
+        // Ninguém pode atualizar ou apagar logs para manter a integridade.
+        allow update, delete: if false;
+      }
+
+      // --- Dados dos Usuários (Motoboys) ---
+      match /users/{userId} {
+        // Um usuário só pode ler e escrever seus próprios dados.
+        // O admin pode ler os dados de qualquer usuário.
+        allow read, write: if isOwner(userId);
+        allow get, list: if isAdmin(); // 'get' e 'list' para o admin ler
+
+        // --- Subcoleções do Usuário (Ganhos, Despesas, etc.) ---
+        match /{subcollection}/{docId} {
+          // O dono do perfil pode fazer tudo em suas subcoleções.
+          // O admin pode ler os dados para o painel.
+          allow read, write: if isOwner(userId);
+          allow get, list: if isAdmin();
+        }
+      }
+    }
+
+    // ==================================================================
+    // REGRAS PARA EMPRESAS E VAGAS
+    // ==================================================================
+
+    // --- Coleção de Empresas ---
+    match /companies/{companyId} {
+      // Qualquer um pode criar uma conta de empresa (status 'pending').
+      allow create: if isUserAuthenticated() && request.resource.data.status == 'pending';
+      // A empresa só pode ler e atualizar seus próprios dados.
+      // O admin pode ler e atualizar (para aprovar/reprovar).
+      allow read, update: if isOwner(companyId) || isAdmin();
+      // Apenas o admin pode apagar uma empresa.
+      allow delete: if isAdmin();
+    }
+
+    // --- Coleção de Vagas (Jobs) ---
+    match /jobs/{jobId} {
+      // Leitura:
+      // - Todos autenticados podem ler vagas 'disponiveis'.
+      // - A empresa dona ou o motoboy que aceitou podem ler vagas 'negociando' ou 'concluidas'.
+      // - Admins podem ler qualquer vaga.
+      allow read: if (isUserAuthenticated() && resource.data.status == 'disponivel') ||
+                     (isUserAuthenticated() && (isOwner(resource.data.empresaId) || isOwner(resource.data.motoboyId))) ||
+                     isAdmin();
+
+      // Criação:
+      // - Apenas a empresa dona pode criar uma vaga.
+      allow create: if isUserAuthenticated() && isOwner(request.resource.data.empresaId);
+
+      // Atualização:
+      // - Um motoboy pode aceitar uma vaga (mudar status para 'negociando').
+      // - A empresa pode concluir ou cancelar a vaga.
+      // - O motoboy pode cancelar a negociação.
+      allow update: if isUserAuthenticated() &&
+                       (
+                         // Motoboy aceitando a vaga
+                         (request.resource.data.status == 'negociando' && resource.data.status == 'disponivel' && isOwner(request.resource.data.motoboyId)) ||
+                         // Empresa concluindo a vaga
+                         (request.resource.data.status == 'concluida' && isOwner(resource.data.empresaId)) ||
+                         // Motoboy ou Empresa cancelando/reabrindo
+                         (isOwner(resource.data.empresaId) || isOwner(resource.data.motoboyId))
+                       );
+
+      // Exclusão:
+      // - Apenas a empresa dona pode apagar uma vaga.
+      allow delete: if isUserAuthenticated() && isOwner(resource.data.empresaId);
+
+      // --- Subcoleção de Mensagens do Chat ---
+      match /messages/{messageId} {
+        // Apenas a empresa ou o motoboy da vaga podem ler e escrever no chat.
+        allow read, create: if isUserAuthenticated() &&
+                               (isOwner(get(/databases/$(database)/documents/jobs/$(jobId)).data.empresaId) ||
+                                isOwner(get(/databases/$(database)/documents/jobs/$(jobId)).data.motoboyId));
+        // Ninguém pode editar ou apagar mensagens.
+        allow update, delete: if false;
+      }
+    }
+
+    // ==================================================================
+    // REGRAS PARA DADOS PÚBLICOS (Assistente Graxa)
+    // ==================================================================
+    match /graxa_kb/{docId} {
+      // Todos podem ler a base de conhecimento.
+      allow read: if true;
+      // Apenas admins podem criar, editar ou apagar.
+      allow write: if isAdmin();
+    }
+
+    match /graxa_manuals_kb/{docId} {
+      // Todos podem ler a base de conhecimento dos manuais.
+      allow read: if true;
+      // Apenas admins podem criar, editar ou apagar.
+      allow write: if isAdmin();
+    }
+  }
+}
