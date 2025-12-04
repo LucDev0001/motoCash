@@ -14,28 +14,23 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-let db;
-try {
-  // Inicializa o Firestore
-  db = firebase.firestore();
+const firestore = firebase.firestore();
 
-  // Habilita a persistência offline com sincronização entre abas.
-  // Esta é a forma moderna e recomendada, que resolve os avisos do console.
-  db.enablePersistence({ synchronizeTabs: true })
-    .then(() => {
-      console.log("Persistência do Firestore habilitada com sucesso.");
-    })
-    .catch((err) => {
-      if (err.code == "failed-precondition") {
-        console.warn("Múltiplas abas abertas, persistência pode não funcionar.");
-      } else if (err.code == "unimplemented") {
-        console.warn("Navegador não suporta persistência offline.");
-      }
-    });
-} catch (err) {
-  console.error("Erro ao habilitar a persistência do Firestore:", err.code);
-  db = firebase.firestore(); // Fallback para inicialização normal se a persistência falhar
-}
+// Nova forma de habilitar a persistência, evitando o warning de depreciação.
+firestore
+  .enablePersistence({ synchronizeTabs: true })
+  .then(() => {
+    console.log("Persistência do Firestore habilitada com sucesso.");
+  })
+  .catch((err) => {
+    if (err.code === "failed-precondition") {
+      console.warn(
+        "Múltiplas abas abertas, a persistência pode não funcionar como esperado."
+      );
+    } else if (err.code === "unimplemented") {
+      console.warn("O navegador atual não suporta persistência offline.");
+    }
+  });
 
 let auth;
 // Inicializa o auth apenas se a função existir, evitando erros em páginas que não o carregam.
@@ -43,6 +38,6 @@ if (typeof firebase.auth === "function") {
   auth = firebase.auth();
 }
 
-export { db };
+export { firestore as db }; // Exporta como 'db' para manter a compatibilidade com o resto do código.
 export { auth };
 export const appId = "moto-manager-v1";

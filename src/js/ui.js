@@ -43,6 +43,12 @@ export async function openEditModal(id, type) {
 
   const modal = await openModal("editModal");
 
+  // **CORREÇÃO ESTRUTURAL**: Adiciona o listener de submit aqui, em vez de usar onsubmit no HTML.
+  // Isso garante que o event.preventDefault() funcione corretamente e evita recarregamento da página.
+  modal.querySelector("form").addEventListener("submit", (e) => {
+    API.saveEdit(e);
+  });
+
   // Preenche os campos escondidos
   modal.querySelector("#edit-id").value = id;
   modal.querySelector("#edit-type").value = type;
@@ -283,15 +289,7 @@ export function showConfirmation(
 
 export async function showCompleteProfileModal() {
   // **CORREÇÃO COMPLETA**: A função foi refatorada para incluir a inicialização
-  // dos seletores FIPE, o listener de imagem e a correção do submit do formulário.
   const modal = await openModal("completeProfileModal");
-
-  // 1. Corrige o submit do formulário para não recarregar a página.
-  modal
-    .querySelector("#public-profile-form")
-    .addEventListener("submit", (event) => {
-      API.savePublicProfile(event);
-    });
 
   // 2. Inicializa os seletores de marca/modelo da FIPE.
   initFipeSelectors();
@@ -507,6 +505,14 @@ export async function openPublicProfileEditor() {
     const publicProfile = userDoc.data()?.publicProfile || {};
 
     const modal = await openModal("completeProfileModal");
+
+    // **CORREÇÃO ESTRUTURAL**: Adiciona o listener de submit aqui.
+    // Isso centraliza a lógica e garante que o formulário não recarregue a página.
+    modal
+      .querySelector("#public-profile-form")
+      .addEventListener("submit", (event) => {
+        API.savePublicProfile(event);
+      });
 
     modal.querySelector("#public-profile-modal-title").textContent =
       "Editar Perfil da Moto";

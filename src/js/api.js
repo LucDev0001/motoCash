@@ -212,8 +212,7 @@ export async function setUserOnlineStatus(isOnline) {
     const userData = userDoc.data() || {};
     if (
       !userData.publicProfile?.name ||
-      !userData.publicProfile?.fipeModelText || // Verifica o novo campo de texto do modelo
-      !userData.publicProfile?.motoPlate ||
+      !userData.publicProfile?.fipeModelText ||
       !userData.publicProfile?.whatsapp
     ) {
       // Perfil incompleto, mostrar modal para preenchimento
@@ -286,30 +285,35 @@ export async function setUserOnlineStatus(isOnline) {
 }
 
 export function savePublicProfile(event) {
-  if (event) event.preventDefault();
+  event.preventDefault(); // Garante que o formulário não recarregue a página
   if (!currentUser) return;
 
   const name = document.getElementById("public-name").value;
+  const whatsapp = document.getElementById("public-whatsapp").value;
+  const terms = document.getElementById("public-terms-checkbox").checked;
+
   const motoPlate = document.getElementById("public-moto-plate").value;
   const motoColor = document.getElementById("public-moto-color").value;
   const motoYear = document.getElementById("public-moto-year").value;
   const motoRenavam = document.getElementById("public-moto-renavam").value;
   const motoState = document.getElementById("public-moto-state").value;
   const motoImageUrl = document.getElementById("public-moto-image-url").value;
-  const whatsapp = document.getElementById("public-whatsapp").value;
-  const terms = document.getElementById("public-terms-checkbox").checked;
-
-  // **NOVO: Captura a meta de ganhos do modal**
-  const monthlyGoalInput = document.getElementById("public-monthly-goal");
-  const monthlyGoal = monthlyGoalInput
-    ? parseFloat(monthlyGoalInput.value)
-    : null;
 
   // Novos campos da FIPE
   const brandSelect = document.getElementById("fipe-brand");
   const modelSelect = document.getElementById("fipe-model");
   if (!terms) {
-    return showNotification("Você deve aceitar os termos para continuar.");
+    return showNotification(
+      "Você deve aceitar os termos para salvar seu perfil."
+    );
+  }
+
+  // Validação manual dos campos essenciais
+  if (!name || !brandSelect.value || !modelSelect.value || !whatsapp) {
+    return showNotification(
+      "Por favor, preencha todos os campos obrigatórios: Nome, Marca, Modelo e WhatsApp.",
+      "Campos Incompletos"
+    );
   }
 
   const userRef = db
@@ -339,25 +343,23 @@ export function savePublicProfile(event) {
     { merge: true }
   );
 
-  const goalPromise =
-    monthlyGoal !== null && !isNaN(monthlyGoal)
-      ? userRef.set({ monthlyGoal: monthlyGoal }, { merge: true })
-      : Promise.resolve();
-
-  Promise.all([profilePromise, goalPromise])
+  profilePromise
     .then(() => {
       currentUser.updateProfile({ displayName: name }); // Atualiza o nome no Auth também
       closeModal();
-      // Tenta colocar online apenas se o perfil estiver completo
-      if (name && modelSelect.value && motoPlate && whatsapp) {
-        setUserOnlineStatus(true);
-        showNotification("Perfil salvo! Você agora está online.", "Sucesso");
-      } else {
-        showNotification(
-          "Perfil salvo! Complete os campos obrigatórios para ficar online.",
-          "Sucesso"
-        );
-      }
+      // Tenta colocar online após salvar. A função setUserOnlineStatus já valida se o perfil está completo.
+      setUserOnlineStatus(true)
+        .then(() => {
+          showNotification("Perfil salvo! Você agora está online.", "Sucesso");
+        })
+        .catch((err) => {
+          // Se falhar (ex: perfil incompleto), apenas mostra a notificação de sucesso do salvamento.
+          // A função showCompleteProfileModal() já é chamada dentro de setUserOnlineStatus.
+          showNotification(
+            "Perfil salvo! Complete os dados para ficar online.",
+            "Sucesso"
+          );
+        });
     })
     .catch((e) => {
       showNotification(`Erro ao salvar perfil: ${e.message}`, "Erro");
@@ -742,7 +744,7 @@ export function loadDashboardData(p, shiftFilter, updateCallback) {
  * Compara os ganhos da semana atual com a semana anterior.
  */
 async function renderProAnalysisChart() {
-  const chartCanvas = document.getElementById("chart-pro-analysis");
+  const chartCanvas = document.getElementById("chart-pro-analysis"); // O ID estava correto na sua versão, mas pode ter sido alterado. Garantindo o ID correto.
   if (!chartCanvas) return;
   if (window.myProChart) window.myProChart.destroy();
 
@@ -768,6 +770,7 @@ async function renderProAnalysisChart() {
   const lastWeekData = processWeekData(lastWeekEarnings);
 
   window.myProChart = new Chart(ctx, {
+    // **MELHORIA**: Alterado para 'bar' para melhor comparação diária.
     type: "bar",
     data: {
       labels: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
@@ -775,14 +778,14 @@ async function renderProAnalysisChart() {
         {
           label: "Semana Passada",
           data: lastWeekData,
-          backgroundColor: "rgba(107, 114, 128, 0.5)", // Cinza
+          backgroundColor: "rgba(107, 114, 128, 0.5)", // Tailwind gray-500
           borderColor: "rgba(107, 114, 128, 1)",
           borderWidth: 1,
         },
         {
           label: "Semana Atual",
           data: currentWeekData,
-          backgroundColor: "rgba(251, 191, 36, 0.8)", // Amarelo
+          backgroundColor: "rgba(251, 191, 36, 0.8)", // Tailwind amber-400
           borderColor: "rgba(251, 191, 36, 1)",
           borderWidth: 1,
         },
@@ -790,6 +793,57 @@ async function renderProAnalysisChart() {
     },
     options: { responsive: true, maintainAspectRatio: false },
   });
+
+  // **NOVO: Calcula e renderiza as métricas adicionais da Análise Pro**
+  const totalCurrentWeek = currentWeekData.reduce((a, b) => a + b, 0);
+  const totalLastWeek = lastWeekData.reduce((a, b) => a + b, 0);
+
+  // Variação percentual
+  const variationEl = document.getElementById("pro-analysis-variation");
+  if (variationEl) {
+    if (totalLastWeek > 0) {
+      const variation =
+        ((totalCurrentWeek - totalLastWeek) / totalLastWeek) * 100;
+      variationEl.textContent = `${variation > 0 ? "+" : ""}${variation.toFixed(
+        1
+      )}%`;
+      variationEl.className = `font-bold text-lg ${
+        variation >= 0 ? "text-green-400" : "text-red-400"
+      }`;
+    } else {
+      variationEl.textContent = "N/A";
+      variationEl.className = "font-bold text-lg text-gray-400";
+    }
+  }
+
+  // Melhor dia da semana
+  const bestDayEl = document.getElementById("pro-analysis-best-day");
+  if (bestDayEl) {
+    const maxEarning = Math.max(...currentWeekData);
+    if (maxEarning > 0) {
+      const bestDayIndex = currentWeekData.indexOf(maxEarning);
+      const days = [
+        "Segunda",
+        "Terça",
+        "Quarta",
+        "Quinta",
+        "Sexta",
+        "Sábado",
+        "Domingo",
+      ];
+      bestDayEl.textContent = days[bestDayIndex];
+    } else {
+      bestDayEl.textContent = "N/A";
+    }
+  }
+
+  // Ganho médio por dia
+  const avgEarningEl = document.getElementById("pro-analysis-avg-earning");
+  if (avgEarningEl) {
+    const daysWithEarnings = currentWeekData.filter((d) => d > 0).length;
+    const avg = daysWithEarnings > 0 ? totalCurrentWeek / daysWithEarnings : 0;
+    avgEarningEl.textContent = `R$ ${avg.toFixed(2)}`;
+  }
 }
 
 // --- CRUD API ---
@@ -879,18 +933,30 @@ export function saveEdit(e) {
   e.preventDefault();
   const id = document.getElementById("edit-id").value;
   const type = document.getElementById("edit-type").value;
-  const category = document.getElementById("edit-category").value;
   const dateValue = document.getElementById("edit-date").value;
+
+  // **CORREÇÃO DEFINITIVA**: A categoria é obtida de fontes diferentes
+  // dependendo se é um ganho ou uma despesa.
+  let category;
+  if (type === "expense") {
+    // Para despesas, a categoria vem do dropdown visível.
+    category = document.getElementById("edit-exp-category").value;
+  } else {
+    // Para ganhos, a categoria é fixa e vem do campo escondido.
+    category = document.getElementById("edit-category").value;
+  }
 
   // Corrige o problema de fuso horário, tratando a data como local ao meio-dia.
   const date = new Date(dateValue + "T12:00:00");
 
   let dataToUpdate = {
+    category, // <-- CORREÇÃO: Garante que a categoria seja sempre atualizada.
     // Armazenamos a data como string "YYYY-MM-DD" para consistência com o resto do app.
     date: date.toISOString().split("T")[0],
   };
 
   const safeFloat = (id) => {
+    // Função auxiliar para converter valores monetários
     const val = document.getElementById(id)?.value;
     return val ? parseFloat(val.replace(",", ".")) : 0;
   };
@@ -907,6 +973,18 @@ export function saveEdit(e) {
     successMessage = "Ganho atualizado com sucesso!";
 
     // Adiciona o turno aos dados a serem salvos
+    // **NOVO: Validação manual para ganhos**
+    const earningTotalValue = safeFloat("edit-total");
+    if (
+      category !== "loja_fixa" &&
+      (isNaN(earningTotalValue) || earningTotalValue <= 0)
+    ) {
+      return showNotification(
+        "Por favor, insira um valor de ganho válido.",
+        "Valor Inválido"
+      );
+    }
+
     dataToUpdate.shift = document.getElementById("edit-shift").value;
     dataToUpdate.observation =
       document.getElementById("edit-observation").value;
@@ -924,12 +1002,22 @@ export function saveEdit(e) {
       dataToUpdate.totalValue = safeFloat("edit-total");
       dataToUpdate.count = safeInt("edit-count");
     }
-  } else {
+  } else if (type === "expense") {
     collectionName = "expenses";
     successMessage = "Despesa atualizada com sucesso!";
-    dataToUpdate.category = document.getElementById("edit-exp-category").value;
-    dataToUpdate.totalValue = safeFloat("edit-exp-total");
     dataToUpdate.observation = document.getElementById("edit-exp-desc").value;
+
+    // Validação do valor da despesa
+    const expenseTotalValue = safeFloat("edit-exp-total");
+    if (isNaN(expenseTotalValue) || expenseTotalValue <= 0) {
+      return showNotification(
+        "Por favor, insira um valor de despesa válido e maior que zero.",
+        "Valor Inválido"
+      );
+    }
+    dataToUpdate.totalValue = expenseTotalValue;
+  } else {
+    return console.error("Tipo de edição desconhecido:", type);
   }
 
   db.collection("artifacts")
