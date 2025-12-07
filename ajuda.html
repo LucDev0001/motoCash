@@ -4,14 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Central de Ajuda - AppMotoCash</title>
-    <!-- Link para o CSS compilado pelo Tailwind -->
-    <link rel="stylesheet" href="src/css/styles.css" />
-    <!-- O ideal é que os ícones sejam importados via JS para o build -->
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+      tailwind.config = {
+        darkMode: 'media', // 'media' usa a preferência do sistema operacional, 'class' se você tiver um botão de alternar
+      }
+    </script>
+
     <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
     <div class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
-      <!-- Tela Principal da Ajuda -->
       <div id="help-main-view">
         <header class="text-center py-8">
           <h1 class="text-4xl font-bold text-gray-800 dark:text-white">
@@ -34,7 +39,6 @@
           </div>
         </header>
 
-        <!-- Resultados da Busca -->
         <div id="search-results-container" class="hidden mb-8">
           <button
             id="back-to-categories-btn"
@@ -52,7 +56,6 @@
           <div id="search-results" class="space-y-2"></div>
         </div>
 
-        <!-- Navegação por Categorias -->
         <div id="categories-container">
           <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">
             Navegue por Categorias
@@ -61,11 +64,9 @@
             class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
             id="categories-grid"
           >
-            <!-- Categorias serão injetadas aqui pelo JS -->
-          </div>
+            </div>
         </div>
 
-        <!-- Contato -->
         <div
           class="mt-12 text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md"
         >
@@ -83,7 +84,6 @@
         </div>
       </div>
 
-      <!-- Tela de Visualização do Artigo -->
       <div id="help-article-view" class="hidden">
         <button
           id="back-to-help-btn"
@@ -97,18 +97,15 @@
             id="article-content"
             class="prose dark:prose-invert max-w-none prose-p:text-gray-600 prose-p:dark:text-gray-300 prose-li:text-gray-600 prose-li:dark:text-gray-300"
           >
-            <!-- Conteúdo do artigo será injetado aqui -->
-          </div>
+            </div>
           <div
             class="border-t dark:border-gray-700 mt-8 pt-6 text-center"
             id="article-feedback"
           >
-            <!-- Feedback será injetado aqui -->
-          </div>
+            </div>
         </div>
       </div>
 
-      <!-- Rodapé -->
       <footer class="text-center mt-12 text-xs text-gray-400 space-x-4">
         <a
           href="termos_de_uso.html"
@@ -132,9 +129,26 @@
     <script>
       // --- Lógica da Página de Ajuda ---
       document.addEventListener("DOMContentLoaded", async () => {
-        // Carrega os artigos do arquivo JSON
-        const response = await fetch("src/data/ajuda.json");
-        const helpArticles = await response.json();
+        // ATENÇÃO: Certifique-se de que o arquivo "src/data/ajuda.json" existe!
+        // Se não existir, a página vai travar aqui.
+        try {
+            const response = await fetch("src/data/ajuda.json");
+            if (!response.ok) throw new Error("Erro ao carregar JSON");
+            var helpArticles = await response.json();
+        } catch (error) {
+            console.error("Erro:", error);
+            document.getElementById("categories-grid").innerHTML = "<p class='text-red-500'>Erro ao carregar os dados de ajuda. Verifique o console.</p>";
+            // Dados de fallback para a página não ficar vazia se o JSON falhar
+            helpArticles = {
+                "exemplo": {
+                    "name": "Exemplo (JSON falhou)",
+                    "icon": "alert-triangle",
+                    "color": "text-red-500",
+                    "articles": []
+                }
+            };
+        }
+
 
         const searchInput = document.getElementById("help-search-input");
         const categoriesGrid = document.getElementById("categories-grid");
@@ -146,6 +160,7 @@
         );
 
         // Renderiza as categorias
+        categoriesGrid.innerHTML = ''; // Limpa antes de renderizar
         Object.keys(helpArticles).forEach((key) => {
           const category = helpArticles[key];
           const categoryEl = document.createElement("div");
