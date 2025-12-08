@@ -1,11 +1,21 @@
 import { auth, db, appId } from "./config.js";
-import { router } from "./router.js";
+import { router, renderPublicProfilePage } from "./router.js";
 import { showVerificationBanner, showLoginError, showToast } from "./ui.js";
 import { handleEmailLogin, handlePasswordReset } from "./api.js";
 
 export let currentUser = null;
 
 export function initAuth() {
+  // **NOVO**: Verifica se a URL é de um perfil público ANTES de qualquer outra coisa.
+  const urlParams = new URLSearchParams(window.location.search);
+  const publicProfileId = urlParams.get("profile");
+
+  if (publicProfileId) {
+    // Se for um link de perfil público, renderiza a página pública e para a execução.
+    renderPublicProfilePage(publicProfileId);
+    return; // Impede que o resto da lógica de autenticação seja executado.
+  }
+
   // Adiciona os listeners para os botões da tela de login
   const btnSignin = document.getElementById("btn-signin");
   const btnSignup = document.getElementById("btn-signup");
@@ -108,6 +118,14 @@ export function initAuth() {
         showVerificationBanner();
       }
     } else {
+      // **CORREÇÃO DEFINITIVA**: Antes de mostrar a tela de login,
+      // verifica se a página atual NÃO é um perfil público.
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has("profile")) {
+        // Se for um perfil público, simplesmente não fazemos nada.
+        // A página pública já foi renderizada e deve permanecer visível.
+        return;
+      }
       currentUser = null;
       loginScreen.classList.remove("hidden");
       mainApp.classList.add("hidden");

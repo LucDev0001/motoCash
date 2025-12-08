@@ -13,8 +13,8 @@ import {
   renderHistoryJobs,
   renderAcceptedJobs,
   renderJobChat,
-} from "./ui/extra.ui.js"; // Importa do novo módulo
-import { renderPublicProfile } from "./ui/publicProfile.ui.js"; // **NOVO**
+} from "./ui/extra.ui.js";
+import { renderPublicProfileView } from "./ui/publicProfile.ui.js"; // **NOVO**
 import { renderGraxa } from "./ui/graxa.ui.js"; // **NOVO**
 
 import { currentUser } from "./auth.js";
@@ -107,15 +107,45 @@ export async function router(view, params = {}) {
   } else if (view === "job-chat") {
     title.innerText = "Negociação";
     renderJobChat(content); // A função já pega o ID da vaga internamente
-  } else if (view === "publicProfile") {
+  } else if (view.startsWith("profile/")) {
+    // <-- CORREÇÃO: Rota dinâmica para perfis
+    const userId = view.split("/")[1]; // Extrai o ID do usuário da URL
     title.innerText = "Perfil Público";
     // Esconde a navegação e o cabeçalho para uma visualização limpa
-    document.getElementById("main-app-header").classList.add("hidden");
-    document.getElementById("main-app-nav").classList.add("hidden");
-    await renderPublicProfile(content, params.userId);
+    // Esta lógica será movida para a função de renderização específica
+    // para evitar que seja chamada em um contexto público.
+
+    // CORREÇÃO: Chama a função correta com o ID extraído
+    await renderPublicProfileView(content, userId);
   } else if (view === "graxa") {
     title.innerText = "Assistente Graxa";
     await renderGraxa(content);
   }
   setTimeout(() => lucide.createIcons(), 100);
+}
+
+/**
+ * **NOVO**: Função específica para renderizar a página de perfil público.
+ * É chamada pelo auth.js quando um parâmetro de URL é detectado.
+ * @param {string} userId - O ID do usuário cujo perfil será exibido.
+ */
+export async function renderPublicProfilePage(userId) {
+  // 1. Esconde as telas principais para evitar "piscadas" na tela.
+  const loginScreen = document.getElementById("login-screen");
+  const mainApp = document.getElementById("main-app");
+  if (loginScreen) loginScreen.classList.add("hidden");
+  if (mainApp) mainApp.classList.add("hidden");
+
+  // 2. Limpa o corpo da página para garantir que apenas o perfil público seja exibido.
+  document.body.innerHTML = "";
+
+  // 3. Cria um novo container para a view pública e o adiciona ao body.
+  const publicViewContainer = document.createElement("div");
+  publicViewContainer.id = "public-view-container";
+  publicViewContainer.className = "bg-gray-100 dark:bg-gray-900"; // Adiciona um fundo
+  document.body.appendChild(publicViewContainer);
+
+  // Renderiza a view pública diretamente neste container,
+  // ignorando completamente o #main-app e o router principal.
+  await renderPublicProfileView(publicViewContainer, userId);
 }

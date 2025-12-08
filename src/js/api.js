@@ -380,30 +380,30 @@ export function savePublicProfile(event) {
     .doc(appId)
     .collection("users")
     .doc(currentUser.uid);
+  // **NOVO**: Referência para o documento na coleção pública.
+  const publicProfileRef = db
+    .collection("public_profiles")
+    .doc(currentUser.uid);
 
-  const profilePromise = userRef.set(
-    {
-      email: currentUser.email, // <-- ADICIONADO: Salva o e-mail do usuário
-      publicProfile: {
-        name,
-        motoPlate,
-        motoColor,
-        motoYear,
-        motoRenavam,
-        motoState,
-        motoImageUrl,
-        fipeBrandCode: brandSelect.value,
-        fipeModelCode: modelSelect.value,
-        fipeBrandText: brandSelect.options[brandSelect.selectedIndex].text,
-        fipeModelText: modelSelect.options[modelSelect.selectedIndex].text,
-        whatsapp: whatsapp.replace(/\D/g, ""), // Salva apenas os números do telefone
-      },
-    },
-    { merge: true }
-  );
+  // **CORREÇÃO**: O objeto de dados públicos é a fonte principal da verdade.
+  const publicData = {
+    name,
+    motoImageUrl,
+    fipeBrandText: brandSelect.options[brandSelect.selectedIndex].text,
+    fipeModelText: modelSelect.options[modelSelect.selectedIndex].text,
+    whatsapp: whatsapp.replace(/\D/g, ""),
+    userId: currentUser.uid,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  };
 
-  profilePromise
+  // **CORREÇÃO**: A escrita no perfil público é agora a operação principal.
+  publicProfileRef
+    .set(publicData)
     .then(() => {
+      // Após garantir que o perfil público foi salvo, tentamos salvar os dados privados.
+      // Mesmo que esta operação falhe, o perfil público já existe.
+      userRef.set({ publicProfile: publicData }, { merge: true });
+
       currentUser.updateProfile({ displayName: name }); // Atualiza o nome no Auth também
       closeModal();
       // Tenta colocar online após salvar. A função setUserOnlineStatus já valida se o perfil está completo.
@@ -412,8 +412,6 @@ export function savePublicProfile(event) {
           showNotification("Perfil salvo! Você agora está online.", "Sucesso");
         })
         .catch((err) => {
-          // Se falhar (ex: perfil incompleto), apenas mostra a notificação de sucesso do salvamento.
-          // A função showCompleteProfileModal() já é chamada dentro de setUserOnlineStatus.
           showNotification(
             "Perfil salvo! Complete os dados para ficar online.",
             "Sucesso"
@@ -421,7 +419,7 @@ export function savePublicProfile(event) {
         });
     })
     .catch((e) => {
-      showNotification(`Erro ao salvar perfil: ${e.message}`, "Erro");
+      showNotification(`Erro ao salvar perfil público: ${e.message}`, "Erro");
     });
 }
 
@@ -1279,7 +1277,7 @@ export function deleteMarketItem(id) {
   );
 }
 
-export function submitAd(e) {
+export async function submitAd(e) {
   e.preventDefault();
   const btn = document.getElementById("ad-submit-btn");
   btn.disabled = true;
@@ -1299,6 +1297,16 @@ export function submitAd(e) {
     return;
   }
 
+  // **NOVO: Vantagem para Apoiadores**
+  // Busca os dados do usuário para verificar se é Pro
+  const userDoc = await db
+    .collection("artifacts")
+    .doc(appId)
+    .collection("users")
+    .doc(currentUser.uid)
+    .get();
+  const isPro = userDoc.data()?.isPro || false;
+
   const adData = {
     title: document.getElementById("ad-title").value,
     price: parseFloat(document.getElementById("ad-price").value),
@@ -1308,6 +1316,7 @@ export function submitAd(e) {
     whatsapp: p,
     userId: currentUser.uid,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    isPro: isPro, // Adiciona o status de Apoiador ao anúncio
   };
 
   const adId = document.getElementById("ad-id").value;
@@ -1576,6 +1585,23 @@ export async function saveMaintenanceItem(e, prefillData = null) {
   const doc = await userRef.get();
   const items = doc.data()?.maintenanceItems || [];
 
+  // **NOVO: Vantagem para Apoiadores**
+  // Limita itens de manutenção para usuários gratuitos
+  const isPro = doc.data()?.isPro || false;
+  const FREE_TIER_LIMIT = 5; // Define o limite para usuários gratuitos
+
+  if (!id && !isPro && items.length >= FREE_TIER_LIMIT) {
+    // **MELHORIA**: Usa showConfirmation para dar uma ação ao usuário
+    showConfirmation(
+      `Você atingiu o limite de ${FREE_TIER_LIMIT} itens para usuários gratuitos. Desbloqueie itens ilimitados e outras vantagens se tornando um Apoiador!`,
+      "Limite Atingido",
+      () => {
+        openProPlanModal(); // Função de ui.js para abrir o modal
+      }
+    );
+    return; // Interrompe a função
+  }
+
   if (id) {
     // Edit
     const index = items.findIndex((i) => i.id === id);
@@ -1816,6 +1842,21 @@ export async function calculateAndRenderCostPerKm(userData) {
   document
     .getElementById("reset-cost-btn")
     ?.addEventListener("click", resetCostPerKm);
+
+  // **NOVO: Vantagem para Apoiadores**
+  // Verifica se o usuário é Apoiador (Pro)
+  const isPro = userData?.isPro || false;
+  if (!isPro) {
+    costValueEl.textContent = "PRO";
+    costExplanationEl.innerHTML = `
+      <p>Uma análise exclusiva para Apoiadores.</p>
+      <a href="#" onclick="UI.openProPlanModal()" class="text-yellow-400 hover:underline font-bold">Seja um Apoiador e desbloqueie!</a>
+    `;
+    costValueEl.classList.remove("animate-pulse");
+    // Esconde o botão de reset para não-apoiadores
+    document.getElementById("reset-cost-btn")?.classList.add("hidden");
+    return;
+  }
 
   try {
     // 1. Buscar todas as despesas relevantes
@@ -2110,47 +2151,6 @@ export async function acceptJob(jobId) {
 }
 
 /**
- * Inicia o fluxo de checkout de assinatura com o Abacate Pay
- * chamando uma Firebase Cloud Function.
- */
-export async function createAbacatePayCheckout() {
-  if (!currentUser) return;
-
-  const checkoutButton = document.getElementById("subscribe-btn");
-  checkoutButton.disabled = true;
-  checkoutButton.innerHTML = `<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> Redirecionando...`;
-
-  try {
-    // Inicializa as funções do Firebase (se ainda não tiver feito)
-    const functions = firebase.functions();
-
-    // Chama a Cloud Function que você irá criar
-    const createCheckout = functions.httpsCallable("createAbacatePayCheckout");
-
-    const result = await createCheckout({
-      // Você pode passar dados para a função se precisar
-      userId: currentUser.uid,
-      email: currentUser.email,
-    });
-
-    const { checkout_url } = result.data;
-
-    if (checkout_url) {
-      // Redireciona o usuário para a página de pagamento segura
-      window.location.assign(checkout_url);
-    } else {
-      throw new Error("URL de checkout não recebida.");
-    }
-  } catch (error) {
-    console.error("Erro ao criar checkout:", error);
-    showNotification(`Erro ao iniciar pagamento: ${error.message}`, "Erro");
-    checkoutButton.disabled = false;
-    checkoutButton.innerHTML = `<i data-lucide="gem"></i> Quero ser Apoiador`;
-    lucide.createIcons();
-  }
-}
-
-/**
  * Escuta por vagas com status "disponível" em tempo real.
  * @param {function} callback - Função a ser chamada com a lista de vagas.
  * @returns {function} - Função para cancelar o listener.
@@ -2369,5 +2369,37 @@ export async function rateCompany(jobId, empresaId, rating) {
   } catch (error) {
     showNotification(`Erro ao avaliar: ${error}`, "Erro");
     closeModal();
+  }
+}
+
+/**
+ * **NOVO**: Busca os dados de um perfil público com base no ID do usuário.
+ * @param {string} userId - O ID do usuário cujo perfil deve ser buscado.
+ * @returns {Promise<object|null>} - Uma promessa que resolve com os dados do perfil ou nulo se não for encontrado.
+ */
+export async function getPublicProfile(userId) {
+  if (!userId) {
+    console.error("ID de usuário não fornecido para getPublicProfile.");
+    return null;
+  }
+
+  try {
+    const profileRef = db.collection("public_profiles").doc(userId);
+    const doc = await profileRef.get();
+
+    if (!doc.exists) {
+      console.warn(
+        `Perfil público para userId: ${userId} não encontrado. O usuário provavelmente ainda não salvou seu perfil público.`
+      );
+    }
+
+    if (doc.exists) {
+      return { id: doc.id, ...doc.data() };
+    } else {
+      return null; // Perfil não encontrado
+    }
+  } catch (error) {
+    console.error("Erro ao buscar perfil público:", error);
+    return null;
   }
 }

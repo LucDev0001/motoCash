@@ -124,16 +124,6 @@ function showUpdateToast() {
 // --- INICIALIZAÇÃO E EVENT LISTENERS GLOBAIS ---
 
 async function initApp() {
-  // **NOVO**: Verifica se a URL é de um perfil público
-  const urlParams = new URLSearchParams(window.location.search);
-  const profileId = urlParams.get("profile");
-
-  if (profileId) {
-    // Se for um perfil público, renderiza a página e para a execução
-    router("publicProfile", { userId: profileId });
-    return;
-  }
-
   initTheme();
 
   // Indicador de Status Online/Offline

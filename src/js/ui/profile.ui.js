@@ -14,22 +14,33 @@ export async function renderProfile(c) {
   c.innerHTML = await fetch("src/templates/views/profile.html").then((res) =>
     res.text()
   );
-  db.collection("artifacts")
-    .doc(appId)
-    .collection("users")
-    .doc(currentUser.uid)
-    .onSnapshot((doc) => {
-      // A configuração inicial dos listeners é feita uma vez.
-      // Este listener agora só atualiza os dados dinâmicos.
-      updateProfileStats(doc);
-    });
 
-  // **CORREÇÃO**: Adiciona os listeners DEPOIS que o HTML foi carregado.
   document.getElementById("profile-name-display").textContent =
     currentUser.displayName || currentUser.email || "User";
   document.getElementById(
     "profile-uid-display"
   ).textContent = `ID: ${currentUser.uid.slice(0, 8)}`;
+
+  // **CORREÇÃO**: Busca os dados do usuário e SÓ ENTÃO adiciona os listeners.
+  try {
+    const doc = await db
+      .collection("artifacts")
+      .doc(appId)
+      .collection("users")
+      .doc(currentUser.uid)
+      .get();
+
+    if (doc.exists) {
+      updateProfileStats(doc);
+      addProfileListeners(doc.data());
+    }
+  } catch (error) {
+    console.error("Erro ao carregar dados do perfil:", error);
+  }
+}
+
+function addProfileListeners(userData = {}) {
+  const isPro = userData.isPro === true;
 
   document
     .getElementById("theme-toggle")
@@ -37,9 +48,13 @@ export async function renderProfile(c) {
   document
     .getElementById("edit-public-profile-btn")
     .addEventListener("click", openPublicProfileEditor);
-  document
-    .getElementById("pro-plan-card")
-    .addEventListener("click", () => openModal("proPlanModal"));
+
+  const shareProfileBtn = document.getElementById("share-profile-btn");
+  if (shareProfileBtn) {
+    shareProfileBtn.addEventListener("click", () =>
+      sharePublicProfile(userData)
+    );
+  }
   document
     .getElementById("achievements-btn")
     .addEventListener("click", () => router("achievements"));
@@ -52,51 +67,41 @@ export async function renderProfile(c) {
   document
     .getElementById("maintenance-shortcut-btn")
     .addEventListener("click", () => router("garage"));
-  document
-    .getElementById("backup-btn")
-    .addEventListener("click", API.backupData);
 
+  // --- Lógica para funcionalidades PRO ---
+  const backupBtn = document.getElementById("backup-btn");
   const restoreBtn = document.getElementById("restore-btn");
   const restoreFileInput = document.getElementById("restore-file-input");
+  const proPlanCard = document.getElementById("pro-plan-card");
 
-  if (restoreBtn && restoreFileInput) {
-    restoreBtn.addEventListener("click", () => {
-      restoreFileInput.click();
-    });
-
-    restoreFileInput.addEventListener("change", (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        API.restoreData(file);
-      }
-      event.target.value = null;
-    });
+  // Adiciona o clique para abrir o modal de apoiador
+  if (proPlanCard) {
+    proPlanCard.addEventListener("click", () => openModal("proPlanModal"));
   }
 
-  // **NOVO**: Lógica para o botão de Compartilhar Perfil
-  const shareProfileBtn = document.getElementById("share-profile-btn");
-  if (shareProfileBtn) {
-    shareProfileBtn.addEventListener("click", async () => {
-      const shareUrl = `${window.location.origin}/?profile=${currentUser.uid}`;
-      const shareData = {
-        title: "Meu Perfil no AppMotoCash",
-        text: "Confira meu perfil profissional de motoboy no AppMotoCash!",
-        url: shareUrl,
-      };
+  if (isPro) {
+    // Usuário é Apoiador: Habilita as funções
+    if (backupBtn) backupBtn.onclick = API.backupData;
+    if (restoreBtn) restoreBtn.onclick = () => restoreFileInput.click();
+  } else {
+    // Usuário NÃO é Apoiador: Desabilita e adiciona o convite
+    if (backupBtn) {
+      backupBtn.disabled = true;
+      backupBtn.onclick = () => openModal("proPlanModal");
+    }
+    if (restoreBtn) {
+      restoreBtn.disabled = true;
+      restoreBtn.onclick = () => openModal("proPlanModal");
+    }
+  }
 
-      try {
-        // Tenta usar a API de compartilhamento nativa do dispositivo
-        if (navigator.share) {
-          await navigator.share(shareData);
-        } else {
-          // Fallback para navegadores que não suportam a API de compartilhamento
-          await navigator.clipboard.writeText(shareUrl);
-          showToast("Link do perfil copiado para a área de transferência!");
-        }
-      } catch (err) {
-        console.error("Erro ao compartilhar:", err);
-      }
-    });
+  // Listener para o input de arquivo (sempre ativo)
+  if (restoreFileInput) {
+    restoreFileInput.onchange = (event) => {
+      const file = event.target.files[0];
+      if (file) API.restoreData(file);
+      event.target.value = null; // Limpa o input para permitir selecionar o mesmo arquivo novamente
+    };
   }
 
   document
@@ -141,6 +146,13 @@ function updateProfileStats(doc) {
   // **NOVO**: Mostra o botão de compartilhar apenas para usuários Pro
   if (shareProfileBtn) shareProfileBtn.classList.toggle("hidden", !isPro);
 
+  // **NOVO**: Controla os botões de Backup/Restauração
+  const proFeatureLocks = document.querySelectorAll(".pro-feature-lock");
+  proFeatureLocks.forEach((lock) => {
+    lock.classList.toggle("hidden", isPro);
+    lock.classList.toggle("flex", !isPro); // Usa 'flex' para mostrar
+  });
+
   // Atualiza estatísticas
   statsRatingEl.textContent = profile.rating
     ? `${profile.rating.toFixed(1)} ★`
@@ -175,4 +187,49 @@ function updateProfileStats(doc) {
     );
     statsEarningsEl.textContent = `R$ ${monthlyEarnings.toFixed(2)}`;
   });
+}
+
+/**
+ * Abre o modal de compartilhamento do perfil público.
+ * @param {object} userData - Os dados do usuário logado.
+ */
+async function sharePublicProfile(userData) {
+  const modal = await openModal("shareProfileModal");
+
+  const publicProfile = userData.publicProfile || {};
+  const profileUrl = `${window.location.origin}${window.location.pathname}?profile=${currentUser.uid}`;
+
+  // Preenche o preview
+  const previewImage = modal.querySelector("#preview-profile-image");
+  const previewName = modal.querySelector("#preview-profile-name");
+  const previewMoto = modal.querySelector("#preview-profile-moto");
+
+  if (publicProfile.motoImageUrl) {
+    previewImage.innerHTML = `<img src="${publicProfile.motoImageUrl}" class="w-full h-full object-cover rounded-full">`;
+  } else {
+    previewImage.innerHTML = `<i data-lucide="bike" class="w-8 h-8 text-gray-400"></i>`;
+    lucide.createIcons();
+  }
+  previewName.textContent = publicProfile.name || "Nome não definido";
+  previewMoto.textContent =
+    publicProfile.fipeModelText || "Moto não cadastrada";
+
+  // Adiciona listeners aos botões de ação
+  modal.querySelector("#copy-profile-link-btn").onclick = () => {
+    navigator.clipboard
+      .writeText(profileUrl)
+      .then(() => {
+        showToast("Link do perfil copiado!", "copy");
+        closeModal();
+      })
+      .catch(() => {
+        alert("Não foi possível copiar o link.");
+      });
+  };
+
+  modal.querySelector("#whatsapp-share-btn").onclick = () => {
+    const text = `Olá! Dê uma olhada no meu perfil profissional de motofretista no AppMotoCash: ${profileUrl}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, "_blank");
+  };
 }

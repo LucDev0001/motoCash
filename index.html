@@ -298,5 +298,14 @@
         </nav>
       </div>
     </div>
+
+    <!-- **NOVO**: Script para expor módulos globalmente -->
+    <script type="module">
+      import * as API from "./src/js/api.js";
+      import * as UI from "./src/js/ui.js";
+
+      window.API = API;
+      window.UI = UI;
+    </script>
   </body>
 </html>

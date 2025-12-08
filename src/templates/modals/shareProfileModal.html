@@ -1,0 +1,55 @@
+<div
+  class="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-[500] animate-fade-in-fast"
+>
+  <div
+    class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md m-4 animate-slide-in-bottom"
+  >
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold dark:text-white">
+        Compartilhar Perfil Público
+      </h3>
+      <button
+        class="close-modal-btn text-gray-500 hover:text-gray-800 dark:hover:text-white"
+      >
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+
+    <!-- Preview do Perfil -->
+    <div
+      class="bg-gray-900 rounded-lg p-4 border border-yellow-500/30 scale-90 origin-top"
+    >
+      <div class="text-center text-white">
+        <div
+          id="preview-profile-image"
+          class="w-16 h-16 rounded-full mx-auto mb-2 bg-gray-700 border-2 border-gray-600 flex items-center justify-center"
+        >
+          <!-- Imagem ou ícone -->
+        </div>
+        <h2 id="preview-profile-name" class="text-xl font-bold">Nome...</h2>
+        <p id="preview-profile-moto" class="text-sm text-gray-400">Moto...</p>
+      </div>
+    </div>
+
+    <p class="text-xs text-center text-gray-500 dark:text-gray-400 mt-2 mb-4">
+      É assim que seu perfil aparecerá para os outros.
+    </p>
+
+    <!-- Botões de Ação -->
+    <div class="space-y-3">
+      <button
+        id="copy-profile-link-btn"
+        class="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold py-3 rounded-lg flex items-center justify-center gap-2"
+      >
+        <i data-lucide="copy" class="w-5 h-5"></i> Copiar Link
+      </button>
+      <button
+        id="whatsapp-share-btn"
+        class="w-full bg-green-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"
+      >
+        <i data-lucide="message-circle" class="w-5 h-5"></i> Compartilhar no
+        WhatsApp
+      </button>
+    </div>
+  </div>
+</div>

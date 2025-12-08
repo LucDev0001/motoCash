@@ -1,88 +1,145 @@
 <div
-  id="pro-plan-modal"
-  class="absolute inset-0 z-[90] bg-black/80 flex items-center justify-center transition-opacity p-4"
+  class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[500] p-4"
 >
   <div
-    class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-xl modal-enter shadow-2xl flex flex-col max-h-[90vh]"
+    class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-md m-4 transform transition-all"
   >
-    <div class="p-6 text-center">
-      <div
-        class="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg mx-auto"
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+        <i
+          data-lucide="gem"
+          class="inline-block w-6 h-6 text-yellow-500 mr-2"
+        ></i
+        >Seja um Apoiador
+      </h3>
+      <button
+        class="close-modal-btn text-gray-400 hover:text-gray-700 dark:hover:text-white"
       >
-        <i data-lucide="gem" class="w-10 h-10 text-white"></i>
-      </div>
-      <h3 class="text-2xl font-bold mt-4 dark:text-white">Plano Apoiador</h3>
-      <p class="text-gray-500 dark:text-gray-400 mt-1">
-        Apoie o projeto por apenas
-        <strong class="text-green-500">R$ 4,99/mês</strong>.
-      </p>
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
     </div>
 
-    <div class="px-6 pb-6 space-y-3 text-sm">
-      <div class="flex items-start gap-3">
+    <p class="text-gray-600 dark:text-gray-300 mb-6">
+      Sua contribuição mantém o app no ar e desbloqueia recursos incríveis para
+      você ir mais longe.
+    </p>
+
+    <div class="space-y-4 mb-8">
+      <div class="flex items-start gap-4">
         <i
-          data-lucide="check"
-          class="w-5 h-5 text-green-500 shrink-0 mt-0.5"
+          data-lucide="line-chart"
+          class="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1"
         ></i>
-        <p class="text-gray-600 dark:text-gray-300">
-          <strong>Ícone de Apoiador:</strong> Um selo especial no seu perfil.
-        </p>
+        <div>
+          <h4 class="font-semibold dark:text-white">Análise de Custo por Km</h4>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Descubra exatamente quanto você gasta para rodar e otimize seus
+            lucros.
+          </p>
+        </div>
       </div>
-      <div class="flex items-start gap-3">
+      <div class="flex items-start gap-4">
         <i
-          data-lucide="check"
-          class="w-5 h-5 text-green-500 shrink-0 mt-0.5"
+          data-lucide="sparkles"
+          class="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1"
         ></i>
-        <p class="text-gray-600 dark:text-gray-300">
-          <strong>Perfil Público:</strong> Uma página compartilhável para usar
-          como seu cartão de visita digital.
-        </p>
+        <div>
+          <h4 class="font-semibold dark:text-white">Destaque no Marketplace</h4>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Seus anúncios com um selo "Apoiador" para mais visibilidade e
+            confiança.
+          </p>
+        </div>
       </div>
-      <div class="flex items-start gap-3">
+      <div class="flex items-start gap-4">
         <i
-          data-lucide="check"
-          class="w-5 h-5 text-green-500 shrink-0 mt-0.5"
+          data-lucide="wrench"
+          class="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1"
         ></i>
-        <p class="text-gray-600 dark:text-gray-300">
-          <strong>Análise Pro:</strong> Gráficos avançados para comparar seu
-          desempenho semanal.
-        </p>
+        <div>
+          <h4 class="font-semibold dark:text-white">
+            Itens de Manutenção Ilimitados
+          </h4>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Cadastre quantos itens de manutenção precisar, sem o limite de 5.
+          </p>
+        </div>
       </div>
-      <div class="flex items-start gap-3">
+      <div class="flex items-start gap-4">
         <i
-          data-lucide="check"
-          class="w-5 h-5 text-green-500 shrink-0 mt-0.5"
+          data-lucide="database-backup"
+          class="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1"
         ></i>
-        <p class="text-gray-600 dark:text-gray-300">
-          <strong>Acesso Ilimitado à Assistente Graxa:</strong> Tire dúvidas
-          sobre manutenção, leis e muito mais.
-        </p>
+        <div>
+          <h4 class="font-semibold dark:text-white">Backup e Restauração</h4>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Proteja seus dados financeiros e de manutenção. Nunca perca seus
+            registros.
+          </p>
+        </div>
       </div>
     </div>
 
-    <!-- NOVO: Instruções para pagamento manual via PIX -->
-    <div class="p-6 border-t border-gray-100 dark:border-gray-700 text-center">
-      <p class="text-sm text-gray-500 dark:text-gray-400">
-        Para ativar, faça um PIX de
-        <strong class="text-green-500">R$ 4,99</strong> para a chave:
-      </p>
-      <div class="my-3 bg-gray-100 dark:bg-gray-700 p-3 rounded-lg">
-        <p class="font-mono font-bold text-gray-800 dark:text-gray-200">
-          11661221408 (CPF)
-        </p>
+    <!-- NOVO: Seção de Pagamento Manual -->
+    <div class="border-t dark:border-gray-700 pt-6 mt-6">
+      <h4
+        class="text-lg font-bold text-center text-gray-900 dark:text-white mb-4"
+      >
+        Como se tornar um Apoiador
+      </h4>
+      <div class="space-y-4 text-sm">
+        <div class="flex gap-3">
+          <div
+            class="flex-shrink-0 w-6 h-6 bg-yellow-500 text-black rounded-full flex items-center justify-center font-bold"
+          >
+            1
+          </div>
+          <div class="text-gray-700 dark:text-gray-300">
+            <p class="mb-1">
+              Faça um <strong>PIX de R$ 4,99 (mensal)</strong> para a chave
+              abaixo.
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Sua contribuição é o combustível que mantém o app funcionando!
+            </p>
+            <div
+              class="mt-2 bg-gray-100 dark:bg-gray-700 p-2 rounded-lg flex items-center justify-between"
+            >
+              <span class="font-mono text-xs">116.612.214-08</span>
+              <button
+                onclick="navigator.clipboard.writeText('116.612.214-08').then(() => UI.showToast('Chave PIX copiada!'))"
+                class="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded text-xs font-bold"
+              >
+                Copiar
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <div
+            class="flex-shrink-0 w-6 h-6 bg-yellow-500 text-black rounded-full flex items-center justify-center font-bold"
+          >
+            2
+          </div>
+          <div class="text-gray-700 dark:text-gray-300">
+            <p>
+              Envie o comprovante para o nosso WhatsApp para liberarmos seu
+              acesso PRO.
+            </p>
+            <a
+              href="https://wa.me/5521984856779?text=Ol%C3%A1%21%20Gostaria%20de%20ativar%20meu%20acesso%20Apoiador.%20Segue%20o%20comprovante."
+              target="_blank"
+              class="mt-2 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+            >
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+              <span>Enviar Comprovante</span>
+            </a>
+          </div>
+        </div>
       </div>
-      <p class="text-xs text-gray-400 dark:text-gray-500">
-        Após o pagamento, envie o comprovante para o e-mail
-        <strong class="dark:text-gray-300"
-          >lucianosantosseverino@gmail.com</strong
-        >
-        para a liberação dos recursos.
+      <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
+        * A liberação do acesso é manual e pode levar algumas horas.
       </p>
     </div>
-    <button
-      class="absolute top-4 right-4 text-gray-500 dark:text-gray-400 p-1 close-modal-btn"
-    >
-      <i data-lucide="x"></i>
-    </button>
   </div>
 </div>
