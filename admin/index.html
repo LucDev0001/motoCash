@@ -82,11 +82,20 @@
 
     <!-- PAINEL PRINCIPAL (DASHBOARD) -->
     <div id="dashboard-screen" class="hidden">
-      <div class="flex h-screen bg-gray-100">
+      <div class="relative min-h-screen lg:flex">
         <!-- Barra Lateral -->
-        <aside class="w-64 bg-gray-800 text-white flex flex-col">
-          <div class="p-4 border-b border-gray-700">
+        <aside
+          id="sidebar"
+          class="bg-gray-800 text-white w-64 min-h-screen fixed inset-y-0 left-0 transform -translate-x-full lg:relative lg:translate-x-0 transition-transform duration-200 ease-in-out z-30 flex flex-col"
+        >
+          <div
+            class="p-4 border-b border-gray-700 flex justify-between items-center"
+          >
             <h2 class="text-xl font-bold">AppMotoCash Admin</h2>
+            <!-- Botão de fechar para mobile -->
+            <button id="close-sidebar-btn" class="lg:hidden text-gray-400 hover:text-white">
+              <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
           </div>
           <nav class="flex-1 p-4 space-y-2">
             <a
@@ -167,23 +176,37 @@
                 <span>Gerador de KB</span>
             </a>
           </div>
-          <div class="p-4 border-t border-gray-700">
-            <button
-              id="logout-btn"
-              class="w-full text-left flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700"
-            >
-              <i data-lucide="log-out" class="w-5 h-5"></i>
-              <span>Sair</span>
-            </button>
-          </div>
         </aside>
 
         <!-- Conteúdo Principal -->
-        <main class="flex-1 p-8 overflow-y-auto relative">
+        <div class="flex-1 flex flex-col">
+          <!-- Header do Conteúdo -->
+          <header
+            class="bg-white shadow-md p-4 flex justify-between items-center sticky top-0 z-20"
+          >
+            <div class="flex items-center gap-4">
+              <!-- Botão de Menu para Mobile -->
+              <button id="open-sidebar-btn" class="lg:hidden text-gray-600">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+              </button>
+              <h1 id="page-title" class="text-xl md:text-2xl font-bold text-gray-800">
+                Dashboard
+              </h1>
+              <!-- NOVO: Contador de usuários/empresas, visível apenas nas telas certas -->
+              <span id="user-count-display" class="hidden bg-gray-200 text-gray-700 text-xs font-bold px-2 py-1 rounded-full">0</span>
+              <span id="company-count-display" class="hidden bg-purple-200 text-purple-800 text-xs font-bold px-2 py-1 rounded-full">0</span>
+
+            </div>
+            <button id="logout-btn" class="flex items-center gap-2 text-sm text-gray-600 hover:text-red-500">
+              <i data-lucide="log-out" class="w-5 h-5"></i>
+              <span class="hidden md:inline">Sair</span>
+            </button>
+          </header>
+
+          <main class="flex-1 p-4 md:p-8 bg-gray-100">
           <!-- ======================= VIEW: DASHBOARD ======================= -->
           <div id="view-dashboard">
-            <div class="flex justify-between items-center">
-              <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
+            <div class="flex justify-end items-center mb-6">
               <button
                 id="refresh-dashboard-btn"
                 class="flex items-center gap-2 text-sm bg-white hover:bg-gray-50 border rounded-lg px-4 py-2 shadow-sm"
@@ -193,7 +216,7 @@
               </button>
             </div>
             <!-- Métricas Principais -->
-            <div
+            <div 
               class="grid grid-cols-1 gap-6 mt-6 md:grid-cols-2 lg:grid-cols-4"
             >
               <div
@@ -331,15 +354,17 @@
 
           <!-- ======================= VIEW: USUÁRIOS ======================= -->
           <div id="view-users" class="hidden">
-            <h1 class="text-3xl font-bold text-gray-800">
-              Gerenciamento de Usuários (<span id="user-count-display">0</span>)
-            </h1>
             <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
               <div class="flex justify-between items-center mb-4">
-                <div class="flex items-center space-x-4">
-                    <h3 class="font-bold text-gray-800">Todos os Motoboys</h3>
+                <div class="flex items-center gap-2">
                     <button id="create-user-btn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center">
                         <i data-lucide="plus-circle" class="w-5 h-5 mr-2"></i> Criar Novo Usuário
+                    </button>
+                    <button id="broadcast-notification-btn" class="bg-yellow-500 text-black px-4 py-2 rounded-md hover:bg-yellow-600 flex items-center gap-2">
+                        <i data-lucide="send" class="w-4 h-4"></i> Enviar Notificação em Massa
+                    </button>
+                    <button id="create-company-btn" class="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition-colors flex items-center">
+                        <i data-lucide="building-2" class="w-5 h-5 mr-2"></i> Criar Empresa
                     </button>
                 </div>
                 <div class="relative">
@@ -380,9 +405,6 @@
 
           <!-- ======================= VIEW: EMPRESAS ======================= -->
           <div id="view-companies" class="hidden">
-            <h1 class="text-3xl font-bold text-gray-800">
-              Gerenciamento de Empresas (<span id="company-count-display">0</span>)
-            </h1>
             <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
               <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center space-x-4">
@@ -427,7 +449,6 @@
 
           <!-- ======================= VIEW: APROVAÇÕES ======================= -->
           <div id="view-approvals" class="hidden">
-            <h1 class="text-3xl font-bold text-gray-800">Aprovação de Novas Empresas</h1>
             <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
               <h3 class="font-bold text-gray-800">Empresas aguardando aprovação</h3>
               <div class="overflow-x-auto mt-4">
@@ -460,9 +481,6 @@
           <div id="view-chat" class="hidden">
             <!-- Lista de Conversas -->
             <div id="chat-list-view">
-              <h1 class="text-3xl font-bold text-gray-800">
-                Monitoramento de Chats
-              </h1>
               <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
                 <h3 class="font-bold text-gray-800">Conversas Recentes</h3>
                 <div class="overflow-x-auto mt-4">
@@ -506,9 +524,6 @@
 
           <!-- ======================= VIEW: LOG DE ATIVIDADES ======================= -->
           <div id="view-logs" class="hidden">
-            <h1 class="text-3xl font-bold text-gray-800">
-              Log de Atividades do Admin
-            </h1>
             <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
               <h3 class="font-bold text-gray-800">Últimas 50 Ações</h3>
               <div class="overflow-x-auto mt-4">
@@ -557,6 +572,7 @@
                     </button>
                 </div>
             </div>
+
             <h2 id="user-details-name" class="text-3xl font-bold text-gray-800 mb-6">Detalhes do Usuário</h2>
 
             <div id="user-details-content" class="space-y-6">
@@ -691,8 +707,6 @@
 
           <!-- ======================= VIEW: CONFIGURAÇÕES ======================= -->
           <div id="view-settings" class="hidden">
-            <h1 class="text-3xl font-bold text-gray-800">Configurações Gerais</h1>
-            <p class="text-gray-500 mt-1">Controle parâmetros globais e o comportamento do aplicativo.</p>
 
             <!-- Card de Parâmetros Globais -->
             <div class="mt-8 p-6 bg-white rounded-lg shadow-md">
@@ -767,9 +781,6 @@
 
           <!-- ======================= VIEW: LOG DE ATIVIDADES ======================= -->
           <div id="view-logs" class="hidden">
-            <h1 class="text-3xl font-bold text-gray-800">
-              Log de Atividades do Admin
-            </h1>
             <div class="mt-6 p-6 bg-white rounded-lg shadow-md">
               <h3 class="font-bold text-gray-800">Últimas 50 Ações</h3>
               <div class="overflow-x-auto mt-4">
@@ -798,8 +809,6 @@
 
           <!-- ======================= VIEW: ASSISTENTE GRAXA KB ======================= -->
           <div id="view-graxa-kb" class="hidden">
-            <h1 class="text-3xl font-bold text-gray-800">Base de Conhecimento da Assistente Graxa</h1>
-            <p class="text-gray-500 mt-1">Adicione, edite ou remova os conhecimentos que a assistente usará para responder aos usuários.</p>
 
             <!-- NOVO: Seção de Upload de JSON -->
             <div class="mt-8 p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
@@ -874,8 +883,6 @@
 
           <!-- ======================= VIEW: GERADOR DE CONHECIMENTO GRAXA ======================= -->
           <div id="view-graxa-generator" class="hidden">
-            <h1 class="text-3xl font-bold text-gray-800">Gerador de Conhecimento em Lote</h1>
-            <p class="text-gray-500 mt-1">Gere centenas de conhecimentos para a assistente Graxa com apenas alguns cliques.</p>
 
             <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
               <!-- Coluna de Inputs -->
@@ -908,7 +915,6 @@
 
           <!-- ======================= VIEW: RELATÓRIOS ======================= -->
           <div id="view-reports" class="hidden">
-            <h1 class="text-3xl font-bold text-gray-800">Relatórios</h1>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
               <div class="p-6 bg-white rounded-lg shadow-md flex flex-col">
                 <h3 class="font-bold text-gray-800">
@@ -939,6 +945,7 @@
                 </div>
               </div>
             </div>
+          </main>
           </div>
     <!-- User Form Modal -->
     <div id="user-form-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
@@ -1077,6 +1084,33 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- MODAL DE MENSAGEM DE APROVAÇÃO -->
+    <div id="approval-message-modal" class="hidden fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-2xl rounded-xl p-6 shadow-2xl">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold text-green-700">Empresa Aprovada!</h3>
+          <button id="close-approval-modal-btn" class="text-gray-500"><i data-lucide="x"></i></button>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">Copie as mensagens abaixo e envie para a empresa para notificá-la.</p>
+        <div class="space-y-4">
+          <div>
+            <label for="whatsapp-message" class="text-sm font-medium text-gray-700">Mensagem para WhatsApp</label>
+            <div class="relative">
+              <textarea id="whatsapp-message" rows="4" class="w-full mt-1 p-2 border rounded-md bg-gray-50" readonly></textarea>
+              <button onclick="copyToClipboard('whatsapp-message')" class="absolute top-2 right-2 bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-xs font-bold">Copiar</button>
+            </div>
+          </div>
+          <div>
+            <label for="email-message" class="text-sm font-medium text-gray-700">Mensagem para E-mail</label>
+            <div class="relative">
+              <textarea id="email-message" rows="8" class="w-full mt-1 p-2 border rounded-md bg-gray-50" readonly></textarea>
+              <button onclick="copyToClipboard('email-message')" class="absolute top-2 right-2 bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-xs font-bold">Copiar</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </body>

@@ -49,6 +49,11 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
         allow get, list: if isAdmin(); // 'get' e 'list' para o admin ler
 
+        // **NOVO**: Permite que admins criem notificações para qualquer usuário.
+        match /notifications/{notificationId} {
+          allow create: if isAdmin();
+        }
+
         // --- Subcoleções do Usuário (Ganhos, Despesas, etc.) ---
         match /{subcollection}/{docId} {
           // O dono do perfil pode fazer tudo em suas subcoleções.

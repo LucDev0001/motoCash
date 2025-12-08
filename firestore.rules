@@ -49,6 +49,11 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
         allow get, list: if isAdmin(); // 'get' e 'list' para o admin ler
 
+        // **NOVO**: Permite que admins criem notificações para qualquer usuário.
+        match /notifications/{notificationId} {
+          allow create: if isAdmin();
+        }
+
         // --- Subcoleções do Usuário (Ganhos, Despesas, etc.) ---
         match /{subcollection}/{docId} {
           // O dono do perfil pode fazer tudo em suas subcoleções.
@@ -115,18 +120,6 @@ service cloud.firestore {
         // Ninguém pode editar ou apagar mensagens.
         allow update, delete: if false;
       }
-    }
-
-    // ==================================================================
-    // REGRAS PARA PERFIS PÚBLICOS
-    // ==================================================================
-    match /public_profiles/{userId} {
-      // Qualquer pessoa (autenticada ou não) pode ler os perfis públicos.
-      allow read: if true;
-
-      // Apenas o dono do perfil (usuário autenticado) pode criar ou
-      // atualizar seu próprio perfil público.
-      allow write: if isOwner(userId);
     }
 
     // ==================================================================

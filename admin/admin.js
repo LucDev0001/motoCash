@@ -140,6 +140,29 @@ function initNavigation() {
     });
   });
 
+  // **NOVO**: Lógica para a sidebar responsiva
+  const sidebar = document.getElementById("sidebar");
+  const openSidebarBtn = document.getElementById("open-sidebar-btn");
+  const closeSidebarBtn = document.getElementById("close-sidebar-btn");
+
+  openSidebarBtn.addEventListener("click", () => {
+    sidebar.classList.remove("-translate-x-full");
+  });
+
+  closeSidebarBtn.addEventListener("click", () => {
+    sidebar.classList.add("-translate-x-full");
+  });
+
+  // Fecha a sidebar ao clicar em um link no modo mobile
+  document.querySelectorAll("#sidebar a").forEach((link) => {
+    link.addEventListener("click", () => {
+      if (window.innerWidth < 1024) {
+        // lg breakpoint
+        sidebar.classList.add("-translate-x-full");
+      }
+    });
+  });
+
   document.getElementById("nav-approvals").addEventListener("click", (e) => {
     navigateTo("view-approvals");
   });
@@ -213,6 +236,18 @@ function initNavigation() {
       }
     });
   }
+
+  // Adiciona o listener para o botão de criar usuário
+  document.getElementById("create-user-btn").onclick = () =>
+    openUserFormModal(null, "motoboy");
+
+  // Adiciona listener para o botão de broadcast
+  document.getElementById("broadcast-notification-btn").onclick = () =>
+    openBroadcastModal();
+
+  // Adiciona o listener para o botão de criar empresa
+  document.getElementById("create-company-btn").onclick = () =>
+    openUserFormModal(null, "company");
 }
 
 /**
@@ -228,14 +263,41 @@ function navigateTo(viewId) {
   document.getElementById(viewId).classList.remove("hidden");
 
   // Atualiza o estado ativo na sidebar
-  document
-    .querySelectorAll(".nav-link")
-    .forEach((link) => link.classList.remove("bg-gray-700"));
+  document.querySelectorAll(".nav-link").forEach((link) => {
+    link.classList.remove("bg-gray-700", "text-white");
+    link.classList.add(
+      "text-gray-300",
+      "hover:bg-gray-700",
+      "hover:text-white"
+    );
+  });
   const navLink = document.getElementById(viewId.replace("view-", "nav-"));
   // Apenas tenta adicionar a classe se o link de navegação correspondente existir.
   if (navLink) {
-    navLink.classList.add("bg-gray-700");
+    navLink.classList.add("bg-gray-900", "text-white");
+    navLink.classList.remove("text-gray-300", "hover:bg-gray-700");
   }
+
+  // **NOVO**: Atualiza o título no header
+  const pageTitleEl = document.getElementById("page-title");
+  let titleText = "Dashboard"; // Padrão
+  if (navLink && navLink.querySelector("span")) {
+    titleText = navLink.querySelector("span").textContent;
+  }
+  // Casos especiais
+  if (viewId === "view-user-details") {
+    titleText = "Detalhes do Usuário";
+  }
+
+  pageTitleEl.textContent = titleText;
+
+  // **NOVO**: Controla a visibilidade dos contadores
+  const userCounter = document.getElementById("user-count-display");
+  const companyCounter = document.getElementById("company-count-display");
+  if (userCounter)
+    userCounter.classList.toggle("hidden", viewId !== "view-users");
+  if (companyCounter)
+    companyCounter.classList.toggle("hidden", viewId !== "view-companies");
 
   // --- Funções específicas de inicialização para cada view ---
   if (viewId === "view-companies") {
@@ -614,8 +676,8 @@ function openNotificationModal(user) {
     try {
       await sendNotificationToUser(
         user.id,
-        title,
-        message,
+        titleInput.value,
+        messageInput.value,
         user.email || user.id
       );
       alert("Notificação enviada com sucesso!");
@@ -903,7 +965,12 @@ function processAndRenderData(usersData) {
 
     // --- Renderiza os Gráficos ---
     renderNewUsersChart(usersData);
-    renderUserHeatmap(usersData);
+    // **CORRIGIDO**: Só renderiza o mapa se a view do dashboard estiver visível
+    if (
+      !document.getElementById("view-dashboard").classList.contains("hidden")
+    ) {
+      renderUserHeatmap(usersData);
+    }
   } catch (error) {
     console.error("Erro ao carregar dados do dashboard:", error);
     alert(
@@ -2001,21 +2068,16 @@ function renderAllUsersTable(searchTerm = "") {
       (user.publicProfile?.name?.toLowerCase() || "").includes(searchTerm) ||
       (user.email?.toLowerCase() || "").includes(searchTerm)
   );
-  // Adiciona o listener para o botão de criar usuário
-  document.getElementById("create-user-btn").onclick = () =>
-    openUserFormModal(null, "motoboy");
 
-  document.getElementById("user-count-display").textContent =
-    filteredUsers.length;
+  // **CORRIGIDO**: Verifica se o elemento existe antes de atualizar
+  const userCountDisplay = document.getElementById("user-count-display");
+  if (userCountDisplay) userCountDisplay.textContent = filteredUsers.length;
 
   if (filteredUsers.length === 0) {
     tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-gray-400">Nenhum usuário encontrado.</td></tr>`;
     return;
   }
 
-  // Adiciona o listener para o botão de criar empresa
-  document.getElementById("create-company-btn").onclick = () =>
-    openUserFormModal(null, "company");
   tableBody.innerHTML = filteredUsers
     .map(
       (user) => `
@@ -2135,8 +2197,10 @@ function renderAllCompaniesTable(searchTerm = "") {
       (company.cnpj?.toLowerCase() || "").includes(searchTerm)
   );
 
-  document.getElementById("company-count-display").textContent =
-    filteredCompanies.length;
+  // **CORRIGIDO**: Verifica se o elemento existe antes de atualizar
+  const companyCountDisplay = document.getElementById("company-count-display");
+  if (companyCountDisplay)
+    companyCountDisplay.textContent = filteredCompanies.length;
 
   if (filteredCompanies.length === 0) {
     tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-gray-400">Nenhuma empresa encontrada.</td></tr>`;

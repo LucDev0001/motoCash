@@ -2,77 +2,98 @@
   class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[500] p-4"
 >
   <div
-    class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-md m-4 transform transition-all"
+    class="bg-white dark:bg-gray-800 w-full max-w-lg rounded-lg shadow-xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 relative"
   >
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+    <div
+      class="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-gray-800 z-10"
+    >
+      <h3
+        class="text-xl font-bold text-gray-900 dark:text-white flex items-center"
+      >
         <i
           data-lucide="gem"
           class="inline-block w-6 h-6 text-yellow-500 mr-2"
-        ></i
-        >Seja um Apoiador
+        ></i>
+        Seja um Apoiador
       </h3>
       <button
-        class="close-modal-btn text-gray-400 hover:text-gray-700 dark:hover:text-white"
+        class="close-modal-btn text-gray-400 hover:text-gray-700 dark:hover:text-white p-1"
       >
         <i data-lucide="x" class="w-6 h-6"></i>
       </button>
     </div>
 
-    <p class="text-gray-600 dark:text-gray-300 mb-6">
+    <p class="text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base">
       Sua contribuição mantém o app no ar e desbloqueia recursos incríveis para
       você ir mais longe.
     </p>
 
     <div class="space-y-4 mb-8">
-      <div class="flex items-start gap-4">
+      <div class="flex items-start gap-3">
         <i
           data-lucide="line-chart"
-          class="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1"
+          class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500 flex-shrink-0 mt-1"
         ></i>
         <div>
-          <h4 class="font-semibold dark:text-white">Análise de Custo por Km</h4>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <h4
+            class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base"
+          >
+            Análise de Custo por Km
+          </h4>
+          <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
             Descubra exatamente quanto você gasta para rodar e otimize seus
             lucros.
           </p>
         </div>
       </div>
-      <div class="flex items-start gap-4">
+
+      <div class="flex items-start gap-3">
         <i
           data-lucide="sparkles"
-          class="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1"
+          class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500 flex-shrink-0 mt-1"
         ></i>
         <div>
-          <h4 class="font-semibold dark:text-white">Destaque no Marketplace</h4>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <h4
+            class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base"
+          >
+            Destaque no Marketplace
+          </h4>
+          <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
             Seus anúncios com um selo "Apoiador" para mais visibilidade e
             confiança.
           </p>
         </div>
       </div>
-      <div class="flex items-start gap-4">
+
+      <div class="flex items-start gap-3">
         <i
           data-lucide="wrench"
-          class="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1"
+          class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500 flex-shrink-0 mt-1"
         ></i>
         <div>
-          <h4 class="font-semibold dark:text-white">
+          <h4
+            class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base"
+          >
             Itens de Manutenção Ilimitados
           </h4>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
             Cadastre quantos itens de manutenção precisar, sem o limite de 5.
           </p>
         </div>
       </div>
-      <div class="flex items-start gap-4">
+
+      <div class="flex items-start gap-3">
         <i
           data-lucide="database-backup"
-          class="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1"
+          class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500 flex-shrink-0 mt-1"
         ></i>
         <div>
-          <h4 class="font-semibold dark:text-white">Backup e Restauração</h4>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <h4
+            class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base"
+          >
+            Backup e Restauração
+          </h4>
+          <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
             Proteja seus dados financeiros e de manutenção. Nunca perca seus
             registros.
           </p>
@@ -80,8 +101,7 @@
       </div>
     </div>
 
-    <!-- NOVO: Seção de Pagamento Manual -->
-    <div class="border-t dark:border-gray-700 pt-6 mt-6">
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
       <h4
         class="text-lg font-bold text-center text-gray-900 dark:text-white mb-4"
       >
@@ -90,46 +110,46 @@
       <div class="space-y-4 text-sm">
         <div class="flex gap-3">
           <div
-            class="flex-shrink-0 w-6 h-6 bg-yellow-500 text-black rounded-full flex items-center justify-center font-bold"
+            class="flex-shrink-0 w-6 h-6 bg-yellow-500 text-black rounded-full flex items-center justify-center font-bold text-xs"
           >
             1
           </div>
-          <div class="text-gray-700 dark:text-gray-300">
+          <div class="text-gray-700 dark:text-gray-300 w-full">
             <p class="mb-1">
               Faça um <strong>PIX de R$ 4,99 (mensal)</strong> para a chave
               abaixo.
             </p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-              Sua contribuição é o combustível que mantém o app funcionando!
-            </p>
             <div
-              class="mt-2 bg-gray-100 dark:bg-gray-700 p-2 rounded-lg flex items-center justify-between"
+              class="mt-2 bg-gray-100 dark:bg-gray-700 p-2 rounded-lg flex items-center justify-between gap-2"
             >
-              <span class="font-mono text-xs">116.612.214-08</span>
+              <span class="font-mono text-xs truncate select-all"
+                >116.612.214-08</span
+              >
               <button
                 onclick="navigator.clipboard.writeText('116.612.214-08').then(() => UI.showToast('Chave PIX copiada!'))"
-                class="bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded text-xs font-bold"
+                class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 px-3 py-1 rounded text-xs font-bold transition-colors"
               >
                 Copiar
               </button>
             </div>
           </div>
         </div>
+
         <div class="flex gap-3">
           <div
-            class="flex-shrink-0 w-6 h-6 bg-yellow-500 text-black rounded-full flex items-center justify-center font-bold"
+            class="flex-shrink-0 w-6 h-6 bg-yellow-500 text-black rounded-full flex items-center justify-center font-bold text-xs"
           >
             2
           </div>
-          <div class="text-gray-700 dark:text-gray-300">
-            <p>
+          <div class="text-gray-700 dark:text-gray-300 w-full">
+            <p class="mb-2">
               Envie o comprovante para o nosso WhatsApp para liberarmos seu
               acesso PRO.
             </p>
             <a
               href="https://wa.me/5521984856779?text=Ol%C3%A1%21%20Gostaria%20de%20ativar%20meu%20acesso%20Apoiador.%20Segue%20o%20comprovante."
               target="_blank"
-              class="mt-2 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+              class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
             >
               <i data-lucide="message-circle" class="w-4 h-4"></i>
               <span>Enviar Comprovante</span>
@@ -137,7 +157,7 @@
           </div>
         </div>
       </div>
-      <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
+      <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-4 pb-2">
         * A liberação do acesso é manual e pode levar algumas horas.
       </p>
     </div>
