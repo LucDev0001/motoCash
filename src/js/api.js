@@ -1534,13 +1534,16 @@ export function getMaintenanceData(callback) {
 
 export async function saveOdometer() {
   const odometer = document.getElementById("current-odometer").value;
-  await db
-    .collection("artifacts")
+  db.collection("artifacts")
     .doc(appId)
     .collection("users")
     .doc(currentUser.uid)
-    .set({ odometer: parseInt(odometer) }, { merge: true });
-  showNotification("Quilometragem salva!", "Sucesso");
+    .set({ odometer: parseInt(odometer) }, { merge: true })
+    .then(() => {
+      showNotification("Quilometragem salva!", "Sucesso");
+      closeModal();
+      router("garage"); // Recarrega a garagem para atualizar os cálculos
+    });
 }
 /**
  * Salva um novo item de manutenção ou atualiza um existente.
@@ -1765,18 +1768,54 @@ export async function requestNotificationPermission() {
   }
 }
 
-export async function calculateAndRenderCostPerKm(userId) {
+/**
+ * Reseta o cálculo de custo por quilômetro, zerando o odômetro inicial.
+ */
+export function resetCostPerKm() {
+  showConfirmation(
+    "Isso irá apagar o ponto de partida do seu cálculo de custo. O cálculo recomeçará a partir da sua quilometragem atual. Deseja continuar?",
+    "Resetar Cálculo?",
+    async () => {
+      if (!currentUser) return;
+      const userRef = db
+        .collection("artifacts")
+        .doc(appId)
+        .collection("users")
+        .doc(currentUser.uid);
+
+      try {
+        // Define o initialOdometer como 0 para forçar o recálculo na próxima vez.
+        await userRef.update({
+          initialOdometer: 0,
+        });
+        showNotification(
+          "Cálculo resetado! A contagem começará novamente.",
+          "Sucesso"
+        );
+        router("garage"); // Recarrega a garagem para refletir a mudança.
+      } catch (error) {
+        console.error("Erro ao resetar custo por km:", error);
+        showNotification("Não foi possível resetar o cálculo.", "Erro");
+      }
+    }
+  );
+}
+
+export async function calculateAndRenderCostPerKm(userData) {
   const userRef = db
     .collection("artifacts")
     .doc(appId)
     .collection("users")
     .doc(currentUser.uid);
-  const doc = await userRef.get();
-  const items = doc.data()?.maintenanceItems || [];
   const costValueEl = document.getElementById("cost-per-km-value");
   const costExplanationEl = document.getElementById("cost-per-km-explanation");
 
   if (!costValueEl || !costExplanationEl) return;
+
+  // Adiciona o listener para o novo botão de reset
+  document
+    .getElementById("reset-cost-btn")
+    ?.addEventListener("click", resetCostPerKm);
 
   try {
     // 1. Buscar todas as despesas relevantes
@@ -1794,11 +1833,16 @@ export async function calculateAndRenderCostPerKm(userId) {
       }
     });
 
-    const initialOdometer = doc.data()?.initialOdometer || 0;
-    const currentOdometer = doc.data()?.odometer || 0;
+    let currentData = userData;
+    let initialOdometer = currentData?.initialOdometer || 0;
+    const currentOdometer = currentData?.odometer || 0;
 
     if (currentOdometer > 0 && initialOdometer === 0) {
       await userRef.set({ initialOdometer: currentOdometer }, { merge: true });
+      // **CORREÇÃO SIMPLIFICADA**: Busca os dados novamente para garantir consistência.
+      const updatedDoc = await userRef.get();
+      currentData = updatedDoc.data();
+      initialOdometer = currentData?.initialOdometer || 0;
     }
 
     const totalKm = currentOdometer - initialOdometer;

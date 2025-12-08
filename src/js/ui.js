@@ -414,7 +414,12 @@ export async function openOdometerModal() {
 
   modal
     .querySelector("#save-odometer-btn")
-    .addEventListener("click", API.saveOdometer);
+    .addEventListener("click", async () => {
+      // A função saveOdometer agora é assíncrona e cuida de fechar o modal e recarregar
+      await API.saveOdometer();
+      // O código abaixo não é mais estritamente necessário se a API já faz isso,
+      // mas é uma boa prática garantir o fluxo aqui também.
+    });
 }
 
 export async function openDebitsModal() {

@@ -38,9 +38,18 @@
       id="cost-analysis-container"
       class="text-center bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg"
     >
-      <p class="text-xs font-bold text-gray-500 dark:text-gray-400">
-        Custo por Km Rodado
-      </p>
+      <div class="flex items-center justify-center gap-2">
+        <p class="text-xs font-bold text-gray-500 dark:text-gray-400">
+          Custo por Km Rodado
+        </p>
+        <button
+          id="reset-cost-btn"
+          class="text-gray-400 hover:text-red-500 p-1"
+          title="Resetar cálculo de custo"
+        >
+          <i data-lucide="rotate-cw" class="w-3 h-3"></i>
+        </button>
+      </div>
       <p
         id="cost-per-km-value"
         class="text-2xl font-bold text-purple-600 dark:text-purple-400 animate-pulse"

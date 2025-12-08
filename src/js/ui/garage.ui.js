@@ -23,18 +23,19 @@ export async function renderGarage(c) {
     .get()
     .then((doc) => {
       if (doc.exists) {
+        const userData = doc.data();
         // Inicia o cálculo de custo por Km
         if (typeof calculateAndRenderCostPerKm === "function") {
-          calculateAndRenderCostPerKm(doc.id);
+          calculateAndRenderCostPerKm(userData);
         }
 
         // Renderiza o novo checklist de manutenção
         renderMaintenanceChecklist(
-          doc.data()?.maintenanceItems || [],
-          doc.data()?.odometer || 0
+          userData?.maintenanceItems || [],
+          userData?.odometer || 0
         );
 
-        const publicProfile = doc.data()?.publicProfile || {};
+        const publicProfile = userData?.publicProfile || {};
         if (
           publicProfile.fipeBrandCode &&
           publicProfile.fipeModelCode &&
@@ -53,7 +54,7 @@ export async function renderGarage(c) {
           );
 
           // Verifica e exibe os alertas de vencimento na tela da garagem
-          const documentDates = doc.data()?.documentDates || {};
+          const documentDates = userData?.documentDates || {};
           checkAndDisplayDocumentAlerts(
             documentDates,
             document.getElementById("garage-alerts-container")
