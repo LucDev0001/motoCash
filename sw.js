@@ -1,4 +1,4 @@
-const CACHE_NAME = "motocash-v2.2.0"; // Versão incrementada para forçar a atualização do cache
+const CACHE_NAME = "motocash-v2.2.1"; // Versão incrementada para forçar a atualização do cache
 const DATA_CACHE_NAME = "motocash-data-v2.2.0";
 
 // Lista de arquivos essenciais para o App Shell.
