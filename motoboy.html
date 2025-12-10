@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppMotoCash - O App que Entende a Sua Correria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="landing.css">
+    <link rel="icon" href="favicon.ico">
+</head>
+<body class="bg-gray-900 text-white font-sans">
+
+    <!-- Header -->
+    <header class="bg-gray-900/80 backdrop-blur-sm fixed top-0 left-0 right-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <img src="Icon-192.png" alt="AppMotoCash Logo" class="w-8 h-8">
+                <span class="text-xl font-bold text-yellow-400">AppMotoCash</span>
+            </div>
+            <nav class="hidden md:flex space-x-8">
+                <a href="#features" class="text-gray-300 hover:text-yellow-400">Funcionalidades</a>
+                <a href="#story" class="text-gray-300 hover:text-yellow-400">Minha História</a>
+                <a href="#pro" class="text-gray-300 hover:text-yellow-400">Seja Apoiador</a>
+            </nav>
+            <a href="./index.html" class="hidden md:block bg-yellow-500 text-black font-bold py-2 px-4 rounded-lg hover:bg-yellow-400 transition-colors">
+                Acessar App
+            </a>
+            <button id="mobile-menu-btn" class="md:hidden text-white">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden fixed inset-0 bg-gray-900 z-40 pt-20 p-6">
+        <nav class="flex flex-col space-y-6 text-center">
+            <a href="#features" class="text-gray-300 hover:text-yellow-400 text-lg">Funcionalidades</a>
+            <a href="#story" class="text-gray-300 hover:text-yellow-400 text-lg">Minha História</a>
+            <a href="#pro" class="text-gray-300 hover:text-yellow-400 text-lg">Seja Apoiador</a>
+            <a href="./index.html" class="bg-yellow-500 text-black font-bold py-3 px-6 rounded-lg hover:bg-yellow-400 transition-colors mt-4">
+                Acessar App
+            </a>
+        </nav>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative min-h-screen flex items-center justify-center text-center pt-20 overflow-hidden">
+        <div class="absolute inset-0 bg-gray-900 bg-opacity-50"></div>
+        <div class="absolute inset-0 z-0">
+             <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-gray-900 to-transparent"></div>
+        </div>
+
+        <div class="relative z-10 px-6 animate-fade-in-up">
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight">
+                O App que Entende a <span class="text-yellow-400">Sua Correria</span>.
+            </h1>
+            <p class="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-gray-300">
+                Feito de motoboy para motoboy. Tenha o controle total das suas finanças, manutenção da sua moto e encontre as melhores vagas.
+            </p>
+            <div class="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
+                <a href="./index.html" class="w-full sm:w-auto bg-yellow-500 text-black font-bold py-3 px-8 rounded-lg text-lg hover:bg-yellow-400 transition-transform transform hover:scale-105">
+                    Comece a Usar
+                </a>
+                <a href="#features" class="w-full sm:w-auto border border-gray-600 text-gray-300 font-bold py-3 px-8 rounded-lg text-lg hover:bg-gray-800 transition-colors">
+                    Ver Funcionalidades
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-gray-900">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Ferramentas para o seu Sucesso</h2>
+            <p class="max-w-3xl mx-auto text-gray-400 mb-12">Tudo o que você precisa para gerenciar sua vida nas ruas, em um só lugar.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="feature-card bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700">
+                    <i data-lucide="bar-chart-2" class="w-12 h-12 text-yellow-400 mx-auto mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Controle Financeiro</h3>
+                    <p class="text-gray-400">Registre seus ganhos e despesas detalhadamente. Saiba exatamente de onde seu dinheiro vem e para onde vai.</p>
+                </div>
+                <!-- Feature 2 -->
+                <div class="feature-card bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700">
+                    <i data-lucide="wrench" class="w-12 h-12 text-yellow-400 mx-auto mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Minha Garagem</h3>
+                    <p class="text-gray-400">Controle a manutenção da sua moto, receba alertas de troca de óleo e nunca mais esqueça de uma revisão.</p>
+                </div>
+                <!-- Feature 3 -->
+                <div class="feature-card bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700">
+                    <i data-lucide="briefcase" class="w-12 h-12 text-yellow-400 mx-auto mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Hub de Vagas</h3>
+                    <p class="text-gray-400">Encontre vagas de entrega e corridas publicadas por empresas parceiras diretamente no app.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Story Section -->
+    <section id="story" class="py-20 bg-gray-800/50">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto">
+                <i data-lucide="user-heart" class="w-16 h-16 text-yellow-400 mx-auto mb-6"></i>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">De Motoboy para Motoboy</h2>
+                <p class="text-lg text-gray-300 leading-relaxed">
+                    Meu nome é Luciano Santos, e assim como você, eu vivo a realidade das ruas sobre duas rodas. Criei o AppMotoCash a partir da minha própria necessidade de ter uma ferramenta que realmente entendesse nosso dia a dia. Chega de planilhas complicadas e anotações perdidas. Este é um app feito com a graxa e o suor de quem está no trecho, para te ajudar a prosperar.
+                </p>
+                <div class="mt-8">
+                    <a href="https://www.linkedin.com/in/lucianodev/" target="_blank" class="text-yellow-400 hover:text-yellow-300 font-semibold">Conecte-se comigo no LinkedIn</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pro Plan Section -->
+    <section id="pro" class="py-20 bg-gray-900">
+        <div class="container mx-auto px-6 text-center">
+            <div class="max-w-md mx-auto mb-12">
+                 <div class="inline-block bg-yellow-400 rounded-full p-3 mb-4 shadow-lg shadow-yellow-500/20">
+                     <i data-lucide="gem" class="w-10 h-10 text-black"></i>
+                 </div>
+                <h2 class="text-3xl md:text-4xl font-bold">Vire a Chave com o Plano Apoiador</h2>
+                <p class="mt-4 text-gray-400">Invista em você. Por um valor simbólico, você mantém o app no ar e desbloqueia ferramentas poderosas.</p>
+            </div>
+            <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <div class="feature-card bg-gray-800 p-6 rounded-lg text-left flex items-start gap-4">
+                    <i data-lucide="line-chart" class="w-8 h-8 text-yellow-400 flex-shrink-0 mt-1"></i>
+                    <div>
+                        <h4 class="font-semibold text-white">Análise de Custo por Km</h4>
+                        <p class="text-sm text-gray-400">Descubra seu custo real por quilômetro rodado e saiba se a corrida realmente compensa.</p>
+                    </div>
+                </div>
+                <div class="feature-card bg-gray-800 p-6 rounded-lg text-left flex items-start gap-4">
+                    <i data-lucide="sparkles" class="w-8 h-8 text-yellow-400 flex-shrink-0 mt-1"></i>
+                    <div>
+                        <h4 class="font-semibold text-white">Destaque no Marketplace</h4>
+                        <p class="text-sm text-gray-400">Seus anúncios com selo "Apoiador" para mais visibilidade e confiança na venda.</p>
+                    </div>
+                </div>
+                <div class="feature-card bg-gray-800 p-6 rounded-lg text-left flex items-start gap-4">
+                    <i data-lucide="wrench" class="w-8 h-8 text-yellow-400 flex-shrink-0 mt-1"></i>
+                    <div>
+                        <h4 class="font-semibold text-white">Manutenção Ilimitada</h4>
+                        <p class="text-sm text-gray-400">Cadastre todos os itens de manutenção da sua moto, sem o limite de 5 itens.</p>
+                    </div>
+                </div>
+                 <div class="feature-card bg-gray-800 p-6 rounded-lg text-left flex items-start gap-4">
+                    <i data-lucide="database-backup" class="w-8 h-8 text-yellow-400 flex-shrink-0 mt-1"></i>
+                    <div>
+                        <h4 class="font-semibold text-white">Backup e Restauração</h4>
+                        <p class="text-sm text-gray-400">Proteja seus dados financeiros e de manutenção para nunca perder seus registros.</p>
+                    </div>
+                </div>
+            </div>
+             <div class="mt-12">
+                 <a href="./index.html" class="bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold py-4 px-10 rounded-lg text-lg hover:from-yellow-500 hover:to-amber-600 transition-transform transform hover:scale-105 shadow-lg shadow-yellow-500/20">
+                    Quero ser Apoiador
+                </a>
+             </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800/50 border-t border-gray-800 py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-gray-400">&copy; 2024 AppMotoCash. Todos os direitos reservados.</p>
+            <p class="text-sm text-gray-500 mt-2">Criado com 💜 por <a href="https://github.com/LucDev0001" target="_blank" class="hover:text-yellow-400">Santos Codes</a></p>
+        </div>
+    </footer>
+    
+    <script src="landing.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

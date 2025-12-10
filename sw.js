@@ -1,5 +1,5 @@
-const CACHE_NAME = "motocash-v2.1.1"; // Versão incrementada para forçar a atualização do cache
-const DATA_CACHE_NAME = "motocash-data-v2.1.1";
+const CACHE_NAME = "motocash-v2.2.0"; // Versão incrementada para forçar a atualização do cache
+const DATA_CACHE_NAME = "motocash-data-v2.2.0";
 
 // Lista de arquivos essenciais para o App Shell.
 const assetsToCache = [
@@ -10,6 +10,7 @@ const assetsToCache = [
   "./Icon-192.png",
   "./Icon-512.png",
   "./assets/notification.mp3",
+  "./assets/img/bike.svg", // Novo ícone local
   // Ícones para atalhos
   "./icons/add.png",
   "./icons/garage.png",
@@ -33,6 +34,8 @@ const assetsToCache = [
   "./src/templates/views/publicProfile.html",
   "./src/templates/views/support.html",
   // Templates de Modais (essencial para interações offline)
+  "./src/templates/modals/adModal.html", // Novo modal de anúncio
+  "./src/templates/modals/rateCompanyModal.html", // Novo modal de avaliação
   "./src/templates/modals/completeProfileModal.html",
   "./src/templates/modals/debitsModal.html",
   "./src/templates/modals/documentsModal.html",

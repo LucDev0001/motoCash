@@ -1,5 +1,7 @@
+import { db } from "../config.js";
 import { loadDashboardData, deleteItem } from "../api.js";
 import { openEditModal, openShareModal } from "../ui.js";
+import { showAdModal } from "./ad.ui.js";
 
 let currentChart = null;
 export let unsubscribeListeners = [];
@@ -48,7 +50,11 @@ export async function renderDashboard(c) {
   document
     .getElementById("open-share-modal-btn")
     .addEventListener("click", openShareModal);
+  
+  // Exibe o anúncio em modal
+  showAdModal();
 }
+
 
 function formatShortDateWithWeekday(dateObject) {
   if (!(dateObject instanceof Date) || isNaN(dateObject)) {

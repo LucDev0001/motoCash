@@ -155,5 +155,15 @@ service cloud.firestore {
         // Apenas admins podem ler os logs para treinar a IA
         allow read, list, delete: if isAdmin();
     }
+
+    // ==================================================================
+    // REGRAS PARA ANÚNCIOS (ADVERTISEMENTS)
+    // ==================================================================
+    match /advertisements/{adId} {
+      // Qualquer usuário autenticado pode ler os anúncios.
+      allow read: if isUserAuthenticated();
+      // Apenas admins podem criar, editar ou apagar anúncios.
+      allow write: if isAdmin();
+    }
   }
 }

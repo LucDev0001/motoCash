@@ -1,0 +1,65 @@
+<!-- Esta view será gerenciada pelo admin.js e inserida na main -->
+<div id="view-ads">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Gerenciador de Anúncios</h2>
+    <button id="add-new-ad-btn" class="bg-blue-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2">
+      <i data-lucide="plus"></i> Novo Anúncio
+    </button>
+  </div>
+
+  <!-- Formulário de Anúncio (Modal) -->
+  <div id="ad-form-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-50">
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl mx-4">
+      <div class="flex justify-between items-center mb-6">
+        <h3 id="ad-form-title" class="text-xl font-bold text-gray-800">Criar Novo Anúncio</h3>
+        <button id="close-ad-form-btn" class="text-gray-500 hover:text-gray-700">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      <form id="ad-form" class="space-y-4">
+        <input type="hidden" id="ad-id">
+        <div>
+          <label for="ad-title" class="block text-sm font-medium text-gray-700">Título</label>
+          <input type="text" id="ad-title" required class="mt-1 w-full p-2 border rounded-md" placeholder="Ex: Peças com 10% de desconto!">
+        </div>
+        <div>
+          <label for="ad-content" class="block text-sm font-medium text-gray-700">Conteúdo / Descrição</label>
+          <textarea id="ad-content" rows="3" required class="mt-1 w-full p-2 border rounded-md" placeholder="Descreva a promoção ou o anúncio."></textarea>
+        </div>
+        <div>
+          <label for="ad-image-url" class="block text-sm font-medium text-gray-700">URL da Imagem</label>
+          <input type="url" id="ad-image-url" class="mt-1 w-full p-2 border rounded-md" placeholder="https://exemplo.com/imagem.png">
+        </div>
+        <div>
+          <label for="ad-target-link" class="block text-sm font-medium text-gray-700">Link de Destino (para onde o motoboy vai ao clicar)</label>
+          <input type="url" id="ad-target-link" required class="mt-1 w-full p-2 border rounded-md" placeholder="https://lojadepcas.com/promocao">
+        </div>
+        <div class="flex justify-end gap-4 mt-6">
+          <button type="button" id="cancel-ad-form-btn" class="bg-gray-300 text-gray-800 font-bold px-6 py-2 rounded-lg hover:bg-gray-400">Cancelar</button>
+          <button type="submit" class="bg-yellow-500 text-black font-bold px-6 py-2 rounded-lg hover:bg-yellow-600">Salvar Anúncio</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabela de Anúncios -->
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="text-sm font-bold text-gray-500 border-b">
+            <th class="p-3">Título</th>
+            <th class="p-3">Status</th>
+            <th class="p-3">Visualizações</th>
+            <th class="p-3">Cliques</th>
+            <th class="p-3">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="ads-table-body">
+          <!-- Os anúncios serão inseridos aqui -->
+          <tr><td colspan="5" class="text-center p-8 text-gray-400">Carregando anúncios...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

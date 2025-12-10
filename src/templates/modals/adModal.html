@@ -1,0 +1,22 @@
+<div id="ad-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[1000] fade-in">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full max-w-sm m-4 scale-in-fast relative">
+    
+    <!-- Botão de Fechar e Contador -->
+    <div class="absolute top-2 right-2 flex items-center gap-2">
+      <span id="ad-countdown" class="text-xs font-bold bg-gray-900/50 text-white rounded-full w-6 h-6 flex items-center justify-center">5</span>
+      <button id="close-ad-modal-btn" class="text-white bg-gray-900/50 rounded-full p-1 hover:bg-gray-900/75">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- Conteúdo do Anúncio -->
+    <div id="ad-modal-content" class="cursor-pointer">
+      <img id="ad-modal-image" src="" alt="Anúncio" class="w-full h-40 object-cover rounded-t-lg">
+      <div class="p-4">
+        <h3 id="ad-modal-title" class="font-bold text-lg text-gray-800 dark:text-white"></h3>
+        <p id="ad-modal-content-text" class="text-sm text-gray-600 dark:text-gray-400 mt-1"></p>
+      </div>
+    </div>
+
+  </div>
+</div>

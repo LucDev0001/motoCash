@@ -1742,4 +1742,69 @@ document.addEventListener("DOMContentLoaded", async () => {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
+
+  // --- PASSWORD RESET ---
+  window.openPasswordResetModal = () => {
+    const modalContainer = document.getElementById('password-reset-modal-container');
+    if (!modalContainer) return;
+
+    modalContainer.classList.remove('hidden');
+    modalContainer.innerHTML = `
+      <div class="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-[600]">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm m-4">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">Redefinir Senha</h3>
+            <button onclick="closePasswordResetModal()" class="text-gray-500 hover:text-gray-800 dark:hover:text-white">&times;</button>
+          </div>
+          <form id="password-reset-form">
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Digite o e-mail associado à sua conta e enviaremos um link para você redefinir sua senha.
+            </p>
+            <input type="email" id="reset-email-input" placeholder="E-mail da empresa" required class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg mb-4"/>
+            <button type="submit" class="w-full bg-yellow-500 text-black font-bold py-3 rounded-lg hover:bg-yellow-400 transition-colors">
+              Enviar Link de Redefinição
+            </button>
+          </form>
+        </div>
+      </div>
+    `;
+    document.getElementById('password-reset-form').addEventListener('submit', handlePasswordReset);
+  }
+
+  window.closePasswordResetModal = () => {
+    const modalContainer = document.getElementById('password-reset-modal-container');
+    if(modalContainer) modalContainer.innerHTML = '';
+  }
+
+  async function handlePasswordReset(event) {
+    event.preventDefault();
+    const email = document.getElementById('reset-email-input').value;
+    const { sendPasswordResetEmail } = window.firebaseTools;
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+
+    if (!email) {
+      showError("Por favor, digite um endereço de e-mail.");
+      return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Enviando...';
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert('E-mail de redefinição enviado! Verifique sua caixa de entrada (e a pasta de spam).');
+      closePasswordResetModal();
+    } catch (error) {
+      console.error("Erro ao enviar e-mail de redefinição:", error);
+      if (error.code === 'auth/user-not-found') {
+        alert('Nenhuma conta encontrada com este endereço de e-mail.');
+      } else {
+        alert('Ocorreu um erro. Tente novamente.');
+      }
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Enviar Link de Redefinição';
+    }
+  }
+
+
 }); // FIM DO 'DOMContentLoaded'

@@ -23,6 +23,7 @@
         getAuth,
         createUserWithEmailAndPassword,
         signInWithEmailAndPassword,
+        sendPasswordResetEmail,
       } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
       import {
         getFirestore,
@@ -65,6 +66,7 @@
         db,
         createUserWithEmailAndPassword,
         signInWithEmailAndPassword,
+        sendPasswordResetEmail,
         doc,
         setDoc,
         getDoc,
@@ -89,178 +91,93 @@
   </head>
   <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
     <!-- TELA DE LOGIN / CADASTRO -->
-    <div
-      id="auth-screen"
-      class="min-h-screen flex items-center justify-center p-4"
-    >
-      <div
-        class="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 items-center"
-      >
-        <!-- Seção de Marketing (Landing Page) -->
+    <div id="auth-screen" class="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+      <div class="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        
+        <!-- Coluna de Marketing -->
         <div class="text-center lg:text-left">
           <div class="inline-flex items-center gap-3">
-            <div class="bg-yellow-500 p-3 rounded-full">
+            <div class="bg-yellow-400 p-3 rounded-2xl">
               <i data-lucide="bike" class="w-8 h-8 text-black"></i>
             </div>
-            <h1 class="text-4xl font-bold">AppMotoCash</h1>
+            <h1 class="text-4xl font-bold text-gray-800 dark:text-white">MotoCash</h1>
           </div>
-          <h2 class="text-3xl lg:text-5xl font-extrabold mt-4 leading-tight">
-            Encontre os melhores motoboys freelancers.
-            <span class="text-yellow-500">Agora.</span>
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white mt-6 leading-tight">
+            A conexão direta com os melhores <span class="text-yellow-500">entregadores</span>.
           </h2>
-          <p class="text-gray-500 dark:text-gray-400 mt-6 text-lg">
-            Chega de depender de um único entregador. Tenha acesso a uma rede de
-            profissionais qualificados, prontos para atender sua demanda com
-            agilidade e segurança.
+          <p class="text-gray-600 dark:text-gray-400 mt-6 text-lg">
+            Publique suas vagas, acompanhe entregas em tempo real e gerencie seu time de motoboys freelancers com facilidade e segurança.
           </p>
-          <div
-            class="mt-8 flex items-center justify-center lg:justify-start gap-4"
-          >
-            <div class="flex items-center gap-2">
-              <i data-lucide="map-pin" class="w-5 h-5 text-green-500"></i
-              ><span>Localização em tempo real</span>
+          <div class="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6">
+            <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+              <i data-lucide="map-pin" class="w-5 h-5 text-green-500"></i>
+              <span>Localização em tempo real</span>
             </div>
-            <div class="flex items-center gap-2">
-              <i data-lucide="star" class="w-5 h-5 text-yellow-500"></i
-              ><span>Sistema de avaliação</span>
+            <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+              <i data-lucide="star" class="w-5 h-5 text-yellow-500"></i>
+              <span>Sistema de avaliação</span>
             </div>
-            <div class="flex items-center gap-2">
-              <i data-lucide="message-circle" class="w-5 h-5 text-blue-500"></i
-              ><span>Chat integrado</span>
+            <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+              <i data-lucide="message-circle" class="w-5 h-5 text-blue-500"></i>
+              <span>Chat integrado</span>
             </div>
           </div>
         </div>
 
         <!-- Formulário -->
-        <div
-          class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md mx-auto"
-        >
+        <div class="bg-white dark:bg-gray-800/50 dark:backdrop-blur-sm p-8 rounded-2xl border dark:border-gray-700 shadow-xl w-full max-w-md mx-auto">
           <div class="flex border-b dark:border-gray-700 mb-6">
-            <button
-              id="tab-login"
-              class="flex-1 pb-3 font-bold border-b-2 border-yellow-500 text-yellow-500"
-            >
+            <button id="tab-login" class="flex-1 pb-3 font-bold border-b-2 border-yellow-500 text-yellow-500">
               Entrar
             </button>
-            <button
-              id="tab-register"
-              class="flex-1 pb-3 font-bold text-gray-400"
-            >
+            <button id="tab-register" class="flex-1 pb-3 font-bold text-gray-400 hover:text-yellow-500 transition-colors">
               Cadastrar
             </button>
           </div>
 
-          <!-- Mensagem de Erro -->
-          <div
-            id="auth-error"
-            class="hidden bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 p-3 rounded-lg text-sm mb-4"
-          ></div>
+          <div id="auth-error" class="hidden bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 p-3 rounded-lg text-sm mb-4"></div>
 
-          <!-- Formulário de Login -->
           <form id="login-form" class="space-y-4">
-            <input
-              type="email"
-              id="login-email"
-              placeholder="E-mail da empresa"
-              required
-              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
-            />
-            <input
-              type="password"
-              id="login-password"
-              placeholder="Senha"
-              required
-              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
-            />
-            <button
-              type="submit"
-              class="w-full bg-yellow-500 text-black font-bold py-3 rounded-lg hover:bg-yellow-400 transition-colors"
-            >
+             <div>
+                <label for="login-email" class="text-sm font-medium text-gray-700 dark:text-gray-300">E-mail</label>
+                <input type="email" id="login-email" required class="mt-1 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"/>
+            </div>
+            <div>
+                <label for="login-password" class="text-sm font-medium text-gray-700 dark:text-gray-300">Senha</label>
+                <input type="password" id="login-password" required class="mt-1 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg focus:ring-yellow-500 focus:border-yellow-500"/>
+            </div>
+            <div class="text-right">
+              <a href="#" onclick="openPasswordResetModal()" class="text-sm text-yellow-500 hover:underline">Esqueceu a senha?</a>
+            </div>
+            <button type="submit" class="w-full bg-yellow-500 text-black font-bold py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md hover:shadow-lg">
               Acessar Painel
             </button>
           </form>
 
-          <!-- Formulário de Cadastro -->
           <form id="register-form" class="hidden space-y-4">
-            <input
-              type="text"
-              id="register-name"
-              placeholder="Nome da Empresa"
-              required
-              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
-            />
-            <input
-              type="text"
-              id="register-cnpj"
-              placeholder="CNPJ"
-              required
-              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
-            />
-            <input
-              type="text" id="register-cep" placeholder="CEP" required
-              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
-            />
+             <input type="text" id="register-name" placeholder="Nome da Empresa" required class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"/>
+            <input type="text" id="register-cnpj" placeholder="CNPJ" required class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"/>
             <div class="grid grid-cols-3 gap-4">
-              <input
-                type="text" id="register-logradouro" placeholder="Logradouro" required
-                class="col-span-2 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
-              />
-              <input
-                type="text" id="register-numero" placeholder="Nº" required
-                class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
-              />
+                <input type="text" id="register-cep" placeholder="CEP" required class="col-span-1 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"/>
+                <input type="text" id="register-logradouro" placeholder="Logradouro" required class="col-span-2 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"/>
             </div>
-            <input
-              type="text" id="register-bairro" placeholder="Bairro" required
-              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
-            />
+            <div class="grid grid-cols-3 gap-4">
+                 <input type="text" id="register-numero" placeholder="Nº" required class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"/>
+                <input type="text" id="register-bairro" placeholder="Bairro" required class="col-span-2 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"/>
+            </div>
             <div class="grid grid-cols-3 gap-4">
               <input type="text" id="register-cidade" placeholder="Cidade" required class="col-span-2 w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"/>
               <input type="text" id="register-estado" placeholder="UF" required maxlength="2" class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"/>
             </div>
-            <input
-              type="tel"
-              id="register-whatsapp"
-              placeholder="WhatsApp (com DDD)"
-              required
-              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
-            />
-            <input
-              type="email"
-              id="register-email"
-              placeholder="E-mail de Contato"
-              required
-              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
-            />
-            <input
-              type="password"
-              id="register-password"
-              placeholder="Crie uma Senha"
-              required
-              class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"
-            />
+            <input type="tel" id="register-whatsapp" placeholder="WhatsApp (com DDD)" required class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"/>
+            <input type="email" id="register-email" placeholder="E-mail de Contato" required class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"/>
+            <input type="password" id="register-password" placeholder="Crie uma Senha" required class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg"/>
             <div class="flex items-start space-x-2 pt-2">
-              <input
-                type="checkbox"
-                id="register-terms"
-                required
-                class="mt-1 rounded border-gray-600 bg-gray-800 text-yellow-500 focus:ring-yellow-500"
-              />
-              <label for="register-terms" class="text-xs text-gray-400"
-                >Eu li e concordo com os
-                <a
-                  href="../termos_de_uso.html"
-                  target="_blank"
-                  class="underline text-yellow-500"
-                  >Termos de Uso</a
-                >.</label
-              >
+              <input type="checkbox" id="register-terms" required class="mt-1 rounded border-gray-600 bg-gray-800 text-yellow-500 focus:ring-yellow-500"/>
+              <label for="register-terms" class="text-xs text-gray-400">Eu li e concordo com os <a href="../termos_de_uso.html" target="_blank" class="underline text-yellow-500">Termos de Uso</a>.</label>
             </div>
-            <button
-              type="submit"
-              class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-500 transition-colors"
-            >
-              Criar Conta
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-500 transition-colors">
+              Criar Conta e Aguardar Aprovação
             </button>
           </form>
         </div>
@@ -505,6 +422,9 @@
     </div>
     <div id="company-modal-container">
       <!-- Modais da empresa (como criar/editar vaga, avaliação) serão injetados aqui -->
+    </div>
+    <div id="password-reset-modal-container" class="hidden">
+        <!-- O modal de redefinição de senha será injetado aqui -->
     </div>
     <script>
       lucide.createIcons();

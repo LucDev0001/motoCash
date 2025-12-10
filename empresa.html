@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppMotoCash para Empresas - Contrate Motoboys com Agilidade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="landing.css">
+    <link rel="icon" href="favicon.ico">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-sm fixed top-0 left-0 right-0 z-50 border-b border-gray-200">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <img src="Icon-192.png" alt="AppMotoCash Logo" class="w-8 h-8">
+                <span class="text-xl font-bold text-gray-800">AppMotoCash</span>
+            </div>
+            <nav class="hidden md:flex space-x-8">
+                <a href="#how-it-works" class="text-gray-600 hover:text-yellow-600">Como Funciona</a>
+                <a href="#benefits" class="text-gray-600 hover:text-yellow-600">Benefícios</a>
+            </nav>
+            <a href="./empresa/" class="hidden md:block bg-gray-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-black transition-colors">
+                Publicar Vaga
+            </a>
+            <button id="mobile-menu-btn" class="md:hidden text-gray-800">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden fixed inset-0 bg-white z-40 pt-20 p-6">
+        <nav class="flex flex-col space-y-6 text-center">
+            <a href="#how-it-works" class="text-gray-600 hover:text-yellow-600 text-lg">Como Funciona</a>
+            <a href="#benefits" class="text-gray-600 hover:text-yellow-600 text-lg">Benefícios</a>
+            <a href="./empresa/" class="bg-gray-800 text-white font-bold py-3 px-6 rounded-lg hover:bg-black transition-colors mt-4">
+                Publicar Vaga
+            </a>
+        </nav>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="hero-empresa" class="relative bg-white flex items-center pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div class="container mx-auto px-6 text-center">
+            <div class="relative z-10">
+                <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-gray-900">
+                    A solução de entregas que <span class="text-yellow-500">sua empresa precisa</span>.
+                </h1>
+                <p class="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-gray-600">
+                    Conecte-se a uma rede de motoboys qualificados e prontos para atender sua demanda. Chega de dores de cabeça com entregas.
+                </p>
+                <div class="mt-10">
+                    <a href="./empresa/" class="bg-yellow-500 text-black font-bold py-4 px-10 rounded-lg text-lg hover:bg-yellow-400 transition-transform transform hover:scale-105 shadow-lg shadow-yellow-500/30">
+                        Cadastre sua Empresa Agora
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it Works Section -->
+    <section id="how-it-works" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-12">Simples, Rápido e Eficiente</h2>
+            <div class="relative grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                <!-- Linha conectora -->
+                <div class="hidden md:block absolute top-1/2 left-0 w-full h-px bg-gray-300 -translate-y-1/2"></div>
+                
+                <!-- Passo 1 -->
+                <div class="relative feature-card bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                     <div class="absolute -top-5 left-1/2 -translate-x-1/2 w-10 h-10 bg-yellow-500 text-black rounded-full flex items-center justify-center font-bold text-lg border-4 border-gray-50">1</div>
+                    <i data-lucide="file-plus-2" class="w-10 h-10 text-yellow-500 mb-4 mt-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Publique a Vaga</h3>
+                    <p class="text-gray-600">Descreva sua necessidade de entrega, defina o valor e publique para a nossa rede de motoboys.</p>
+                </div>
+                <!-- Passo 2 -->
+                <div class="relative feature-card bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                    <div class="absolute -top-5 left-1/2 -translate-x-1/2 w-10 h-10 bg-yellow-500 text-black rounded-full flex items-center justify-center font-bold text-lg border-4 border-gray-50">2</div>
+                    <i data-lucide="message-square" class="w-10 h-10 text-yellow-500 mb-4 mt-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Negocie no Chat</h3>
+                    <p class="text-gray-600">Um motoboy aceitou? Converse diretamente com ele através do chat integrado para alinhar os detalhes.</p>
+                </div>
+                <!-- Passo 3 -->
+                <div class="relative feature-card bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                    <div class="absolute -top-5 left-1/2 -translate-x-1/2 w-10 h-10 bg-yellow-500 text-black rounded-full flex items-center justify-center font-bold text-lg border-4 border-gray-50">3</div>
+                    <i data-lucide="star" class="w-10 h-10 text-yellow-500 mb-4 mt-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Avalie o Serviço</h3>
+                    <p class="text-gray-600">Após a entrega, avalie o motoboy e ajude a construir uma comunidade de profissionais de confiança.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section id="benefits" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Vantagens para o seu Negócio</h2>
+                <p class="text-gray-600 mb-12">Ferramentas que otimizam sua logística e garantem a qualidade do seu serviço de entrega.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="feature-card bg-gray-50 p-8 rounded-lg flex items-start gap-6">
+                    <div class="bg-yellow-500/20 text-yellow-600 p-3 rounded-lg"><i data-lucide="users" class="w-8 h-8"></i></div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">Rede de Profissionais</h3>
+                        <p class="text-gray-600">Acesso a dezenas de motoboys autônomos prontos para atender sua demanda, sem vínculos ou burocracia.</p>
+                    </div>
+                </div>
+                <div class="feature-card bg-gray-50 p-8 rounded-lg flex items-start gap-6">
+                    <div class="bg-yellow-500/20 text-yellow-600 p-3 rounded-lg"><i data-lucide="map" class="w-8 h-8"></i></div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">Mapa em Tempo Real</h3>
+                        <p class="text-gray-600">Acompanhe a localização dos motoboys disponíveis na sua região e tenha uma visão clara da sua cobertura.</p>
+                    </div>
+                </div>
+                <div class="feature-card bg-gray-50 p-8 rounded-lg flex items-start gap-6">
+                    <div class="bg-yellow-500/20 text-yellow-600 p-3 rounded-lg"><i data-lucide="message-circle" class="w-8 h-8"></i></div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">Comunicação Direta</h3>
+                        <p class="text-gray-600">Utilize o chat integrado para combinar detalhes, resolver imprevistos e garantir uma entrega perfeita.</p>
+                    </div>
+                </div>
+                <div class="feature-card bg-gray-50 p-8 rounded-lg flex items-start gap-6">
+                    <div class="bg-yellow-500/20 text-yellow-600 p-3 rounded-lg"><i data-lucide="shield-check" class="w-8 h-8"></i></div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">Sistema de Avaliação</h3>
+                        <p class="text-gray-600">Avalie os profissionais após cada serviço e consulte a reputação para contratar com mais segurança.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA Section -->
+    <section id="final-cta" class="py-20 bg-gray-800 text-white">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl font-bold">Pronto para otimizar suas entregas?</h2>
+            <p class="mt-4 max-w-2xl mx-auto text-gray-300">
+                Cadastre-se gratuitamente, publique sua primeira vaga e sinta a diferença de ter uma rede de profissionais à sua disposição.
+            </p>
+            <div class="mt-8">
+                <a href="./empresa/" class="bg-yellow-500 text-black font-bold py-4 px-10 rounded-lg text-lg hover:bg-yellow-400 transition-transform transform hover:scale-105 shadow-lg shadow-yellow-500/20">
+                    Começar Agora
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-gray-400">&copy; 2024 AppMotoCash. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+    
+    <script src="landing.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,3 +1,5 @@
+import { initAds, renderAds } from './ads.js';
+
 // ======================================================
 // ⚠️ SUAS CHAVES FIREBASE AQUI ⚠️
 // ======================================================
@@ -15,6 +17,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+initAds(db); // Injeta a instância do DB no módulo de anúncios
 const appId = "moto-manager-v1"; // O mesmo ID do seu app principal
 
 const loginScreen = document.getElementById("login-screen");
@@ -170,6 +173,11 @@ function initNavigation() {
   // Adiciona listener para a nova tela de Configurações
   document.getElementById("nav-settings").addEventListener("click", (e) => {
     navigateTo("view-settings");
+  });
+
+  // Adiciona listener para a nova tela de Anúncios
+  document.getElementById("nav-ads").addEventListener("click", (e) => {
+    navigateTo("view-ads");
   });
 
   // **NOVO**: Adiciona listener para a tela da Assistente Graxa
@@ -330,6 +338,9 @@ function navigateTo(viewId) {
   }
   if (viewId === "view-settings") {
     loadAppSettings();
+  }
+  if (viewId === "view-ads") {
+    renderAds(document.getElementById('view-ads'));
   }
   if (viewId === "view-graxa-kb") {
     initGraxaKbView(); // **NOVO**: Inicializa a view da assistente
