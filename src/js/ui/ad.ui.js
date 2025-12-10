@@ -1,4 +1,5 @@
-import { db } from "../config.js";
+import { db, appId } from "../config.js";
+import { currentUser } from "../auth.js";
 import { closeModal } from "../ui.js";
 
 /**
@@ -9,6 +10,15 @@ export async function showAdModal() {
   if (!modalContainer) return;
 
   try {
+    // **NOVO: Verifica se o usuário é Apoiador antes de exibir o anúncio**
+    if (currentUser) {
+      const userDoc = await db.collection("artifacts").doc(appId).collection("users").doc(currentUser.uid).get();
+      if (userDoc.exists && userDoc.data().isPro === true) {
+        console.log("Usuário Apoiador. Anúncio não será exibido.");
+        return; // Não exibe anúncio para Apoiadores
+      }
+    }
+
     // 1. Busca um anúncio aleatório e ativo
     const key = db.collection("advertisements").doc().id;
     let adSnap = await db.collection("advertisements")
