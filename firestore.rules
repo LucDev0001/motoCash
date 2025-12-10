@@ -73,6 +73,16 @@ service cloud.firestore {
     }
 
     // ==================================================================
+    // REGRAS PARA PERFIS PÚBLICOS
+    // ==================================================================
+    match /public_profiles/{userId} {
+      // Qualquer pessoa (autenticada ou não) pode ler perfis públicos.
+      allow read: if true;
+      // Apenas o dono do perfil pode criar, atualizar ou apagar.
+      allow write: if isOwner(userId);
+    }
+
+    // ==================================================================
     // REGRAS PARA EMPRESAS E VAGAS
     // ==================================================================
 
