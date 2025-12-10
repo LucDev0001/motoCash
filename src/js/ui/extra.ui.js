@@ -404,8 +404,20 @@ export async function renderJobChat(c) {
 
   const jobRef = db.collection("jobs").doc(jobId);
   const unsubJob = jobRef.onSnapshot(async (jobSnap) => {
-    if (!jobSnap.exists) return;
+    if (!jobSnap.exists) {
+      // A vaga pode ter sido apagada pela empresa
+      showNotification("Esta vaga não está mais disponível.", "Aviso");
+      router('dashboard'); // Volta para o início
+      return;
+    }
     const jobData = jobSnap.data();
+
+    // **MELHORIA**: Verifica o status da vaga em tempo real.
+    // Se a empresa concluiu a vaga, mostra a tela de conclusão para o motoboy.
+    if (jobData.status === 'concluida') {
+      showJobConcludedScreen(jobId, jobData.empresaName);
+      return; // Interrompe a execução para não renderizar o chat
+    }
 
     chatHeaderEl.innerHTML = `
       <h3 class="font-bold">${jobData.title}</h3>

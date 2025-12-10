@@ -1998,13 +1998,125 @@ const ALL_ACHIEVEMENTS = [
     description: "Primeira meta mensal definida",
     icon: "piggy-bank",
   },
-  {
-    id: "goal_met",
-    title: "Meta Batida",
-    description: "Atingiu a meta mensal",
-    icon: "target",
-  },
 ];
+
+// --- COMPANY RATING API (for Motoboys) ---
+
+// Variáveis de estado para o modal de avaliação da empresa
+let currentCompanyRating = 0;
+let currentRatingJobId = null;
+let currentRatingCompanyId = null;
+
+/**
+ * Abre o modal para o motoboy avaliar a empresa.
+ * @param {string} jobId - O ID da vaga.
+ * @param {string} companyId - O ID da empresa.
+ * @param {string} companyName - O nome da empresa.
+ */
+export async function openCompanyRatingModal(jobId, companyId, companyName) {
+  currentRatingJobId = jobId;
+  currentRatingCompanyId = companyId;
+  currentCompanyRating = 0;
+
+  const modalContainer = document.getElementById("modal-container");
+  if (!modalContainer) return;
+
+  const response = await fetch("src/templates/modals/rateCompanyModal.html");
+  modalContainer.innerHTML = await response.text();
+
+  document.getElementById("rating-company-name").textContent = companyName;
+  const ratingForm = document.getElementById("rate-company-form");
+
+  // Função para renderizar as estrelas
+  const renderStars = (rating) => {
+    const starContainer = document.getElementById("star-rating-container");
+    starContainer.innerHTML = "";
+    for (let i = 1; i <= 5; i++) {
+      const starWrapper = document.createElement("span");
+      starWrapper.className = "cursor-pointer";
+      starWrapper.onclick = () => handleStarClick(i);
+      starWrapper.innerHTML = `<i data-lucide="star" class="w-10 h-10 transition-colors ${
+        i <= rating
+          ? "text-yellow-400 fill-current"
+          : "text-gray-300 dark:text-gray-600"
+      }"></i>`;
+      starContainer.appendChild(starWrapper);
+    }
+    lucide.createIcons();
+  };
+
+  const handleStarClick = (rating) => {
+    currentCompanyRating = rating;
+    renderStars(rating);
+  };
+  
+  // Expor a função para o escopo global para ser acessível pelo HTML
+  window.handleStarClick = handleStarClick;
+
+  renderStars(0); // Inicializa as estrelas
+
+  ratingForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (currentCompanyRating === 0) {
+      return showNotification("Por favor, selecione de 1 a 5 estrelas.", "Atenção");
+    }
+    const comment = document.getElementById("rating-comment").value;
+    saveCompanyRating(currentRatingJobId, currentRatingCompanyId, currentCompanyRating, comment);
+  });
+  
+  modalContainer.querySelector('.close-modal-btn').addEventListener('click', closeModal);
+}
+
+/**
+ * Salva a avaliação da empresa no Firestore.
+ * @param {string} jobId
+ * @param {string} companyId
+ * @param {number} rating
+ * @param {string} comment
+ */
+async function saveCompanyRating(jobId, companyId, rating, comment) {
+  const companyRef = db.collection("companies").doc(companyId);
+  const jobRef = db.collection("jobs").doc(jobId);
+
+  try {
+    await db.runTransaction(async (transaction) => {
+      const jobDoc = await transaction.get(jobRef);
+      if (jobDoc.data().motoboyRatingGiven) {
+        throw "Você já avaliou esta empresa por este serviço.";
+      }
+
+      const companyDoc = await transaction.get(companyRef);
+      if (!companyDoc.exists) {
+        throw "Esta empresa não existe mais.";
+      }
+      
+      const companyData = companyDoc.data() || {};
+      const currentRating = companyData.rating || 0;
+      const ratingCount = companyData.ratingCount || 0;
+
+      const newRatingCount = ratingCount + 1;
+      const newTotalRating = (currentRating * ratingCount) + rating;
+      const newAverageRating = newTotalRating / newRatingCount;
+
+      transaction.update(companyRef, {
+        rating: newAverageRating,
+        ratingCount: newRatingCount,
+      });
+
+      transaction.update(jobRef, { 
+          motoboyRatingGiven: rating,
+          motoboyRatingComment: comment
+      });
+    });
+
+    showNotification("Obrigado pela sua avaliação!", "Sucesso");
+    closeModal();
+    router('dashboard'); // Volta para a tela inicial
+  } catch (error) {
+    showNotification(`Erro ao salvar avaliação: ${error}`, "Erro");
+    closeModal();
+  }
+}
 
 export function getAchievements(callback) {
   const userRef = db

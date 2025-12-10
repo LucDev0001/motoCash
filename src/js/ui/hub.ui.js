@@ -44,6 +44,14 @@ async function updateJobsUI(jobs, motoboyId) {
 
   if (jobs.length === 0) {
     listContainer.innerHTML = `<p class="text-center text-gray-400 py-8">Nenhuma vaga publicada no momento.</p>`;
+    // **Limpa apenas os marcadores de jobs antigos se não houver novos jobs**
+    if (map) {
+      map.eachLayer((layer) => {
+        if (layer.options.isJobMarker) {
+          map.removeLayer(layer);
+        }
+      });
+    }
     return;
   }
 
@@ -110,9 +118,9 @@ async function updateJobsUI(jobs, motoboyId) {
 
   // Atualiza os marcadores no mapa
   if (map) {
-    // Limpa marcadores antigos
+    // Limpa apenas os marcadores de jobs antigos
     map.eachLayer((layer) => {
-      if (layer instanceof L.Marker) {
+      if (layer.options.isJobMarker) {
         map.removeLayer(layer);
       }
     });
@@ -126,12 +134,20 @@ async function updateJobsUI(jobs, motoboyId) {
 function addMarkersToMap(jobs) {
   if (!map) return;
 
+  const jobIcon = L.icon({
+    iconUrl: 'data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
+    className: "job-marker-icon"
+  });
+
   jobs.forEach((job) => {
-    if (job.location && job.location.latitude && job.location.longitude) {
+    if (job.location && job.location.lat && job.location.lon) {
       const marker = L.marker([
-        job.location.latitude,
-        job.location.longitude,
-      ]).addTo(map);
+        job.location.lat,
+        job.location.lon,
+      ], { icon: jobIcon, isJobMarker: true }).addTo(map); // Adiciona a propriedade customizada
       marker.bindPopup(`
                 <div class="font-sans">
                     <h3 class="font-bold">${job.title}</h3>
@@ -199,4 +215,34 @@ function initializeMap(centerCoordinates) {
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
+
+  // **NOVO**: Adiciona os marcadores das empresas ao mapa
+  addCompanyMarkersToMap();
+}
+
+/**
+ * **NOVO**: Busca e adiciona marcadores para todas as empresas aprovadas no mapa.
+ */
+async function addCompanyMarkersToMap() {
+  if (!map) return;
+
+  const companyIcon = L.icon({
+    iconUrl: 'data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building-2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>',
+    iconSize: [28, 28],
+    iconAnchor: [14, 28],
+    popupAnchor: [0, -28],
+  });
+  
+  try {
+    const companiesSnap = await db.collection("companies").where("status", "==", "approved").get();
+    companiesSnap.forEach(doc => {
+      const company = doc.data();
+      if (company.location && company.location.lat && company.location.lon) {
+        const marker = L.marker([company.location.lat, company.location.lon], { icon: companyIcon }).addTo(map);
+        marker.bindPopup(`<div class="font-bold text-base">${company.name}</div>`);
+      }
+    });
+  } catch (error) {
+    console.error("Erro ao buscar empresas para o mapa:", error);
+  }
 }

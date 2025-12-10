@@ -1,0 +1,25 @@
+<div id="rate-company-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-[500] fade-in">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md m-4 scale-in">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">Avaliar Empresa</h3>
+            <button class="close-modal-btn text-gray-500 hover:text-gray-800 dark:hover:text-white">&times;</button>
+        </div>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Sua avaliação para <strong id="rating-company-name" class="text-yellow-500">Nome da Empresa</strong> é muito importante.
+        </p>
+        <form id="rate-company-form">
+            <div id="star-rating-container" class="flex justify-center items-center gap-2 mb-6">
+                <!-- As estrelas serão inseridas aqui via JS -->
+            </div>
+            <div class="space-y-1">
+                <label for="rating-comment" class="text-sm font-medium text-gray-700 dark:text-gray-300">Deixe um comentário (opcional):</label>
+                <textarea id="rating-comment" rows="3" class="w-full p-3 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-lg" placeholder="Como foi a experiência? A comunicação foi clara?"></textarea>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-500 transition-colors">
+                    Enviar Avaliação
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

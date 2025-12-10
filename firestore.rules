@@ -43,10 +43,16 @@ service cloud.firestore {
       }
 
       // --- Dados dos Usuários (Motoboys) ---
+      // --- Dados dos Usuários (Motoboys) ---
       match /users/{userId} {
-        // Um usuário só pode ler e escrever seus próprios dados.
+        // Qualquer usuário autenticado (empresa ou motoboy) pode ler os dados de um motoboy.
+        allow read: if isUserAuthenticated();
+        // Apenas o próprio motoboy pode criar ou apagar seu perfil.
+        allow create, delete: if isOwner(userId);
+        // O dono do perfil pode atualizar seus dados, e qualquer usuário autenticado (empresa)
+        // pode atualizar o perfil para registrar uma avaliação.
+        allow update: if isOwner(userId) || isUserAuthenticated();
         // O admin pode ler os dados de qualquer usuário.
-        allow read, write: if isOwner(userId);
         allow get, list: if isAdmin(); // 'get' e 'list' para o admin ler
 
         // **NOVO**: Permite que admins criem notificações para qualquer usuário.
@@ -72,9 +78,12 @@ service cloud.firestore {
     match /companies/{companyId} {
       // Qualquer um pode criar uma conta de empresa (status 'pending').
       allow create: if isUserAuthenticated() && request.resource.data.status == 'pending';
-      // A empresa só pode ler e atualizar seus próprios dados.
-      // O admin pode ler e atualizar (para aprovar/reprovar).
-      allow read, update: if isOwner(companyId) || isAdmin();
+      // A empresa pode ler seus próprios dados. Qualquer usuário autenticado (motoboy) pode ler
+      // os dados de uma empresa para, por exemplo, ver seu perfil.
+      allow read: if isUserAuthenticated();
+      // A empresa pode atualizar seus dados, o admin também (para aprovar), e um motoboy
+      // pode atualizar para submeter uma avaliação.
+      allow update: if isOwner(companyId) || isAdmin() || isUserAuthenticated();
       // Apenas o admin pode apagar uma empresa.
       allow delete: if isAdmin();
     }

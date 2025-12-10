@@ -504,48 +504,7 @@
       </div>
     </div>
     <div id="company-modal-container">
-      <!-- Modal de Avaliação do Motoboy -->
-      <div
-        id="rating-modal"
-        class="hidden fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4"
-      >
-        <div
-          class="bg-white dark:bg-gray-800 w-full max-w-md rounded-xl p-6 shadow-2xl"
-        >
-          <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">
-            Avalie o Serviço de
-            <span id="rating-motoboy-name" class="text-yellow-500"></span>
-          </h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Sua avaliação ajuda a manter a qualidade da nossa comunidade.
-          </p>
-          <form id="rating-form">
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-2"
-                >Sua nota:</label
-              >
-              <div
-                id="star-rating-container"
-                class="flex items-center justify-center text-4xl text-gray-300 dark:text-gray-600"
-              >
-                <!-- Estrelas serão geradas pelo JS -->
-              </div>
-            </div>
-            <div class="mb-6">
-              <label for="rating-comment" class="block text-sm font-medium"
-                >Comentário (opcional):</label
-              >
-              <textarea
-                id="rating-comment"
-                rows="3"
-                placeholder="Deixe um elogio ou sugestão..."
-                class="w-full mt-1 p-2 bg-gray-50 dark:bg-gray-700 border dark:border-gray-600 rounded-md"
-              ></textarea>
-            </div>
-            <button type="submit" class="w-full bg-yellow-500 text-black font-bold py-3 rounded-lg hover:bg-yellow-400 transition-colors">Enviar Avaliação</button>
-          </form>
-        </div>
-      </div>
+      <!-- Modais da empresa (como criar/editar vaga, avaliação) serão injetados aqui -->
     </div>
     <script>
       lucide.createIcons();

@@ -24,6 +24,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     limit,
   } = window.firebaseTools;
 
+  let currentCompanyData = null; // Variável para guardar os dados da empresa
+  let currentAppSettings = {}; // Variável para guardar as configurações do app
+
   // Carrega as configurações globais e verifica o modo manutenção
   const maintenanceActive = await loadGlobalSettings();
   if (maintenanceActive) {
@@ -39,8 +42,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const authScreen = document.getElementById("auth-screen");
   const pendingScreen = document.getElementById("pending-approval-screen");
   const appScreen = document.getElementById("app-screen");
-  let currentCompanyData = null; // Variável para guardar os dados da empresa
-  let currentAppSettings = {}; // Variável para guardar as configurações do app
 
   // Variáveis de estado para o modal de avaliação
   let currentRatingJobId = null;
@@ -284,18 +285,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     currentCompanyData = companyData; // Salva os dados da empresa
     document.getElementById("company-name-header").textContent =
       companyData.name;
-    initializeMotoboysMap(companyData);
-    listenForOnlineMotoboys();
+    initializeMotoboysMap(companyData); // Prepara o mapa e inicia o listener de motoboys
     listenForPublishedJobs(); // NOVO: Inicia o listener para as vagas da empresa
     listenForPastJobs(); // NOVO: Inicia o listener para o histórico
     listenForAcceptedJobs(); // NOVO: Inicia o listener para vagas que foram aceitas
 
     // Adiciona o listener para o formulário de perfil
     const profileForm = document.getElementById("company-profile-form");
-    if (profileForm)
+    if (profileForm) {
       // Garante que o listener seja adicionado apenas uma vez
       profileForm.removeEventListener("submit", handleUpdateProfile);
-    profileForm.addEventListener("submit", handleUpdateProfile);
+      profileForm.addEventListener("submit", handleUpdateProfile);
+    }
   }
 
   function initializeMotoboysMap(companyData) {
@@ -350,29 +351,37 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       };
     }
+
+    // Inicia (ou reinicia) o listener de motoboys com os dados mais recentes da empresa
+    listenForOnlineMotoboys(companyData);
   }
 
-  function listenForOnlineMotoboys() {
+  function listenForOnlineMotoboys(companyData) {
     const usersRef = collection(db, "artifacts", "moto-manager-v1", "users");
     const q = query(usersRef, where("status.isOnline", "==", true));
-    const searchRadius = currentAppSettings.searchRadius || 10; // Raio em KM, com fallback para 10km
 
     onSnapshot(q, (snapshot) => {
       let onlineMotoboys = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+      const searchRadius = currentAppSettings.searchRadius || 10; // Raio em KM, com fallback para 10km
 
       // Filtra os motoboys com base no raio de busca, se a empresa tiver localização
-      if (currentCompanyData.location?.lat) {
+      if (companyData?.location?.lat) {
         onlineMotoboys = onlineMotoboys.filter((motoboy) => {
-          if (!motoboy.status?.location) return false;
+          // CORREÇÃO: Adicionado .location no caminho
+          if (
+            !motoboy.status?.location?.latitude ||
+            !motoboy.status?.location?.longitude
+          )
+            return false;
 
           const distance = getDistance(
-            currentCompanyData.location.lat,
-            currentCompanyData.location.lon,
-            motoboy.status.location.latitude,
-            motoboy.status.location.longitude
+            companyData.location.lat,
+            companyData.location.lon,
+            motoboy.status.location.latitude, // <--- AQUI
+            motoboy.status.location.longitude // <--- AQUI
           );
           return distance <= searchRadius;
         });
@@ -381,25 +390,34 @@ document.addEventListener("DOMContentLoaded", async () => {
       updateMapMarkers(onlineMotoboys, searchRadius);
     });
   }
-
   function updateMapMarkers(motoboys) {
     if (!map) return;
 
-    // Limpa marcadores antigos
+    // 1. Limpa marcadores antigos
     motoboyMarkers.forEach((marker) => map.removeLayer(marker));
     motoboyMarkers = [];
 
-    const motoboyIcon = L.icon({
-      iconUrl: "https://unpkg.com/lucide-static@latest/icons/bike.svg",
-      iconSize: [38, 38],
-      iconAnchor: [19, 38],
-      popupAnchor: [0, -40],
-      className: "motoboy-marker-icon",
+    // 2. Define o ícone usando o arquivo LOCAL (bike.svg)
+    // Usamos L.divIcon para manter o estilo de bolinha branca (definido no CSS)
+    const motoboyIcon = L.divIcon({
+      html: `<img src="../assets/img/moto.png"  
+      class="rounded-full border-2 border-white shadow-md"
+      style="width: 100%; height: 100%;" />`,
+      className: "", // Remove estilos padrão do Leaflet para usar o nosso CSS
+      iconSize: [20, 20], // Tamanho total do ícone
+      iconAnchor: [20, 20], // Ponto de ancoragem (centro do ícone)
+      popupAnchor: [0, -20], // Onde o balão abre em relação ao ícone
     });
 
     motoboys.forEach((motoboy) => {
-      if (motoboy.status?.location) {
-        const { latitude, longitude } = motoboy.status.location;
+      // 3. A CORREÇÃO CRÍTICA DE LÓGICA:
+      // Acessamos 'status.location' em vez de 'motoboy.location' direto
+      const locationData = motoboy.status?.location;
+
+      if (locationData?.latitude && locationData?.longitude) {
+        const { latitude, longitude } = locationData;
+
+        // Cria o marcador com o ícone SVG local
         const marker = L.marker([latitude, longitude], {
           icon: motoboyIcon,
         }).addTo(map);
@@ -411,19 +429,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         const ratingCount = profile.ratingCount || 0;
 
         marker.bindPopup(`
-                <div class="font-sans">
-                    <h3 class="font-bold">${profile.name || "Motoboy"}</h3>
-                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        <p>${profile.fipeModelText || "Moto não informada"}</p>
-                        <p class="text-xs">Placa: ${
-                          profile.motoPlate || "N/A"
-                        }</p>
-                        <p class="text-xs font-bold mt-2">Avaliação: ${rating} (${ratingCount} ${
+        <div class="font-sans">
+            <h3 class="font-bold">${profile.name || "Motoboy"}</h3>
+            <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <p>${profile.fipeModelText || "Moto não informada"}</p>
+                <p class="text-xs">Placa: ${profile.motoPlate || "N/A"}</p>
+                <p class="text-xs font-bold mt-2">Avaliação: ${rating} (${ratingCount} ${
           ratingCount === 1 ? "avaliação" : "avaliações"
         })</p>
-                    </div>
-                </div>
-            `);
+            </div>
+        </div>
+      `);
+
         motoboyMarkers.push(marker);
       }
     });
@@ -540,6 +557,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const chatBadge = document.getElementById("chat-notification-badge");
 
     onSnapshot(q, (snapshot) => {
+      // Remove os cards de negociação antigos antes de renderizar os novos
+      document
+        .querySelectorAll(".negotiating-job-card")
+        .forEach((card) => card.remove());
+
       const jobs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       renderChatList(jobs); // Renderiza a lista na nova tela de chat
       renderPublishedJobsList(jobs, true); // Passa um flag para indicar que são vagas em negociação
@@ -603,6 +625,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       card.id = `job-card-${job.id}`; // Adiciona um ID único ao card
       card.className = // Estilos do card
         "bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border dark:border-gray-700";
+
+      if (isNegotiating) {
+        card.classList.add("negotiating-job-card");
+      }
 
       let actionButton = `
             <button onclick="window.openEditJobModal('${job.id}')" class="text-blue-500 hover:text-blue-700"><i data-lucide="edit" class="w-4 h-4"></i></button>
@@ -1241,7 +1267,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // A avaliação agora é feita no histórico. Esta função apenas conclui a vaga.
     if (!confirm("Tem certeza que deseja marcar esta vaga como concluída?"))
       return;
-    finalizeJobConclusion(jobId);
 
     try {
       // Primeiro, buscamos os dados da vaga para pegar o ID e nome do motoboy
@@ -1280,23 +1305,28 @@ document.addEventListener("DOMContentLoaded", async () => {
    * @param {string} motoboyId - O ID do motoboy a ser avaliado.
    * @param {string} motoboyName - O nome do motoboy.
    */
-  function openRatingModal(jobId, motoboyId, motoboyName) {
+  async function openRatingModal(jobId, motoboyId, motoboyName) {
     currentRatingJobId = jobId;
     currentRatingMotoboyId = motoboyId;
     currentStarRating = 0;
 
-    const modal = document.getElementById("rating-modal");
+    // Carrega o modal dinamicamente para evitar conflitos
+    const modalContainer = document.getElementById("company-modal-container");
+    const response = await fetch(`modals/ratingModal.html`);
+    modalContainer.innerHTML = await response.text();
+
+    const modal = modalContainer.querySelector("#rating-modal");
     const motoboyNameEl = document.getElementById("rating-motoboy-name");
     const ratingForm = document.getElementById("rating-form");
 
     motoboyNameEl.textContent = motoboyName;
     ratingForm.reset();
-    renderStars(0); // Reseta as estrelas
+    window.renderStars(0); // Reseta as estrelas
 
     modal.classList.remove("hidden");
 
     // Lida com o envio do formulário de avaliação
-    ratingForm.onsubmit = (e) => {
+    ratingForm.addEventListener("submit", (e) => {
       e.preventDefault();
       if (currentStarRating === 0) {
         alert("Por favor, selecione uma nota de 1 a 5 estrelas.");
@@ -1309,45 +1339,51 @@ document.addEventListener("DOMContentLoaded", async () => {
         currentStarRating,
         comment
       );
-    };
+    });
 
     // Permite fechar o modal clicando fora dele ou no botão de fechar implícito
-    modal.onclick = (e) => {
-      if (e.target.id === "rating-modal") {
+    modalContainer
+      .querySelector(".close-company-modal-btn")
+      .addEventListener("click", () => {
         closeRatingModal();
-      }
-    };
+      });
   }
 
   function closeRatingModal() {
-    const modal = document.getElementById("rating-modal");
-    modal.classList.add("hidden");
+    const modalContainer = document.getElementById("company-modal-container");
+    if (modalContainer) modalContainer.innerHTML = ""; // Limpa o container
+
     // Após fechar o modal, volta para o dashboard
     navigateCompanyDashboard("dashboard");
+    // Redireciona para a aba de histórico para ver o resultado
+    navigateCompanyDashboard("history");
   }
 
   /**
    * Renderiza as estrelas de avaliação no container.
    * @param {number} rating - A nota atual (0 a 5).
    */
-  function renderStars(rating) {
+  window.renderStars = (rating) => {
     const starContainer = document.getElementById("star-rating-container");
     starContainer.innerHTML = "";
     for (let i = 1; i <= 5; i++) {
-      const star = document.createElement("i");
-      star.dataset.lucide = "star";
-      star.classList.add("w-10", "h-10", "cursor-pointer", "transition-colors");
-      if (i <= rating) {
-        star.classList.add("text-yellow-400", "fill-current");
-      }
-      star.onclick = () => {
-        currentStarRating = i;
-        renderStars(i);
-      };
-      starContainer.appendChild(star);
+      const starWrapper = document.createElement("span");
+      starWrapper.className = "cursor-pointer";
+      starWrapper.onclick = () => window.handleStarClick(i);
+      starWrapper.innerHTML = `<i data-lucide="star" class="w-10 h-10 transition-colors ${
+        i <= rating
+          ? "text-yellow-400 fill-current"
+          : "text-gray-300 dark:text-gray-600"
+      }"></i>`;
+      starContainer.appendChild(starWrapper);
     }
     lucide.createIcons();
-  }
+  };
+
+  window.handleStarClick = (rating) => {
+    currentStarRating = rating;
+    window.renderStars(rating);
+  };
 
   /**
    * Salva a avaliação no Firestore.
@@ -1372,42 +1408,42 @@ document.addEventListener("DOMContentLoaded", async () => {
       "users",
       motoboyId
     );
-    const ratingRef = doc(collection(motoboyRef, "ratings"));
+    const jobRef = doc(db, "jobs", jobId);
 
     try {
       await runTransaction(db, async (transaction) => {
+        const jobDoc = await transaction.get(jobRef);
+        if (jobDoc.data().ratingGiven) {
+          // Se já foi avaliado, não faz nada para evitar duplicidade.
+          // Pode ser melhorado para lançar um erro se o modal não deveria ter sido aberto.
+          console.warn("Este serviço já foi avaliado.");
+          return;
+        }
+
         const motoboyDoc = await transaction.get(motoboyRef);
         if (!motoboyDoc.exists()) {
           throw "Este usuário não existe mais.";
         }
 
-        // Adiciona a nova avaliação na subcoleção
-        transaction.set(ratingRef, {
-          jobId,
-          rating,
-          comment,
-          companyId: user.uid,
-          companyName: currentCompanyData.name,
-          createdAt: serverTimestamp(),
-        });
-
         // Atualiza a avaliação média no perfil do motoboy
         const currentData = motoboyDoc.data().publicProfile || {};
-        const currentTotalRatings = currentData.ratingCount || 0; // Usando ratingCount para consistência
-        const currentAvgRating = currentData.rating || 0; // Usando rating para consistência
+        const currentTotalRatings = currentData.ratingCount || 0;
+        const currentAvgRating = currentData.rating || 0;
 
         const newTotalRatings = currentTotalRatings + 1;
         const newAvgRating =
           (currentAvgRating * currentTotalRatings + rating) / newTotalRatings;
 
+        // 1. Atualiza o perfil do motoboy
         transaction.update(motoboyRef, {
           "publicProfile.rating": newAvgRating,
           "publicProfile.ratingCount": newTotalRatings,
         });
 
-        // Marca a vaga como avaliada para não pedir de novo
-        transaction.update(doc(db, "jobs", jobId), {
+        // 2. Marca a vaga como avaliada para não pedir de novo
+        transaction.update(jobRef, {
           ratingGiven: rating,
+          ratingComment: comment, // Opcional: salvar o comentário também na vaga
         });
       });
 
@@ -1415,22 +1451,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       closeRatingModal();
     } catch (error) {
       console.error("Erro ao salvar avaliação:", error);
-      alert("Ocorreu um erro ao enviar sua avaliação. Tente novamente.");
-    }
-  }
-
-  // Função que efetivamente conclui a vaga após a avaliação (não mais usada diretamente pelo botão)
-  async function finalizeJobConclusion(jobId) {
-    try {
-      await updateDoc(doc(db, "jobs", jobId), {
-        status: "concluida",
-      });
-      alert("Vaga concluída com sucesso!");
-      // Apenas volta para o dashboard, o listener cuidará de remover o chat
-      navigateCompanyDashboard("dashboard");
-    } catch (error) {
-      console.error("Erro ao concluir vaga:", error);
-      alert("Não foi possível concluir a vaga.");
+      // Exibe a mensagem de erro específica (ex: "Você já avaliou este serviço.")
+      alert("Erro ao enviar avaliação: " + error);
+      closeRatingModal();
     }
   }
 
@@ -1706,7 +1729,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   /**
    * Calcula a distância em KM entre duas coordenadas geográficas.
    */
-  function getDistance(lat1, lon1, lat2, lon2) {
+  window.getDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371; // Raio da Terra em km
     const dLat = (lat2 - lat1) * (Math.PI / 180);
     const dLon = (lon2 - lon1) * (Math.PI / 180);
@@ -1718,5 +1741,5 @@ document.addEventListener("DOMContentLoaded", async () => {
         Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
-  }
+  };
 }); // FIM DO 'DOMContentLoaded'
