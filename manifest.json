@@ -48,15 +48,13 @@
       "name": "Adicionar Transação",
       "short_name": "Adicionar",
       "description": "Adicionar um novo ganho ou despesa",
-      "url": "./index.html?action=finance",
-      "icons": [{ "src": "icons/add.png", "sizes": "192x192" }]
+      "url": "./index.html?action=finance"
     },
     {
       "name": "Minha Garagem",
       "short_name": "Garagem",
       "description": "Acessar os detalhes da sua moto e manutenções",
-      "url": "./index.html?action=garage",
-      "icons": [{ "src": "icons/garage.png", "sizes": "192x192" }]
+      "url": "./index.html?action=garage"
     }
   ],
   "categories": ["finance", "productivity", "business", "navigation"],
