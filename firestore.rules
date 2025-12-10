@@ -45,8 +45,10 @@ service cloud.firestore {
       // --- Dados dos Usuários (Motoboys) ---
       // --- Dados dos Usuários (Motoboys) ---
       match /users/{userId} {
-        // Qualquer usuário autenticado (empresa ou motoboy) pode ler os dados de um motoboy.
-        allow read: if isUserAuthenticated();
+        // Qualquer usuário pode LER (get) um perfil público específico.
+        // Apenas usuários autenticados podem LISTAR todos os usuários.
+        allow get: if true;
+        allow list: if isUserAuthenticated();
         // Apenas o próprio motoboy pode criar ou apagar seu perfil.
         allow create, delete: if isOwner(userId);
         // O dono do perfil pode atualizar seus dados, e qualquer usuário autenticado (empresa)
