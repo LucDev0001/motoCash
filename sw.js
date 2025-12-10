@@ -12,8 +12,6 @@ const assetsToCache = [
   "./assets/notification.mp3",
   "./assets/img/bike.svg", // Novo ícone local
   // Ícones para atalhos
-  "./icons/add.png",
-  "./icons/garage.png",
   // Templates de Views (essencial para navegação offline)
   "./src/templates/views/about.html",
   "./src/templates/views/accepted-jobs.html",

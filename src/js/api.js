@@ -804,9 +804,11 @@ async function renderProAnalysisChart() {
   const chartCanvas = document.getElementById("chart-pro-analysis");
   if (!chartCanvas) return;
 
-  // Destrói a instância anterior do gráfico, se existir
-  if (proChartInstance) {
-    proChartInstance.destroy();
+  // **CORREÇÃO**: Busca e destrói a instância anterior do gráfico diretamente pelo ID do canvas.
+  // Isso é mais robusto do que usar uma variável de escopo de módulo.
+  const existingChart = Chart.getChart("chart-pro-analysis");
+  if (existingChart) {
+    existingChart.destroy();
   }
 
   const ctx = chartCanvas.getContext("2d");
@@ -830,7 +832,7 @@ async function renderProAnalysisChart() {
   const currentWeekData = processWeekData(currentWeekEarnings);
   const lastWeekData = processWeekData(lastWeekEarnings);
 
-  proChartInstance = new Chart(ctx, {
+  const proChartInstance = new Chart(ctx, {
     type: "bar",
     data: {
       labels: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
